@@ -4,6 +4,7 @@ pub mod identifier;
 pub mod path;
 pub mod visitor;
 pub mod iterator;
+pub mod new_visitor;
 
 use std::borrow::Borrow;
 

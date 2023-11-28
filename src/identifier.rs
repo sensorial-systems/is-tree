@@ -40,3 +40,10 @@ pub trait HasIdentifier {
     type Identifier: IsIdentifier;
     fn identifier(&self) -> &Self::Identifier;
 }
+
+impl HasIdentifier for String {
+    type Identifier = Self;
+    fn identifier(&self) -> &Self::Identifier {
+        self
+    }
+}
