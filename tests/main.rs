@@ -12,41 +12,46 @@ pub struct Module {
 
 use std::{collections::HashMap, vec, borrow::{Borrow, BorrowMut}};
 
+impl TreeUpdate for Module {
+    fn add_branch(&mut self, child: impl Into<Self>) -> &mut Self
+    where Self: Sized
+    {
+        let child = child.into();
+        self.children
+            .entry(child.path_segment().clone())
+            .or_insert(child)
+    }
+}
+
+impl HasBranches for Module {
+    fn branches<'a>(&'a self) -> Box<dyn Iterator<Item = &Self> + 'a> {
+        Box::new(self.children.values())
+    }
+
+    fn branches_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &mut Self> + 'a> {
+        Box::new(self.children.values_mut())
+    }
+
+    fn get<K>(&self, key: K) -> Option<&Self>
+    where K: Into<Self::PathSegment>, Self::PathSegment: Borrow<Self::PathSegment>{
+        let key = key.into();
+        self
+            .children
+            .get(&key)
+    }
+
+    fn get_mut<K>(&mut self, key: K) -> Option<&mut Self>
+    where K: Into<Self::PathSegment>, Self::PathSegment: BorrowMut<Self::PathSegment>{
+        let key = key.into();
+        self
+            .children
+            .get_mut(&key)
+    }
+}
+
 impl IsTree for Module {
-fn add_branch(&mut self, child: impl Into<Self>) -> &mut Self
-where Self: Sized
-{
-    let child = child.into();
-    self.children
-        .entry(child.path_segment().clone())
-        .or_insert(child)
+    
 }
-
-fn branches<'a>(&'a self) -> Box<dyn Iterator<Item = &Self> + 'a> {
-    Box::new(self.children.values())
-}
-
-fn branches_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &mut Self> + 'a> {
-    Box::new(self.children.values_mut())
-}
-
-fn get<K>(&self, key: K) -> Option<&Self>
-where K: Into<Self::PathSegment>, Self::PathSegment: Borrow<Self::PathSegment>{
-    let key = key.into();
-    self
-        .children
-        .get(&key)
-}
-
-fn get_mut<K>(&mut self, key: K) -> Option<&mut Self>
-where K: Into<Self::PathSegment>, Self::PathSegment: BorrowMut<Self::PathSegment>{
-    let key = key.into();
-    self
-        .children
-        .get_mut(&key)
-}
-}
-
 
 impl Module {
     pub fn format(&self) -> PathSegment {

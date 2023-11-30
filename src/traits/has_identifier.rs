@@ -2,7 +2,13 @@ use crate::IsPathSegment;
 
 pub trait HasPathSegment {
     type PathSegment: IsPathSegment;
+
     fn path_segment(&self) -> &Self::PathSegment;
+
+    fn is(&self, identifier: impl PartialEq<Self::PathSegment>) -> bool {
+        identifier.eq(self.path_segment())
+    }
+
 }
 
 impl HasPathSegment for String {

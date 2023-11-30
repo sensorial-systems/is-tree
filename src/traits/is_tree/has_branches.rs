@@ -1,20 +1,9 @@
+use crate::{HasPathSegment, TreeUpdate};
+
 use std::borrow::BorrowMut;
 
-use crate::TreeVisitor;
 
-use super::has_identifier::HasPathSegment;
-
-pub trait IsTree: HasPathSegment {
-    fn is(&self, identifier: impl PartialEq<Self::PathSegment>) -> bool {
-        identifier.eq(self.path_segment())
-    }
-
-    fn add_branch(&mut self, _child: impl Into<Self>) -> &mut Self where Self: Sized {
-        self
-    }
-
-    fn remove_branch(&mut self, _identifier: &Self::PathSegment) {}
-
+pub trait HasBranches: HasPathSegment + TreeUpdate {
     fn branches<'a>(&'a self) -> Box<dyn Iterator<Item = &Self> + 'a>;
     fn branches_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &mut Self> + 'a>;
 
@@ -81,9 +70,4 @@ pub trait IsTree: HasPathSegment {
         }
     }
 
-    fn iter(&self) -> TreeVisitor<'_, Self>
-    where Self: Sized
-    {
-        TreeVisitor::new(self)
-    }
 }
