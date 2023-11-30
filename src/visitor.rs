@@ -1,25 +1,25 @@
 use std::rc::Rc;
 
-use crate::{IsIdentifier, HasIdentifier, Path, Identifier, IsTree};
+use crate::{IsPathSegment, HasPathSegment, Path, PathSegment, IsTree};
 
 pub struct Visitor<'a, Value>
-where Value: HasIdentifier
+where Value: HasPathSegment
 {
     pub parent: Option<Rc<Visitor<'a, Value>>>,
     pub value: &'a Value,
-    pub path: Path<'a, Value::Identifier>
+    pub path: Path<'a, Value::PathSegment>
 }
 
 impl<'a, Value> Visitor<'a, Value>
-where Value: HasIdentifier
+where Value: HasPathSegment
 {
-    pub fn new(value: &'a Value, parent: Option<Rc<Visitor<'a, Value>>>, path: Path<'a, Value::Identifier>) -> Rc<Self> {
+    pub fn new(value: &'a Value, parent: Option<Rc<Visitor<'a, Value>>>, path: Path<'a, Value::PathSegment>) -> Rc<Self> {
         Rc::new(Self { value, parent, path })
     }
 
     pub fn child(self: &Rc<Self>, value: &'a Value) -> Rc<Self>
     {
-        let path = self.path.join(value.identifier().clone());
+        let path = self.path.join(value.path_segment().clone());
         let child = Self::new(value, Some(self.clone()), path);
         child
     }
@@ -32,20 +32,20 @@ where Value: HasIdentifier
     }
 
     pub fn relative<K>(self: &Rc<Self>, path: impl IntoIterator<Item = K>) -> Option<Rc<Self>>
-    where K: Into<Value::Identifier>,
+    where K: Into<Value::PathSegment>,
         Value: IsTree
     {
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {
             let segment = segment.into();
             match segment.kind() {
-                Identifier::Root => Some(self.root()),
-                Identifier::Self_ => self.relative(path),
-                Identifier::Super => self
+                PathSegment::Root => Some(self.root()),
+                PathSegment::Self_ => self.relative(path),
+                PathSegment::Super => self
                     .parent
                     .as_ref()
                     .and_then(|parent| parent.relative(path)),
-                Identifier::Other(segment) => self
+                PathSegment::Other(segment) => self
                     .value
                     .get(segment.clone())
                     .and_then(|branch|

@@ -1,16 +1,16 @@
 use std::rc::Rc;
 
-use crate::{HasIdentifier, Visitor, IsTree};
+use crate::{HasPathSegment, Visitor, IsTree};
 
 pub struct TreeVisitor<'a, Value>
-where Value: HasIdentifier,
+where Value: HasPathSegment,
 {
     stack: Vec<Rc<Visitor<'a, Value>>>,
 }
 
 impl<'a, Value> TreeVisitor<'a, Value>
 where
-    Value: HasIdentifier + IsTree,
+    Value: HasPathSegment + IsTree,
 {
     pub fn new(root: &'a Value) -> Self {
         let visitor = Visitor::new(root, Default::default(), Default::default());
@@ -30,7 +30,7 @@ where
 }
 
 impl<'a, Value> Iterator for TreeVisitor<'a, Value>
-where Value: HasIdentifier
+where Value: HasPathSegment
 {
     type Item = Rc<Visitor<'a, Value>>;
 

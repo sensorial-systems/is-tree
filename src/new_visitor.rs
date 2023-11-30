@@ -1,36 +1,27 @@
-use crate::{IsIdentifier, HasIdentifier, Path, Identifier, IsTree};
+use crate::{HasPathSegment, Path, traits::{has_root::HasRoot, has_parent::HasParent, is_tree::IsTree}};
 
 #[derive(Clone)]
 pub struct Visitor<'a, Parent, Value>
-where Value: HasIdentifier + Clone, Parent: Clone
+where Value: HasPathSegment + Clone, Parent: Clone
 {
     pub parent: &'a Parent,
     pub value: &'a Value,
-    pub path: Path<'a, Value::Identifier>
+    pub path: Path<'a, Value::PathSegment>
 }
 
 impl<'a, Value> Visitor<'a, (), Value>
-where Value: HasIdentifier + Clone
+where Value: HasPathSegment + Clone
 {
     pub fn new(value: &'a Value) -> Self {
-        let path = Path::default().join(value.identifier().clone());
+        let path = Path::default().join(value.path_segment().clone());
         let parent = &();
         Self { value, parent, path }
     }
 }
 
-pub trait HasParent {
-    type Parent;
-    fn parent(&self) -> &Self::Parent;
-}
-
-pub trait HasRoot {
-    type Root;
-    fn root(&self) -> &Self::Root;
-}
 
 impl<'a, Value> HasRoot for Visitor<'a, (), Value>
-where Value: HasIdentifier + Clone
+where Value: HasPathSegment + Clone
 {
     type Root = Self;
     fn root(&self) -> &Self {
@@ -40,7 +31,7 @@ where Value: HasIdentifier + Clone
 
 
 impl<'a, Parent, Value> HasRoot for Visitor<'a, Parent, Value>
-where Value: HasIdentifier + Clone,
+where Value: HasPathSegment + Clone,
       Parent: HasRoot + Clone
 {
     type Root = Parent::Root;
@@ -50,7 +41,7 @@ where Value: HasIdentifier + Clone,
 }
 
 impl<'a, Parent, Value> HasParent for Visitor<'a, Parent, Value>
-where Value: HasIdentifier + Clone, Parent: Clone
+where Value: HasPathSegment + Clone, Parent: Clone
 {
     type Parent = Parent;
     fn parent(&self) -> &Self::Parent {
@@ -59,35 +50,35 @@ where Value: HasIdentifier + Clone, Parent: Clone
 }
 
 impl<'a, Parent, Value> Visitor<'a, Parent, Value>
-where Value: HasIdentifier + Clone, Parent: Clone
+where Value: HasPathSegment + Clone, Parent: Clone
 {
     pub fn new_with_parent(value: &'a Value, parent: &'a Parent) -> Self {
-        let path = Path::default().join(value.identifier().clone());
+        let path = Path::default().join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
-    pub fn new_with_parent_and_path(value: &'a Value, parent: &'a Parent, path: Path<'a, Value::Identifier>) -> Self {
-        let path = path.join(value.identifier().clone());
+    pub fn new_with_parent_and_path(value: &'a Value, parent: &'a Parent, path: Path<'a, Value::PathSegment>) -> Self {
+        let path = path.join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
     pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, Self, Child>
-    where Child: HasIdentifier<Identifier = Value::Identifier> + Clone
+    where Child: HasPathSegment<PathSegment = Value::PathSegment> + Clone
     {
         Visitor::new_with_parent_and_path(value, self, self.path.clone())
     }
 
     pub fn relative<K, RParent, RValue>(&self, path: impl IntoIterator<Item = K>) -> Option<Visitor<'a, RParent, RValue>>
-    where K: Into<Value::Identifier>,
+    where K: Into<Value::PathSegment>,
         Parent: HasRoot,
         Parent::Root: Clone + Into<Visitor<'a, RParent, RValue>>,
         Value: IsTree,
         RParent: Clone,
-        RValue: HasIdentifier + Clone,
+        RValue: HasPathSegment + Clone,
         Visitor<'a, Parent, Value>: Into<Visitor<'a, RParent, RValue>>
     {
         let mut path = path.into_iter();
-        if let Some(segment) = path.next() {
+        if let Some(_segment) = path.next() {
             Some((*self.root()).clone().into())
             // let segment = segment.into();
             // match segment.kind() {
@@ -113,34 +104,34 @@ where Value: HasIdentifier + Clone, Parent: Clone
 
 #[cfg(test)]
 mod test {
-    use crate::{new_visitor::{HasParent, HasRoot}, Path, IsIdentifier};
+    use crate::*;
 
     use super::Visitor;
 
 
-    struct Module {
-        name: String,
-        children: Vec<Module>
-    }
+    // struct Module {
+    //     name: String,
+    //     children: Vec<Module>
+    // }
 
 
 
     #[test]
     fn new_visitor() {
-        let module = Module {
-            name: String::from("a"),
-            children: vec![
-                Module {
-                    name: String::from("b"),
-                    children: vec![
-                        Module {
-                            name: String::from("c"),
-                            children: vec![]
-                        }
-                    ]
-                }
-            ]
-        };
+        // let module = Module {
+        //     name: String::from("a"),
+        //     children: vec![
+        //         Module {
+        //             name: String::from("b"),
+        //             children: vec![
+        //                 Module {
+        //                     name: String::from("c"),
+        //                     children: vec![]
+        //                 }
+        //             ]
+        //         }
+        //     ]
+        // };
         let a = String::from("a");
         let b = String::from("b");
         let c = String::from("c");

@@ -1,1 +1,1 @@
-pub use crate::{IsIdentifier, HasIdentifier, IsTree, IterType, IterTypeMut};
+pub use crate::{IsPathSegment, HasPathSegment, IsTree, IterType, IterTypeMut};
