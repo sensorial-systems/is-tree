@@ -141,6 +141,9 @@ mod test {
                 }
             ]
         };
+        let a = String::from("a");
+        let b = String::from("b");
+        let c = String::from("c");
         // TODO: Implement iterator for visit.
         let a = Visitor::new(&a);
         let b = a.child(&b);
