@@ -108,45 +108,73 @@ mod test {
 
     use super::Visitor;
 
+    #[derive(Clone)]
+    pub struct Library {
+        name: String,
+        root_module: Module
+    }
 
-    // struct Module {
-    //     name: String,
-    //     children: Vec<Module>
-    // }
+    impl HasPathSegment for Library {
+        type PathSegment = String;
+        fn path_segment(&self) -> &Self::PathSegment {
+            &self.name
+        }
+    }
 
+    #[derive(Clone)]
+    struct Module {
+        name: String,
+        children: Vec<Module>
+    }
 
+    impl HasPathSegment for Module {
+        type PathSegment = String;
+        fn path_segment(&self) -> &Self::PathSegment {
+            &self.name
+        }
+    }
 
     #[test]
     fn new_visitor() {
-        // let module = Module {
-        //     name: String::from("a"),
-        //     children: vec![
-        //         Module {
-        //             name: String::from("b"),
-        //             children: vec![
-        //                 Module {
-        //                     name: String::from("c"),
-        //                     children: vec![]
-        //                 }
-        //             ]
-        //         }
-        //     ]
-        // };
-        let a = String::from("a");
-        let b = String::from("b");
-        let c = String::from("c");
-        // TODO: Implement iterator for visit.
-        let a = Visitor::new(&a);
-        let b = a.child(&b);
-        let c = b.child(&c);
+        let library = Library {
+            name: String::from("a"),
+            root_module: Module {
+                name: String::from("b"),
+                children: vec![
+                    Module {
+                        name: String::from("c"),
+                        children: vec![
+                            Module {
+                                name: String::from("d"),
+                                children: vec![]
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+        let a = &library;
+        let b = &a.root_module;
+        let c = &b.children[0];
+        let d = &c.children[0];
+        let a = Visitor::new(a);
+        let b = a.child(b);
+        let c = b.child(c);
+        let d = c.child(d);
+        
         assert_eq!(a.path.to_string(), "a");
         assert_eq!(b.path.to_string(), "a::b");
         assert_eq!(c.path.to_string(), "a::b::c");
+        assert_eq!(d.path.to_string(), "a::b::c::d");
+
         assert_eq!(*a.parent(), ());
-        assert_eq!(*b.parent().value, String::from("a"));
-        assert_eq!(*c.parent().value, String::from("b"));
-        assert_eq!(*a.root().value, String::from("a"));
-        assert_eq!(*b.root().value, String::from("a"));
-        assert_eq!(*c.root().value, String::from("a"));
+        assert_eq!(*b.parent().value.path_segment(), String::from("a"));
+        assert_eq!(*c.parent().value.path_segment(), String::from("b"));
+        assert_eq!(*d.parent().value.path_segment(), String::from("c"));
+
+        assert_eq!(*a.root().value.path_segment(), String::from("a"));
+        assert_eq!(*b.root().value.path_segment(), String::from("a"));
+        assert_eq!(*c.root().value.path_segment(), String::from("a"));
+        assert_eq!(*d.root().value.path_segment(), String::from("a"));
     }
 }
