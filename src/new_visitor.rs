@@ -1,16 +1,28 @@
-use crate::{HasPathSegment, Path, traits::{has_root::HasRoot, has_parent::HasParent, is_tree::IsTree}};
+use crate::*;
 
-#[derive(Clone)]
 pub struct Visitor<'a, Parent, Value>
-where Value: HasPathSegment + Clone, Parent: Clone
+where Value: HasPathSegment
 {
     pub parent: &'a Parent,
     pub value: &'a Value,
     pub path: Path<'a, Value::PathSegment>
 }
 
+impl<'a, Parent, Value> Clone for Visitor<'a, Parent, Value>
+where Value: HasPathSegment
+{
+    fn clone(&self) -> Self {
+        Self {
+            parent: self.parent,
+            value: self.value,
+            path: self.path.clone()
+        }
+    }
+
+}
+
 impl<'a, Value> Visitor<'a, (), Value>
-where Value: HasPathSegment + Clone
+where Value: HasPathSegment
 {
     pub fn new(value: &'a Value) -> Self {
         let path = Path::default().join(value.path_segment().clone());
@@ -21,7 +33,7 @@ where Value: HasPathSegment + Clone
 
 
 impl<'a, Value> HasRoot for Visitor<'a, (), Value>
-where Value: HasPathSegment + Clone
+where Value: HasPathSegment
 {
     type Root = Self;
     fn root(&self) -> &Self {
@@ -31,8 +43,8 @@ where Value: HasPathSegment + Clone
 
 
 impl<'a, Parent, Value> HasRoot for Visitor<'a, Parent, Value>
-where Value: HasPathSegment + Clone,
-      Parent: HasRoot + Clone
+where Value: HasPathSegment,
+      Parent: HasRoot
 {
     type Root = Parent::Root;
     fn root(&self) -> &Self::Root {
@@ -41,7 +53,7 @@ where Value: HasPathSegment + Clone,
 }
 
 impl<'a, Parent, Value> HasParent for Visitor<'a, Parent, Value>
-where Value: HasPathSegment + Clone, Parent: Clone
+where Value: HasPathSegment
 {
     type Parent = Parent;
     fn parent(&self) -> &Self::Parent {
@@ -50,7 +62,7 @@ where Value: HasPathSegment + Clone, Parent: Clone
 }
 
 impl<'a, Parent, Value> Visitor<'a, Parent, Value>
-where Value: HasPathSegment + Clone, Parent: Clone
+where Value: HasPathSegment
 {
     pub fn new_with_parent(value: &'a Value, parent: &'a Parent) -> Self {
         let path = Path::default().join(value.path_segment().clone());
@@ -63,7 +75,7 @@ where Value: HasPathSegment + Clone, Parent: Clone
     }
 
     pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, Self, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment> + Clone
+    where Child: HasPathSegment<PathSegment = Value::PathSegment>
     {
         Visitor::new_with_parent_and_path(value, self, self.path.clone())
     }
@@ -72,30 +84,28 @@ where Value: HasPathSegment + Clone, Parent: Clone
     where K: Into<Value::PathSegment>,
         Parent: HasRoot,
         Parent::Root: Clone + Into<Visitor<'a, RParent, RValue>>,
-        Value: IsTree,
-        RParent: Clone,
-        RValue: HasPathSegment + Clone,
+        RValue: HasPathSegment,
         Visitor<'a, Parent, Value>: Into<Visitor<'a, RParent, RValue>>
     {
         let mut path = path.into_iter();
-        if let Some(_segment) = path.next() {
-            Some((*self.root()).clone().into())
-            // let segment = segment.into();
-            // match segment.kind() {
-            //     Identifier::Root => Some(self.root()),
-            //     Identifier::Self_ => self.relative(path),
-            //     Identifier::Super => self
-            //         .parent
-            //         .as_ref()
-            //         .and_then(|parent| parent.relative(path)),
-            //     Identifier::Other(segment) => self
-            //         .value
-            //         .get(segment.clone())
-            //         .and_then(|branch|
-            //             self.child(branch)
-            //                 .relative(path)
-            //         )
-            // }
+        if let Some(segment) = path.next() {
+            let segment = segment.into();
+            match segment.kind() {
+                PathSegment::Root => Some((*self.root()).clone().into()),
+                PathSegment::Self_ => self.relative(path),
+                _ => todo!("Hello")
+                // Identifier::Super => self
+                //     .parent
+                //     .as_ref()
+                //     .and_then(|parent| parent.relative(path)),
+                // Identifier::Other(segment) => self
+                //     .value
+                //     .get(segment.clone())
+                //     .and_then(|branch|
+                //         self.child(branch)
+                //             .relative(path)
+                //     )
+            }
         } else {
             Some((*self).clone().into())
         }
@@ -108,7 +118,6 @@ mod test {
 
     use super::Visitor;
 
-    #[derive(Clone)]
     pub struct Library {
         name: String,
         root_module: Module
@@ -121,7 +130,6 @@ mod test {
         }
     }
 
-    #[derive(Clone)]
     struct Module {
         name: String,
         children: Vec<Module>
@@ -161,7 +169,7 @@ mod test {
         let b = a.child(b);
         let c = b.child(c);
         let d = c.child(d);
-        
+
         assert_eq!(a.path.to_string(), "a");
         assert_eq!(b.path.to_string(), "a::b");
         assert_eq!(c.path.to_string(), "a::b::c");
@@ -176,5 +184,7 @@ mod test {
         assert_eq!(*b.root().value.path_segment(), String::from("a"));
         assert_eq!(*c.root().value.path_segment(), String::from("a"));
         assert_eq!(*d.root().value.path_segment(), String::from("a"));
+
+        // assert_eq!(a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
     }
 }
