@@ -21,18 +21,50 @@ where Value: HasPathSegment
 
 }
 
-impl<'a, Value> Visitor<'a, (), Value>
+impl IsPathSegment for () {
+    fn root() -> Self {
+        ()
+    }
+    fn self_() -> Self {
+        ()
+    }
+    fn super_() -> Self {
+        ()
+    }
+}
+
+impl HasPathSegment for () {
+    type PathSegment = ();
+    fn path_segment(&self) -> &Self::PathSegment {
+        self
+    }
+}
+
+impl Default for Visitor<'static, (), ()> {
+    fn default() -> Self {
+        Visitor {
+            parent: &(),
+            value: &(),
+            path: Path::default()
+        }
+    }
+}
+
+lazy_static::lazy_static! {
+    pub static ref ROOT_VISITOR: Visitor<'static, (), ()> = Default::default();
+}
+
+impl<'a, Value> Visitor<'a, Visitor<'a, (), ()>, Value>
 where Value: HasPathSegment
 {
     pub fn new(value: &'a Value) -> Self {
         let path = Path::default().join(value.path_segment().clone());
-        let parent = &();
+        let parent = &ROOT_VISITOR;
         Self { value, parent, path }
     }
 }
 
-
-impl<'a, Value> HasRoot for Visitor<'a, (), Value>
+impl<'a, Value> HasRoot for Visitor<'a, Visitor<'a, (), ()>, Value>
 where Value: HasPathSegment
 {
     type Root = Self;
@@ -175,7 +207,7 @@ mod test {
         assert_eq!(c.path.to_string(), "a::b::c");
         assert_eq!(d.path.to_string(), "a::b::c::d");
 
-        assert_eq!(*a.parent(), ());
+        assert_eq!(*a.parent().value, ());
         assert_eq!(*b.parent().value.path_segment(), String::from("a"));
         assert_eq!(*c.parent().value.path_segment(), String::from("b"));
         assert_eq!(*d.parent().value.path_segment(), String::from("c"));
@@ -185,6 +217,10 @@ mod test {
         assert_eq!(*c.root().value.path_segment(), String::from("a"));
         assert_eq!(*d.root().value.path_segment(), String::from("a"));
 
-        // assert_eq!(a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
+        // TODO: Change constraints to make it work.
+        // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
+
+        // TODO: Test it dynamically (everything is statically typed here).
+        // TODO: How to create ModuleParent?
     }
 }

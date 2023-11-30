@@ -1,9 +1,8 @@
-use std::fmt::Display;
 use std::hash::Hash;
 
 use crate::PathSegment;
 
-pub trait IsPathSegment: PartialEq + Eq + Hash + Clone + Display {
+pub trait IsPathSegment: PartialEq + Eq + Hash + Clone {
     fn root() -> Self;
     fn self_() -> Self;
     fn super_() -> Self;
