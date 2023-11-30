@@ -114,8 +114,6 @@ where Value: HasPathSegment
 
     pub fn relative<K, RParent, RValue>(&self, path: impl IntoIterator<Item = K>) -> Option<Visitor<'a, RParent, RValue>>
     where K: Into<Value::PathSegment>,
-        Parent: HasRoot,
-        Parent::Root: Clone + Into<Visitor<'a, RParent, RValue>>,
         RValue: HasPathSegment,
         Visitor<'a, Parent, Value>: Into<Visitor<'a, RParent, RValue>>
     {
@@ -123,8 +121,10 @@ where Value: HasPathSegment
         if let Some(segment) = path.next() {
             let segment = segment.into();
             match segment.kind() {
-                PathSegment::Root => Some((*self.root()).clone().into()),
+                // PathSegment::Root => Some((*self.root()).clone().into()),
                 PathSegment::Self_ => self.relative(path),
+                // TODO: Fix this by implementing relative for Visitor<'a, Visitor<Grandparent, Parent>, Value>
+                // PathSegment::Super => self.parent.relative(path),
                 _ => todo!("Hello")
                 // Identifier::Super => self
                 //     .parent
@@ -218,7 +218,8 @@ mod test {
         assert_eq!(*d.root().value.path_segment(), String::from("a"));
 
         // TODO: Change constraints to make it work.
-        // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
+        assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
+        // assert_eq!(*b.relative(vec![String::super_()]).unwrap().value.path_segment(), String::from("a"));
 
         // TODO: Test it dynamically (everything is statically typed here).
         // TODO: How to create ModuleParent?
