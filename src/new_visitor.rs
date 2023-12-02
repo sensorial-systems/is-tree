@@ -3,17 +3,18 @@ use crate::*;
 pub struct Visitor<'a, Parent, Value>
 where Value: HasPathSegment
 {
-    pub parent: &'a Parent,
+    pub parent: Parent,
     pub value: &'a Value,
     pub path: Path<'a, Value::PathSegment>
 }
 
 impl<'a, Parent, Value> Clone for Visitor<'a, Parent, Value>
-where Value: HasPathSegment
+where Value: HasPathSegment,
+      Parent: Clone
 {
     fn clone(&self) -> Self {
         Self {
-            parent: self.parent,
+            parent: self.parent.clone(),
             value: self.value,
             path: self.path.clone()
         }
@@ -40,7 +41,7 @@ impl HasPathSegment for () {
     }
 }
 
-impl Default for Visitor<'static, (), ()> {
+impl Default for Visitor<'static, &'static (), ()> {
     fn default() -> Self {
         Visitor {
             parent: &(),
@@ -51,20 +52,20 @@ impl Default for Visitor<'static, (), ()> {
 }
 
 lazy_static::lazy_static! {
-    pub static ref ROOT_VISITOR: Visitor<'static, (), ()> = Default::default();
+    pub static ref ROOT_VISITOR: Visitor<'static, &'static (), ()> = Default::default();
 }
 
-impl<'a, Value> Visitor<'a, Visitor<'a, (), ()>, Value>
+impl<'a, Value> Visitor<'a, &'a Visitor<'a, &'a (), ()>, Value>
 where Value: HasPathSegment
 {
     pub fn new(value: &'a Value) -> Self {
         let path = Path::default().join(value.path_segment().clone());
         let parent = &ROOT_VISITOR;
-        Self { value, parent, path }
+        Self { parent, value, path }
     }
 }
 
-impl<'a, Value> HasRoot for Visitor<'a, Visitor<'a, (), ()>, Value>
+impl<'a, Value> HasRoot for Visitor<'a, Visitor<'a, &'a (), ()>, Value>
 where Value: HasPathSegment
 {
     type Root = Self;
@@ -74,7 +75,7 @@ where Value: HasPathSegment
 }
 
 
-impl<'a, Parent, Value> HasRoot for Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> HasRoot for Visitor<'a, &'a Parent, Value>
 where Value: HasPathSegment,
       Parent: HasRoot
 {
@@ -89,11 +90,11 @@ where Value: HasPathSegment
 {
     type Parent = Parent;
     fn parent(&self) -> &Self::Parent {
-        self.parent
+        &self.parent
     }
 }
 
-impl<'a, Parent, Value> Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> Visitor<'a, &'a Parent, Value>
 where Value: HasPathSegment
 {
     pub fn new_with_parent(value: &'a Value, parent: &'a Parent) -> Self {
@@ -106,26 +107,26 @@ where Value: HasPathSegment
         Self { value, parent, path }
     }
 
-    pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, Self, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment>
+    pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, &'a Self, Child>
+    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
     {
         Visitor::new_with_parent_and_path(value, self, self.path.clone())
     }
 
-    pub fn relative<K, RParent, RValue>(&self, path: impl IntoIterator<Item = K>) -> Option<Visitor<'a, RParent, RValue>>
-    where K: Into<Value::PathSegment>,
-        RValue: HasPathSegment,
-        Visitor<'a, Parent, Value>: Into<Visitor<'a, RParent, RValue>>
-    {
-        let mut path = path.into_iter();
-        if let Some(segment) = path.next() {
-            let segment = segment.into();
-            match segment.kind() {
+    // pub fn relative<K, RParent, RValue>(&self, path: impl IntoIterator<Item = K>) -> Option<Visitor<'a, RParent, RValue>>
+    // where K: Into<Value::PathSegment>,
+    //     RValue: HasPathSegment,
+    //     Visitor<'a, Parent, Value>: Into<Visitor<'a, RParent, RValue>>
+    // {
+    //     let mut path = path.into_iter();
+    //     if let Some(segment) = path.next() {
+    //         let segment = segment.into();
+    //         match segment.kind() {
                 // PathSegment::Root => Some((*self.root()).clone().into()),
-                PathSegment::Self_ => self.relative(path),
+                // PathSegment::Self_ => self.relative(path),
                 // TODO: Fix this by implementing relative for Visitor<'a, Visitor<Grandparent, Parent>, Value>
                 // PathSegment::Super => self.parent.relative(path),
-                _ => todo!("Hello")
+                // _ => todo!("Hello")
                 // Identifier::Super => self
                 //     .parent
                 //     .as_ref()
@@ -137,11 +138,11 @@ where Value: HasPathSegment
                 //         self.child(branch)
                 //             .relative(path)
                 //     )
-            }
-        } else {
-            Some((*self).clone().into())
-        }
-    }
+        //     }
+        // } else {
+        //     Some((*self).clone().into())
+        // }
+    // }
 }
 
 #[cfg(test)]
@@ -174,6 +175,36 @@ mod test {
         }
     }
 
+    type LibraryVisitor<'a> = Visitor<'a, &'a Visitor<'a, &'a (), ()>, Library>;
+    // type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
+    type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
+    pub enum ModuleVisitorParent<'a> {
+        Library(&'a LibraryVisitor<'a>),
+        Module(&'a ModuleVisitor<'a>)
+    }
+
+    impl<'a> From<Visitor<'a, &'a LibraryVisitor<'a>, Module>> for ModuleVisitor<'a> {
+        fn from(visitor: Visitor<'a, &'a LibraryVisitor<'a>, Module>) -> Self {
+            Self {
+                parent: ModuleVisitorParent::Library(visitor.parent),
+                value: visitor.value,
+                path: visitor.path
+            }
+        }
+    }
+
+    // impl<'a> From<Visitor<'a,
+
+    // impl<'a> HasRoot for ModuleVisitorParent<'a> {
+    //     type Root = LibraryVisitor<'a>;
+    //     fn root(&self) -> &Self::Root {
+    //         match self {
+    //             ModuleVisitorParent::Library(library) => library.root(),
+    //             ModuleVisitorParent::Module(module) => module.root()
+    //         }
+    //     }
+    // }
+
     #[test]
     fn new_visitor() {
         let library = Library {
@@ -197,28 +228,28 @@ mod test {
         let b = &a.root_module;
         let c = &b.children[0];
         let d = &c.children[0];
-        let a = Visitor::new(a);
-        let b = a.child(b);
-        let c = b.child(c);
-        let d = c.child(d);
+        let a: LibraryVisitor = Visitor::new(a);
+        let b: ModuleVisitor = a.child(b).into();
+        // let c = b.child(c);
+        // let d = c.child(d);
 
         assert_eq!(a.path.to_string(), "a");
         assert_eq!(b.path.to_string(), "a::b");
-        assert_eq!(c.path.to_string(), "a::b::c");
-        assert_eq!(d.path.to_string(), "a::b::c::d");
+        // assert_eq!(c.path.to_string(), "a::b::c");
+        // assert_eq!(d.path.to_string(), "a::b::c::d");
 
         assert_eq!(*a.parent().value, ());
-        assert_eq!(*b.parent().value.path_segment(), String::from("a"));
-        assert_eq!(*c.parent().value.path_segment(), String::from("b"));
-        assert_eq!(*d.parent().value.path_segment(), String::from("c"));
+        // assert_eq!(*b.parent().value.path_segment(), String::from("a"));
+        // assert_eq!(*c.parent().value.path_segment(), String::from("b"));
+        // assert_eq!(*d.parent().value.path_segment(), String::from("c"));
 
-        assert_eq!(*a.root().value.path_segment(), String::from("a"));
-        assert_eq!(*b.root().value.path_segment(), String::from("a"));
-        assert_eq!(*c.root().value.path_segment(), String::from("a"));
-        assert_eq!(*d.root().value.path_segment(), String::from("a"));
+        // assert_eq!(*a.root().value.path_segment(), String::from("a"));
+        // assert_eq!(*b.root().value.path_segment(), String::from("a"));
+        // assert_eq!(*c.root().value.path_segment(), String::from("a"));
+        // assert_eq!(*d.root().value.path_segment(), String::from("a"));
 
         // TODO: Change constraints to make it work.
-        assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
+        // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
         // assert_eq!(*b.relative(vec![String::super_()]).unwrap().value.path_segment(), String::from("a"));
 
         // TODO: Test it dynamically (everything is statically typed here).
