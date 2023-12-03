@@ -190,7 +190,6 @@ mod test {
     }
 
     type LibraryVisitor<'a> = Visitor<'a, &'a Visitor<'a, &'a (), ()>, Library>;
-    // type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
     type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
     pub enum ModuleVisitorParent<'a> {
         Library(&'a LibraryVisitor<'a>),
@@ -208,8 +207,6 @@ mod test {
             Self::Module(visitor)
         }
     }
-
-    // impl<'a> From<Visitor<'a,
 
     // impl<'a> HasRoot for ModuleVisitorParent<'a> {
     //     type Root = LibraryVisitor<'a>;
