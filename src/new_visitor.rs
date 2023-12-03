@@ -280,13 +280,8 @@ mod test {
         assert_eq!(*c.root().path_segment(), String::from("a"));
         assert_eq!(*d.root().path_segment(), String::from("a"));
 
-        assert_eq!(*a.parent().value, ());
-
         // TODO: Change constraints to make it work.
         // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
         // assert_eq!(*b.relative(vec![String::super_()]).unwrap().value.path_segment(), String::from("a"));
-
-        // TODO: Test it dynamically (everything is statically typed here).
-        // TODO: How to create ModuleParent?
     }
 }
