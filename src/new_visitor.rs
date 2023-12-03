@@ -22,6 +22,15 @@ where Value: HasPathSegment,
 
 }
 
+impl<'a, Parent, Value> HasPathSegment for Visitor<'a, Parent, Value>
+where Value: HasPathSegment {
+    type PathSegment = Value::PathSegment;
+    fn path_segment(&self) -> &Self::PathSegment {
+        self.value.path_segment()
+    }
+
+}
+
 impl IsPathSegment for () {
     fn root() -> Self {
         ()
@@ -218,6 +227,16 @@ mod test {
         }
     }
 
+    impl<'a> HasPathSegment for ModuleVisitorParent<'a> {
+        type PathSegment = String;
+        fn path_segment(&self) -> &Self::PathSegment {
+            match self {
+                ModuleVisitorParent::Library(library) => library.path_segment(),
+                ModuleVisitorParent::Module(module) => module.path_segment()
+            }
+        }
+    }
+
     #[test]
     fn new_visitor() {
         let library = Library {
@@ -251,15 +270,17 @@ mod test {
         assert_eq!(c.path.to_string(), "a::b::c");
         assert_eq!(d.path.to_string(), "a::b::c::d");
 
-        assert_eq!(*a.parent().value, ());
-        // assert_eq!(*b.parent().value.path_segment(), String::from("a"));
-        // assert_eq!(*c.parent().value.path_segment(), String::from("b"));
-        // assert_eq!(*d.parent().value.path_segment(), String::from("c"));
+        assert_eq!(*a.parent().path_segment(), ());
+        assert_eq!(*b.parent().path_segment(), String::from("a"));
+        assert_eq!(*c.parent().path_segment(), String::from("b"));
+        assert_eq!(*d.parent().path_segment(), String::from("c"));
 
-        assert_eq!(*a.root().value.path_segment(), String::from("a"));
-        assert_eq!(*b.root().value.path_segment(), String::from("a"));
-        assert_eq!(*c.root().value.path_segment(), String::from("a"));
-        assert_eq!(*d.root().value.path_segment(), String::from("a"));
+        assert_eq!(*a.root().path_segment(), String::from("a"));
+        assert_eq!(*b.root().path_segment(), String::from("a"));
+        assert_eq!(*c.root().path_segment(), String::from("a"));
+        assert_eq!(*d.root().path_segment(), String::from("a"));
+
+        assert_eq!(*a.parent().value, ());
 
         // TODO: Change constraints to make it work.
         // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
