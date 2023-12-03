@@ -94,24 +94,34 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Parent, Value> Visitor<'a, &'a Parent, Value>
+pub trait HasVisitorParent<'a> {
+    type VisitorParent;
+}
+
+impl<'a, Parent, Value> Visitor<'a, Parent, Value>
 where Value: HasPathSegment
 {
-    pub fn new_with_parent(value: &'a Value, parent: &'a Parent) -> Self {
+    pub fn new_with_parent(value: &'a Value, parent: Parent) -> Self {
         let path = Path::default().join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
-    pub fn new_with_parent_and_path(value: &'a Value, parent: &'a Parent, path: Path<'a, Value::PathSegment>) -> Self {
+    pub fn new_with_parent_and_path(value: &'a Value, parent: Parent, path: Path<'a, Value::PathSegment>) -> Self {
         let path = path.join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
-    pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, &'a Self, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
+    pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, Child::VisitorParent, Child>
+    where Child: HasPathSegment<PathSegment = Value::PathSegment> + HasVisitorParent<'a>,
+          &'a Self: Into<Child::VisitorParent>
     {
-        Visitor::new_with_parent_and_path(value, self, self.path.clone())
+        Visitor::new_with_parent_and_path(value, self.into(), self.path.clone())
     }
+}
+
+impl<'a, Parent, Value> Visitor<'a, &'a Parent, Value>
+where Value: HasPathSegment
+{
 
     // pub fn relative<K, RParent, RValue>(&self, path: impl IntoIterator<Item = K>) -> Option<Visitor<'a, RParent, RValue>>
     // where K: Into<Value::PathSegment>,
@@ -149,7 +159,7 @@ where Value: HasPathSegment
 mod test {
     use crate::*;
 
-    use super::Visitor;
+    use super::{Visitor, HasVisitorParent};
 
     pub struct Library {
         name: String,
@@ -163,7 +173,7 @@ mod test {
         }
     }
 
-    struct Module {
+    pub struct Module {
         name: String,
         children: Vec<Module>
     }
@@ -175,6 +185,10 @@ mod test {
         }
     }
 
+    impl<'a> HasVisitorParent<'a> for Module {
+        type VisitorParent = ModuleVisitorParent<'a>;
+    }
+
     type LibraryVisitor<'a> = Visitor<'a, &'a Visitor<'a, &'a (), ()>, Library>;
     // type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
     type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
@@ -183,13 +197,15 @@ mod test {
         Module(&'a ModuleVisitor<'a>)
     }
 
-    impl<'a> From<Visitor<'a, &'a LibraryVisitor<'a>, Module>> for ModuleVisitor<'a> {
-        fn from(visitor: Visitor<'a, &'a LibraryVisitor<'a>, Module>) -> Self {
-            Self {
-                parent: ModuleVisitorParent::Library(visitor.parent),
-                value: visitor.value,
-                path: visitor.path
-            }
+    impl<'a> From<&'a LibraryVisitor<'a>> for ModuleVisitorParent<'a> {
+        fn from(visitor: &'a LibraryVisitor<'a>) -> Self {
+            Self::Library(visitor)
+        }
+    }
+
+    impl<'a> From<&'a ModuleVisitor<'a>> for ModuleVisitorParent<'a> {
+        fn from(visitor: &'a ModuleVisitor<'a>) -> Self {
+            Self::Module(visitor)
         }
     }
 
@@ -228,15 +244,15 @@ mod test {
         let b = &a.root_module;
         let c = &b.children[0];
         let d = &c.children[0];
-        let a: LibraryVisitor = Visitor::new(a);
-        let b: ModuleVisitor = a.child(b).into();
-        // let c = b.child(c);
-        // let d = c.child(d);
+        let a = Visitor::new(a);
+        let b = a.child(b);
+        let c = b.child(c);
+        let d = c.child(d);
 
         assert_eq!(a.path.to_string(), "a");
         assert_eq!(b.path.to_string(), "a::b");
-        // assert_eq!(c.path.to_string(), "a::b::c");
-        // assert_eq!(d.path.to_string(), "a::b::c::d");
+        assert_eq!(c.path.to_string(), "a::b::c");
+        assert_eq!(d.path.to_string(), "a::b::c::d");
 
         assert_eq!(*a.parent().value, ());
         // assert_eq!(*b.parent().value.path_segment(), String::from("a"));
