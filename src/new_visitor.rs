@@ -65,7 +65,7 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Value> HasRoot for Visitor<'a, Visitor<'a, &'a (), ()>, Value>
+impl<'a, Value> HasRoot for Visitor<'a, &'a Visitor<'a, &'a (), ()>, Value>
 where Value: HasPathSegment
 {
     type Root = Self;
@@ -75,7 +75,7 @@ where Value: HasPathSegment
 }
 
 
-impl<'a, Parent, Value> HasRoot for Visitor<'a, &'a Parent, Value>
+impl<'a, Parent, Value> HasRoot for Visitor<'a, Parent, Value>
 where Value: HasPathSegment,
       Parent: HasRoot
 {
@@ -208,15 +208,15 @@ mod test {
         }
     }
 
-    // impl<'a> HasRoot for ModuleVisitorParent<'a> {
-    //     type Root = LibraryVisitor<'a>;
-    //     fn root(&self) -> &Self::Root {
-    //         match self {
-    //             ModuleVisitorParent::Library(library) => library.root(),
-    //             ModuleVisitorParent::Module(module) => module.root()
-    //         }
-    //     }
-    // }
+    impl<'a> HasRoot for ModuleVisitorParent<'a> {
+        type Root = LibraryVisitor<'a>;
+        fn root(&self) -> &Self::Root {
+            match self {
+                ModuleVisitorParent::Library(library) => library.root(),
+                ModuleVisitorParent::Module(module) => module.root()
+            }
+        }
+    }
 
     #[test]
     fn new_visitor() {
@@ -256,10 +256,10 @@ mod test {
         // assert_eq!(*c.parent().value.path_segment(), String::from("b"));
         // assert_eq!(*d.parent().value.path_segment(), String::from("c"));
 
-        // assert_eq!(*a.root().value.path_segment(), String::from("a"));
-        // assert_eq!(*b.root().value.path_segment(), String::from("a"));
-        // assert_eq!(*c.root().value.path_segment(), String::from("a"));
-        // assert_eq!(*d.root().value.path_segment(), String::from("a"));
+        assert_eq!(*a.root().value.path_segment(), String::from("a"));
+        assert_eq!(*b.root().value.path_segment(), String::from("a"));
+        assert_eq!(*c.root().value.path_segment(), String::from("a"));
+        assert_eq!(*d.root().value.path_segment(), String::from("a"));
 
         // TODO: Change constraints to make it work.
         // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
