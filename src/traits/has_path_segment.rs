@@ -17,3 +17,10 @@ impl HasPathSegment for String {
         self
     }
 }
+
+impl HasPathSegment for () {
+    type PathSegment = ();
+    fn path_segment(&self) -> &Self::PathSegment {
+        self
+    }
+}
