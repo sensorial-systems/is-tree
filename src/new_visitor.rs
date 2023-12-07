@@ -60,8 +60,10 @@ impl Default for Visitor<'static, &'static (), ()> {
     }
 }
 
+type RootVisitor = Visitor<'static, &'static (), ()>;
+
 lazy_static::lazy_static! {
-    pub static ref ROOT_VISITOR: Visitor<'static, &'static (), ()> = Default::default();
+    pub static ref ROOT_VISITOR: RootVisitor = Default::default();
 }
 
 impl<'a, Value> Visitor<'a, &'a Visitor<'a, &'a (), ()>, Value>
@@ -128,24 +130,29 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Parent, Value> Visitor<'a, &'a Parent, Value>
+impl<'a, Parent, Value> Visitor<'a, Parent, Value>
 where Value: HasPathSegment
 {
-
-    // pub fn relative<K, RParent, RValue>(&self, path: impl IntoIterator<Item = K>) -> Option<Visitor<'a, RParent, RValue>>
-    // where K: Into<Value::PathSegment>,
-    //     RValue: HasPathSegment,
-    //     Visitor<'a, Parent, Value>: Into<Visitor<'a, RParent, RValue>>
-    // {
-    //     let mut path = path.into_iter();
-    //     if let Some(segment) = path.next() {
-    //         let segment = segment.into();
-    //         match segment.kind() {
-                // PathSegment::Root => Some((*self.root()).clone().into()),
-                // PathSegment::Self_ => self.relative(path),
-                // TODO: Fix this by implementing relative for Visitor<'a, Visitor<Grandparent, Parent>, Value>
-                // PathSegment::Super => self.parent.relative(path),
-                // _ => todo!("Hello")
+    pub fn relative<RelativeType, K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+    where K: Into<Value::PathSegment>,
+          &'a Self: Into<RelativeType>,
+          Value: HasVisitorParent<'a>,
+          &'a Value::VisitorParent: Into<RelativeType>,
+          Self: HasRoot,
+          &'a <Self as HasRoot>::Root: Into<RelativeType>
+    {
+        let mut path = path.into_iter();
+        if let Some(segment) = path.next() {
+            let segment = segment.into();
+            match segment.kind() {
+                PathSegment::Root => Some(self.root().into()),
+                PathSegment::Self_ => self.relative(path),
+                PathSegment::Super => {
+                    // TODO: Make it safer.
+                    let parent: &Value::VisitorParent = unsafe { std::mem::transmute(&self.parent) };
+                    Some(parent.into())
+                },
+                _ => todo!("Hello")
                 // Identifier::Super => self
                 //     .parent
                 //     .as_ref()
@@ -157,18 +164,20 @@ where Value: HasPathSegment
                 //         self.child(branch)
                 //             .relative(path)
                 //     )
-        //     }
-        // } else {
-        //     Some((*self).clone().into())
-        // }
-    // }
+            }
+        } else {
+            Some(self.into())
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
+    use enum_as_inner::EnumAsInner;
+
     use crate::*;
 
-    use super::{Visitor, HasVisitorParent};
+    use super::{Visitor, HasVisitorParent, RootVisitor};
 
     pub struct Library {
         name: String,
@@ -196,6 +205,10 @@ mod test {
 
     impl<'a> HasVisitorParent<'a> for Module {
         type VisitorParent = ModuleVisitorParent<'a>;
+    }
+
+    impl<'a> HasVisitorParent<'a> for Library {
+        type VisitorParent = RootVisitor;
     }
 
     type LibraryVisitor<'a> = Visitor<'a, &'a Visitor<'a, &'a (), ()>, Library>;
@@ -233,6 +246,40 @@ mod test {
             match self {
                 ModuleVisitorParent::Library(library) => library.path_segment(),
                 ModuleVisitorParent::Module(module) => module.path_segment()
+            }
+        }
+    }
+
+    #[derive(EnumAsInner)]
+    enum Visitors<'a> {
+        Root(&'a RootVisitor),
+        Library(&'a LibraryVisitor<'a>),
+        Module(&'a ModuleVisitor<'a>)
+    }
+
+    impl<'a> From<&'a RootVisitor> for Visitors<'a> {
+        fn from(visitor: &'a RootVisitor) -> Self {
+            Self::Root(visitor)
+        }
+    }
+
+    impl<'a> From<&'a LibraryVisitor<'a>> for Visitors<'a> {
+        fn from(visitor: &'a LibraryVisitor<'a>) -> Self {
+            Self::Library(visitor)
+        }
+    }
+
+    impl<'a> From<&'a ModuleVisitor<'a>> for Visitors<'a> {
+        fn from(visitor: &'a ModuleVisitor<'a>) -> Self {
+            Self::Module(visitor)
+        }
+    }
+
+    impl<'a> From<&'a ModuleVisitorParent<'a>> for Visitors<'a> {
+        fn from(visitor: &'a ModuleVisitorParent<'a>) -> Self {
+            match visitor {
+                ModuleVisitorParent::Library(library) => Self::Library(library),
+                ModuleVisitorParent::Module(module) => Self::Module(module)
             }
         }
     }
@@ -280,6 +327,11 @@ mod test {
         assert_eq!(*c.root().path_segment(), String::from("a"));
         assert_eq!(*d.root().path_segment(), String::from("a"));
 
+        assert_eq!(*a.relative::<Visitors, _>(vec![String::self_()]).unwrap().as_library().unwrap().path_segment(), String::from("a"));
+        assert_eq!(*a.relative::<Visitors, _>(vec![String::root()]).unwrap().as_library().unwrap().path_segment(), String::from("a"));
+        assert_eq!(*b.relative::<Visitors, _>(vec![String::self_()]).unwrap().as_module().unwrap().path_segment(), String::from("b"));
+        assert_eq!(*b.relative::<Visitors, _>(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), String::from("a"));
+        assert_eq!(*b.relative::<Visitors, _>(vec![String::root()]).unwrap().as_library().unwrap().path_segment(), String::from("a"));
         // TODO: Change constraints to make it work.
         // assert_eq!(*a.relative(vec![String::self_()]).unwrap().value.path_segment(), String::from("a"));
         // assert_eq!(*b.relative(vec![String::super_()]).unwrap().value.path_segment(), String::from("a"));
