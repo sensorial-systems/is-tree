@@ -12,7 +12,7 @@ pub struct Module {
 
 use std::{collections::HashMap, vec, borrow::{Borrow, BorrowMut}};
 
-impl TreeUpdate for Module {
+impl TreeUpdate<Module> for Module {
     fn add_branch(&mut self, child: impl Into<Self>) -> &mut Self
     where Self: Sized
     {
@@ -23,7 +23,7 @@ impl TreeUpdate for Module {
     }
 }
 
-impl HasBranches for Module {
+impl HasBranches<Module> for Module {
     fn branches<'a>(&'a self) -> Box<dyn Iterator<Item = &Self> + 'a> {
         Box::new(self.children.values())
     }
