@@ -1,7 +1,10 @@
+pub mod segment;
+pub use segment::*;
+
+
 use std::fmt::Display;
 
-
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Path<'a, Segment>
 where Segment: 'a
 {
