@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{*, knows_parent::KnowsParent};
 
 pub struct Visitor<'a, Parent, Value>
 where Value: HasPathSegment
@@ -77,10 +77,15 @@ where Value: HasPathSegment,
     }
 }
 
-impl<'a, Parent, Value> HasParent for Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> KnowsParent for Visitor<'a, Parent, Value>
 where Value: HasPathSegment
 {
     type Parent = Parent;
+}
+
+impl<'a, Parent, Value> HasParent for Visitor<'a, Parent, Value>
+where Value: HasPathSegment
+{
     fn parent(&self) -> &Self::Parent {
         &self.parent
     }

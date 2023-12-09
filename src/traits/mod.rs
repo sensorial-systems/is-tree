@@ -1,3 +1,4 @@
+pub mod knows_parent;
 pub mod has_parent;
 pub mod has_root;
 pub mod has_path_segment;
