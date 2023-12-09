@@ -1,3 +1,3 @@
-pub trait KnowsParent {
+pub trait KnowsParent<'a> {
     type Parent;
 }

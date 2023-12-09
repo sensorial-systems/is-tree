@@ -2,6 +2,7 @@ use enum_as_inner::EnumAsInner;
 
 use ::is_tree::*;
 
+use ::is_tree::knows_parent::KnowsParent;
 use ::is_tree::new_visitor::{Visitor, HasVisitorParent, RootVisitor};
 
 pub struct Library {
@@ -26,6 +27,19 @@ impl HasPathSegment for Module {
     fn path_segment(&self) -> &Self::PathSegment {
         &self.name
     }
+}
+
+pub enum ModuleParent<'a> {
+    Library(&'a Library),
+    Module(&'a Module)
+}
+
+impl<'a> KnowsParent<'a> for Library {
+    type Parent = ();
+}
+
+impl<'a> KnowsParent<'a> for Module {
+    type Parent = ModuleParent<'a>;
 }
 
 impl<'a> HasVisitorParent<'a> for Module {
