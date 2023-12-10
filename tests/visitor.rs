@@ -17,6 +17,13 @@ impl HasPathSegment for Library {
     }
 }
 
+impl HasPathSegment for &Library {
+    type PathSegment = String;
+    fn path_segment(&self) -> &Self::PathSegment {
+        &self.name
+    }
+}
+
 pub struct Module {
     name: String,
     children: Vec<Module>
@@ -32,6 +39,16 @@ impl HasPathSegment for Module {
 pub enum ModuleParent<'a> {
     Library(&'a Library),
     Module(&'a Module)
+}
+
+impl<'a> HasPathSegment for ModuleParent<'a> {
+    type PathSegment = String;
+    fn path_segment(&self) -> &Self::PathSegment {
+        match self {
+            ModuleParent::Library(library) => library.path_segment(),
+            ModuleParent::Module(module) => module.path_segment()
+        }
+    }
 }
 
 impl<'a> From<&'a Library> for ModuleParent<'a> {
@@ -73,15 +90,15 @@ impl<'a> From<&'a ModuleVisitor<'a>> for ModuleVisitorParent<'a> {
     }
 }
 
-impl<'a> HasRoot for ModuleVisitorParent<'a> {
-    type Root = LibraryVisitor<'a>;
-    fn root(&self) -> &Self::Root {
-        match self {
-            ModuleVisitorParent::Library(library) => library.root(),
-            ModuleVisitorParent::Module(module) => module.root()
-        }
-    }
-}
+// impl<'a> HasRoot for ModuleVisitorParent<'a> {
+//     type Root = LibraryVisitor<'a>;
+//     fn root(&self) -> &Self::Root {
+//         match self {
+//             ModuleVisitorParent::Library(library) => library.root(),
+//             ModuleVisitorParent::Module(module) => module.root()
+//         }
+//     }
+// }
 
 impl<'a> HasPathSegment for ModuleVisitorParent<'a> {
     type PathSegment = String;

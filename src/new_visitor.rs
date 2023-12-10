@@ -4,18 +4,20 @@ pub struct Visitor<'a, Parent, Value>
 where Value: HasPathSegment
 {
     pub parent: Parent,
-    pub value: &'a Value,
+    pub value: Value,
     pub path: Path<'a, Value::PathSegment>
 }
 
+// FIXME: Maybe we can use #[derive(Clone)] instead now.
 impl<'a, Parent, Value> Clone for Visitor<'a, Parent, Value>
 where Value: HasPathSegment,
-      Parent: Clone
+      Parent: Clone,
+      Value: Clone
 {
     fn clone(&self) -> Self {
         Self {
             parent: self.parent.clone(),
-            value: self.value,
+            value: self.value.clone(),
             path: self.path.clone()
         }
     }
@@ -31,7 +33,7 @@ where Value: HasPathSegment {
 
 }
 
-impl Default for Visitor<'static, &'static (), ()> {
+impl Default for Visitor<'static, &'static (), &'static ()> {
     fn default() -> Self {
         Visitor {
             parent: &(),
@@ -41,23 +43,23 @@ impl Default for Visitor<'static, &'static (), ()> {
     }
 }
 
-pub type RootVisitor = Visitor<'static, &'static (), ()>;
+pub type RootVisitor = Visitor<'static, &'static (), &'static ()>;
 
 lazy_static::lazy_static! {
     pub static ref ROOT_VISITOR: RootVisitor = Default::default();
 }
 
-impl<'a, Value> Visitor<'a, &'a Visitor<'a, &'a (), ()>, Value>
+impl<'a, Value> Visitor<'a, &'static Visitor<'static, &'static (), &'static ()>, Value>
 where Value: HasPathSegment
 {
-    pub fn new(value: &'a Value) -> Self {
+    pub fn new(value: Value) -> Self {
         let path = Path::default().join(value.path_segment().clone());
         let parent = &ROOT_VISITOR;
         Self { parent, value, path }
     }
 }
 
-impl<'a, Value> HasRoot for Visitor<'a, &'a Visitor<'a, &'a (), ()>, Value>
+impl<'a, Value> HasRoot for Visitor<'a, &'a Visitor<'a, &'a (), &'a ()>, Value>
 where Value: HasPathSegment
 {
     type Root = Self;
@@ -96,21 +98,29 @@ where Value: HasPathSegment,
 impl<'a, Parent, Value> Visitor<'a, Parent, Value>
 where Value: HasPathSegment
 {
-    pub fn new_with_parent(value: &'a Value, parent: Parent) -> Self {
+    pub fn new_with_parent(value: Value, parent: Parent) -> Self {
         let path = Path::default().join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
-    pub fn new_with_parent_and_path(value: &'a Value, parent: Parent, path: Path<'a, Value::PathSegment>) -> Self {
+    pub fn new_with_parent_and_path(value: Value, parent: Parent, path: Path<'a, Value::PathSegment>) -> Self {
         let path = path.join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
-    pub fn child<Child>(&'a self, value: &'a Child) -> Visitor<'a, Child::Parent, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParent<'a>,
-          &'a Self: Into<Child::Parent>
+    pub fn child<Child>(&'a self, value: Child) -> Visitor<'a, Visitor<'a, Parent, Child::Parent>, Child>
+    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
+          Child: KnowsParent<'a>,
+          Child::Parent: HasPathSegment<PathSegment = Value::PathSegment>,
+          Value: Clone + Into<Child::Parent>,
+          Parent: Clone
     {
-        Visitor::new_with_parent_and_path(value, self.into(), self.path.clone())
+        let parent = Visitor {
+            parent: self.parent.clone(),
+            value: self.value.clone().into(),
+            path: self.path.clone()
+        };
+        Visitor::new_with_parent_and_path(value, parent, self.path.clone())
     }
 }
 

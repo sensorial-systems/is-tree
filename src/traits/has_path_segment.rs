@@ -24,3 +24,10 @@ impl HasPathSegment for () {
         self
     }
 }
+
+impl HasPathSegment for &() {
+    type PathSegment = ();
+    fn path_segment(&self) -> &Self::PathSegment {
+        self
+    }
+}
