@@ -80,7 +80,7 @@ where Value: HasPathSegment,
     }
 }
 
-impl<'a, Parent, Value> Visitor<Parent, Value>
+impl<Parent, Value> Visitor<Parent, Value>
 where Value: HasPathSegment
 {
     pub fn new_with_parent(value: Value, parent: Parent) -> Self {
@@ -93,7 +93,7 @@ where Value: HasPathSegment
         Self { value, parent, path }
     }
 
-    pub fn child<Child>(&'a self, value: Child) -> Visitor<Visitor<Parent, Child::Parent>, Child>
+    pub fn child<'a, Child>(&'a self, value: Child) -> Visitor<Visitor<Parent, Child::Parent>, Child>
     where Child: HasPathSegment<PathSegment = Value::PathSegment>,
           Child: KnowsParent<'a>,
           Child::Parent: HasPathSegment<PathSegment = Value::PathSegment>,

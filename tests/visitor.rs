@@ -36,6 +36,13 @@ impl HasPathSegment for Module {
     }
 }
 
+impl HasPathSegment for &Module {
+    type PathSegment = String;
+    fn path_segment(&self) -> &Self::PathSegment {
+        &self.name
+    }
+}
+
 pub enum ModuleParent<'a> {
     Library(&'a Library),
     Module(&'a Module)
@@ -68,6 +75,10 @@ impl<'a> KnowsParent<'a> for Library {
 }
 
 impl<'a> KnowsParent<'a> for Module {
+    type Parent = ModuleParent<'a>;
+}
+
+impl<'a> KnowsParent<'a> for &'a Module {
     type Parent = ModuleParent<'a>;
 }
 
@@ -167,8 +178,8 @@ fn new_visitor() {
     let b = &a.root_module;
     let c = &b.children[0];
     let d = &c.children[0];
-    let a = Visitor::new(a);
-    // let b = a.child(b);
+    let a: Visitor<&Visitor<&(), &()>, &Library> = Visitor::new(a);
+    let b: Visitor<Visitor<&Visitor<&(), &()>, ModuleParent<'_>>, &Module> = a.child(b);
     // let c = b.child(c);
     // let d = c.child(d);
 
