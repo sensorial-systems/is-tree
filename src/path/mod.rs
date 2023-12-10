@@ -5,16 +5,14 @@ pub use segment::*;
 use std::fmt::Display;
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Path<'a, Segment>
-where Segment: 'a
+pub struct Path<Segment>
 {
-    pub segments: Vec<Segment>,
-    phantom: std::marker::PhantomData<&'a Segment>
+    pub segments: Vec<Segment>
 }
 
-impl<'a, Segment> Path<'a, Segment> {
-    pub fn join(&self, segment: impl Into<Segment>) -> Path<'a, Segment>
-    where Path<'a, Segment>: Clone
+impl<Segment> Path<Segment> {
+    pub fn join(&self, segment: impl Into<Segment>) -> Path<Segment>
+    where Path<Segment>: Clone
     {
         let mut clone = self.clone();
         clone.segments.push(segment.into());
@@ -22,43 +20,38 @@ impl<'a, Segment> Path<'a, Segment> {
     }
 }
 
-impl<T> Default for Path<'_, T> {
+impl<Segment> Default for Path<Segment> {
     fn default() -> Self {
         let segments = Vec::new();
-        let phantom = Default::default();
-        Self { segments, phantom }
+        Self { segments }
     }
 }
 
-impl<'a> From<&'a str> for Path<'a, &'a str> {
-    fn from(value: &'a str) -> Path<'a, &'a str> {
+impl<'a> From<&'a str> for Path<&'a str> {
+    fn from(value: &'a str) -> Self {
         let segments = value.split("::").collect();
-        let phantom = Default::default();
-        Self { segments, phantom }
+        Self { segments }
     }
 }
 
-impl<'a, Segment> From<Vec<Segment>> for Path<'a, Segment>
-where Segment: 'a
+impl<Segment> From<Vec<Segment>> for Path<Segment>
 {
-    fn from(value: Vec<Segment>) -> Path<'a, Segment> {
+    fn from(value: Vec<Segment>) -> Path<Segment> {
         let segments = value;
-        let phantom = Default::default();
-        Path { segments, phantom }
+        Path { segments }
     }
 }
 
-impl<'a, Segment> From<&'a [Segment]> for Path<'a, Segment>
+impl<'a, Segment> From<&'a [Segment]> for Path<Segment>
 where Segment: Copy
 {
-    fn from(value: &'a [Segment]) -> Path<'a, Segment> {
+    fn from(value: &'a [Segment]) -> Path<Segment> {
         let segments = value.to_vec();
-        let phantom = Default::default();
-        Path { segments, phantom }
+        Path { segments }
     }
 }
 
-impl<'a> Display for Path<'a, String> {
+impl Display for Path<String> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.segments.join("::"))
     }
@@ -80,7 +73,7 @@ mod tests {
     fn from_array() {
         let array = ["A", "B", "C"];
         let slice = array.as_slice();
-        let path: Path<'_, _> = Path::from(slice);
+        let path: Path<_> = Path::from(slice);
         assert_eq!(path.segments, ["A", "B", "C"]);
     }
 

@@ -71,8 +71,8 @@ impl<'a> KnowsParent<'a> for Module {
     type Parent = ModuleParent<'a>;
 }
 
-type LibraryVisitor<'a> = Visitor<'a, &'a Visitor<'a, &'a (), ()>, Library>;
-type ModuleVisitor<'a> = Visitor<'a, ModuleVisitorParent<'a>, Module>;
+type LibraryVisitor<'a> = Visitor<&'a Visitor<&'a (), ()>, Library>;
+type ModuleVisitor<'a> = Visitor<ModuleVisitorParent<'a>, Module>;
 pub enum ModuleVisitorParent<'a> {
     Library(&'a LibraryVisitor<'a>),
     Module(&'a ModuleVisitor<'a>)

@@ -1,30 +1,15 @@
 use crate::{*, knows_parent::KnowsParent};
 
-pub struct Visitor<'a, Parent, Value>
+#[derive(Clone)]
+pub struct Visitor<Parent, Value>
 where Value: HasPathSegment
 {
     pub parent: Parent,
     pub value: Value,
-    pub path: Path<'a, Value::PathSegment>
+    pub path: Path<Value::PathSegment>
 }
 
-// FIXME: Maybe we can use #[derive(Clone)] instead now.
-impl<'a, Parent, Value> Clone for Visitor<'a, Parent, Value>
-where Value: HasPathSegment,
-      Parent: Clone,
-      Value: Clone
-{
-    fn clone(&self) -> Self {
-        Self {
-            parent: self.parent.clone(),
-            value: self.value.clone(),
-            path: self.path.clone()
-        }
-    }
-
-}
-
-impl<'a, Parent, Value> HasPathSegment for Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment {
     type PathSegment = Value::PathSegment;
     fn path_segment(&self) -> &Self::PathSegment {
@@ -33,7 +18,7 @@ where Value: HasPathSegment {
 
 }
 
-impl Default for Visitor<'static, &'static (), &'static ()> {
+impl Default for Visitor<&'static (), &'static ()> {
     fn default() -> Self {
         Visitor {
             parent: &(),
@@ -43,13 +28,13 @@ impl Default for Visitor<'static, &'static (), &'static ()> {
     }
 }
 
-pub type RootVisitor = Visitor<'static, &'static (), &'static ()>;
+pub type RootVisitor = Visitor<&'static (), &'static ()>;
 
 lazy_static::lazy_static! {
     pub static ref ROOT_VISITOR: RootVisitor = Default::default();
 }
 
-impl<'a, Value> Visitor<'a, &'static Visitor<'static, &'static (), &'static ()>, Value>
+impl<'a, Value> Visitor<&'static Visitor<&'static (), &'static ()>, Value>
 where Value: HasPathSegment
 {
     pub fn new(value: Value) -> Self {
@@ -59,7 +44,7 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Value> HasRoot for Visitor<'a, &'a Visitor<'a, &'a (), &'a ()>, Value>
+impl<'a, Value> HasRoot for Visitor<&'a Visitor<&'a (), &'a ()>, Value>
 where Value: HasPathSegment
 {
     type Root = Self;
@@ -69,7 +54,7 @@ where Value: HasPathSegment
 }
 
 
-impl<'a, Parent, Value> HasRoot for Visitor<'a, Parent, Value>
+impl<Parent, Value> HasRoot for Visitor<Parent, Value>
 where Value: HasPathSegment,
       Parent: HasRoot
 {
@@ -79,14 +64,14 @@ where Value: HasPathSegment,
     }
 }
 
-impl<'a, Parent, Value> KnowsParent<'a> for Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> KnowsParent<'a> for Visitor<Parent, Value>
 where Value: HasPathSegment,
       Parent: 'a
 {
     type Parent = Parent;
 }
 
-impl<'a, Parent, Value> HasParent<'a> for Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> HasParent<'a> for Visitor<Parent, Value>
 where Value: HasPathSegment,
       Parent: 'a + Clone
 {
@@ -95,7 +80,7 @@ where Value: HasPathSegment,
     }
 }
 
-impl<'a, Parent, Value> Visitor<'a, Parent, Value>
+impl<'a, Parent, Value> Visitor<Parent, Value>
 where Value: HasPathSegment
 {
     pub fn new_with_parent(value: Value, parent: Parent) -> Self {
@@ -103,12 +88,12 @@ where Value: HasPathSegment
         Self { value, parent, path }
     }
 
-    pub fn new_with_parent_and_path(value: Value, parent: Parent, path: Path<'a, Value::PathSegment>) -> Self {
+    pub fn new_with_parent_and_path(value: Value, parent: Parent, path: Path<Value::PathSegment>) -> Self {
         let path = path.join(value.path_segment().clone());
         Self { value, parent, path }
     }
 
-    pub fn child<Child>(&'a self, value: Child) -> Visitor<'a, Visitor<'a, Parent, Child::Parent>, Child>
+    pub fn child<Child>(&'a self, value: Child) -> Visitor<Visitor<Parent, Child::Parent>, Child>
     where Child: HasPathSegment<PathSegment = Value::PathSegment>,
           Child: KnowsParent<'a>,
           Child::Parent: HasPathSegment<PathSegment = Value::PathSegment>,

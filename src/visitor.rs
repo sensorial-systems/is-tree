@@ -7,13 +7,13 @@ where Value: HasPathSegment
 {
     pub parent: Option<Rc<Visitor<'a, Value>>>,
     pub value: &'a Value,
-    pub path: Path<'a, Value::PathSegment>
+    pub path: Path<Value::PathSegment>
 }
 
 impl<'a, Value> Visitor<'a, Value>
 where Value: HasPathSegment
 {
-    pub fn new(value: &'a Value, parent: Option<Rc<Visitor<'a, Value>>>, path: Path<'a, Value::PathSegment>) -> Rc<Self> {
+    pub fn new(value: &'a Value, parent: Option<Rc<Visitor<'a, Value>>>, path: Path<Value::PathSegment>) -> Rc<Self> {
         Rc::new(Self { value, parent, path })
     }
 
