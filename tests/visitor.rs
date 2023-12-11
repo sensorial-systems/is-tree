@@ -3,7 +3,7 @@ use enum_as_inner::EnumAsInner;
 use ::is_tree::*;
 
 use ::is_tree::knows_parent::KnowsParent;
-use ::is_tree::new_visitor::{Visitor, RootVisitor, KnowsParentVisitor};
+use ::is_tree::new_visitor::{Visitor, RootVisitor, KnowsParentVisitor, HasRelativeAccess};
 
 pub struct Library {
     name: String,
@@ -86,8 +86,8 @@ impl<'a> From<&'a ModuleVisitor<'a>> for ModuleVisitorParent<'a> {
 }
 
 impl<'a> HasRoot for ModuleVisitorParent<'a> {
-    type Root = LibraryVisitor<'a>;
-    fn root(&self) -> &Self::Root {
+    type Root = &'a LibraryVisitor<'a>;
+    fn root(self) -> Self::Root {
         match self {
             ModuleVisitorParent::Library(library) => library.root(),
             ModuleVisitorParent::Module(module) => module.root()
@@ -229,5 +229,6 @@ fn new_visitor() {
     assert_eq!(*b.relative::<Visitors, _>(vec![String::self_() ]).unwrap().as_module() .unwrap().path_segment(), "b");
     assert_eq!(*b.relative::<Visitors, _>(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*b.relative::<Visitors, _>(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*c.relative::<Visitors, _>(vec![String::super_(), String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
+    // // TODO: Make it work:
+    // // assert_eq!(*c.relative::<Visitors, _>(vec![String::super_(), String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
 }
