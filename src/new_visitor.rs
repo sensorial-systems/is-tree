@@ -55,10 +55,6 @@ where Value: HasPathSegment,
     }
 }
 
-pub trait KnowsParentVisitor<'a> {
-    type ParentVisitor;
-}
-
 //
 // Visitor knows parent
 //
