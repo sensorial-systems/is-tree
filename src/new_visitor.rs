@@ -15,11 +15,39 @@ where Value: HasPathSegment {
     fn path_segment(&self) -> &Self::PathSegment {
         self.value.path_segment()
     }
+}
 
+impl<'a, Parent, Value> HasPathSegment for &'a Visitor<Parent, Value>
+where Value: HasPathSegment {
+    type PathSegment = Value::PathSegment;
+    fn path_segment(&self) -> &Self::PathSegment {
+        self.value.path_segment()
+    }
 }
 
 // TODO: Implement it as RootVisitor<Value: HasPathSegment> = Visitor<(), Value::PathSegment>
 pub type RootVisitor = Visitor<(), String>;
+
+impl HasRoot for Visitor<(), String> {
+    type Root = Self;
+    fn root(self) -> Self {
+        self
+    }
+}
+
+impl<'a> HasRelativeAccess<'a> for RootVisitor
+{
+    fn relative<RelativeType, K>(self, _path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+        where K: Into<<Self as HasPathSegment>::PathSegment>,
+              Self: HasRoot,
+              Self: Into<RelativeType>,
+              Self: HasParent<'a>,
+              <Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
+              <Self as HasRoot>::Root: Into<RelativeType>
+    {
+        Some(self.into())
+    }
+}
 
 impl<'a, Value> Visitor<RootVisitor, Value>
 where Value: HasPathSegment
@@ -105,13 +133,13 @@ where Value: HasPathSegment
 }
 
 pub trait HasRelativeAccess<'a>: HasPathSegment {
-    fn relative<RelativeType, K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+    fn relative<RelativeType, K>(self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
     where K: Into<<Self as HasPathSegment>::PathSegment>,
-          &'a Self: HasRoot,
-          &'a Self: Into<RelativeType>,
-          &'a Self: HasParent<'a>,
-          <&'a Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
-          <&'a Self as HasRoot>::Root: Into<RelativeType>
+          Self: HasRoot,
+          Self: Into<RelativeType>,
+          Self: HasParent<'a>,
+          <Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
+          <Self as HasRoot>::Root: Into<RelativeType>
     {
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {
@@ -141,4 +169,10 @@ pub trait HasRelativeAccess<'a>: HasPathSegment {
     }
 }
 
-impl<'a, T: HasPathSegment> HasRelativeAccess<'a> for T {}
+impl<'a, Parent, Value> HasRelativeAccess<'a> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment + KnowsParentVisitor<'a>,
+      Self: HasPathSegment {}
+
+// impl<'a, Parent, Value> HasRelativeAccess<'a> for Visitor<Parent, Value>
+// where Value: HasPathSegment + KnowsParentVisitor<'a>,
+//       Self: HasPathSegment {}

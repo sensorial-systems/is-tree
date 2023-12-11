@@ -60,6 +60,24 @@ pub enum ModuleVisitorParent<'a> {
     Module(&'a ModuleVisitor<'a>)
 }
 
+// TODO: Enable this:
+// impl<'a> HasRelativeAccess<'a> for ModuleVisitorParent<'a>
+// {
+//     fn relative<RelativeType, K>(self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+//         where K: Into<<Self as HasPathSegment>::PathSegment>,
+//               Self: HasRoot,
+//               Self: Into<RelativeType>,
+//               Self: HasParent<'a>,
+//               <Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
+//               <Self as HasRoot>::Root: Into<RelativeType>,
+//     {
+//         match self {
+//             ModuleVisitorParent::Library(library) => library.relative(path),
+//             ModuleVisitorParent::Module(module) => module.relative(path)
+//         }
+//     }
+// }
+
 impl<'a> KnowsParent<'a> for ModuleVisitorParent<'a> {
     type Parent = Visitors<'a>;
 }
