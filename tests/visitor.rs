@@ -137,6 +137,12 @@ impl<'a> HasPathSegment for Visitors<'a> {
     }
 }
 
+impl<'a> From<&'a RootVisitor> for Visitors<'a> {
+    fn from(visitor: &'a RootVisitor) -> Self {
+        Self::Root(visitor.clone())
+    }
+}
+
 impl<'a> From<RootVisitor> for Visitors<'a> {
     fn from(visitor: RootVisitor) -> Self {
         Self::Root(visitor)
@@ -157,6 +163,15 @@ impl<'a> From<&'a ModuleVisitor<'a>> for Visitors<'a> {
 
 impl<'a> From<ModuleVisitorParent<'a>> for Visitors<'a> {
     fn from(visitor: ModuleVisitorParent<'a>) -> Self {
+        match visitor {
+            ModuleVisitorParent::Library(library) => Self::Library(library),
+            ModuleVisitorParent::Module(module) => Self::Module(module)
+        }
+    }
+}
+
+impl<'a> From<&'a ModuleVisitorParent<'a>> for Visitors<'a> {
+    fn from(visitor: &'a ModuleVisitorParent<'a>) -> Self {
         match visitor {
             ModuleVisitorParent::Library(library) => Self::Library(library),
             ModuleVisitorParent::Module(module) => Self::Module(module)
@@ -209,11 +224,10 @@ fn new_visitor() {
     assert_eq!(*c.root().path_segment(), "a");
     assert_eq!(*d.root().path_segment(), "a");
 
-    // assert_eq!(*a.relative::<Visitors, _>(vec![String::self_() ]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative::<Visitors, _>(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*b.relative::<Visitors, _>(vec![String::self_() ]).unwrap().as_module() .unwrap().path_segment(), "b");
-    // assert_eq!(*b.relative::<Visitors, _>(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*b.relative::<Visitors, _>(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
-    // // TODO: Make it work:
-    // // assert_eq!(*c.relative::<Visitors, _>(vec![String::super_(), String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative::<Visitors, _>(vec![String::self_() ]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative::<Visitors, _>(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative::<Visitors, _>(vec![String::self_() ]).unwrap().as_module() .unwrap().path_segment(), "b");
+    assert_eq!(*b.relative::<Visitors, _>(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative::<Visitors, _>(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
+    // assert_eq!(*c.relative::<Visitors, _>(vec![String::super_(), String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
 }

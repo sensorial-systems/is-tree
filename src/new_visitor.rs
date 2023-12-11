@@ -117,43 +117,43 @@ where Value: HasPathSegment
     }
 }
 
-// impl<'a, Parent, Value> Visitor<'a, Parent, Value>
-// where Value: HasPathSegment
-// {
-//     pub fn relative<RelativeType, K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
-//     where K: Into<Value::PathSegment>,
-//           &'a Self: Into<RelativeType>,
-//           Value: HasVisitorParent<'a>,
-//           &'a Value::VisitorParent: Into<RelativeType>,
-//           Self: HasRoot,
-//           &'a <Self as HasRoot>::Root: Into<RelativeType>
-//     {
-//         let mut path = path.into_iter();
-//         if let Some(segment) = path.next() {
-//             let segment = segment.into();
-//             match segment.kind() {
-//                 PathSegment::Root => Some(self.root().into()),
-//                 PathSegment::Self_ => self.relative(path),
-//                 PathSegment::Super => {
-//                     // TODO: Make it safer.
-//                     let result: &Value::VisitorParent = unsafe { std::mem::transmute(&self.parent) };
-//                     Some(result.into())
-//                 },
-//                 _ => todo!("Not implemented yet")
-//                 // Identifier::Super => self
-//                 //     .parent
-//                 //     .as_ref()
-//                 //     .and_then(|parent| parent.relative(path)),
-//                 // Identifier::Other(segment) => self
-//                 //     .value
-//                 //     .get(segment.clone())
-//                 //     .and_then(|branch|
-//                 //         self.child(branch)
-//                 //             .relative(path)
-//                 //     )
-//             }
-//         } else {
-//             Some(self.into())
-//         }
-//     }
-// }
+impl<'a, Parent, Value> Visitor<Parent, Value>
+where Value: HasPathSegment
+{
+    pub fn relative<RelativeType, K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+    where K: Into<Value::PathSegment>,
+          &'a Self: Into<RelativeType>,
+          Value: KnowsParentVisitor<'a>,
+          &'a Value::ParentVisitor: Into<RelativeType>,
+          Self: HasRoot,
+          &'a <Self as HasRoot>::Root: Into<RelativeType>
+    {
+        let mut path = path.into_iter();
+        if let Some(segment) = path.next() {
+            let segment = segment.into();
+            match segment.kind() {
+                PathSegment::Root => Some(self.root().into()),
+                PathSegment::Self_ => self.relative(path),
+                PathSegment::Super => {
+                    // TODO: Make it safer.
+                    let result: &Value::ParentVisitor = unsafe { std::mem::transmute(&self.parent) };
+                    Some(result.into())
+                },
+                _ => todo!("Not implemented yet")
+                // Identifier::Super => self
+                //     .parent
+                //     .as_ref()
+                //     .and_then(|parent| parent.relative(path)),
+                // Identifier::Other(segment) => self
+                //     .value
+                //     .get(segment.clone())
+                //     .and_then(|branch|
+                //         self.child(branch)
+                //             .relative(path)
+                //     )
+            }
+        } else {
+            Some(self.into())
+        }
+    }
+}
