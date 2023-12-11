@@ -28,7 +28,7 @@ where Value: HasPathSegment {
 // TODO: Implement it as RootVisitor<Value: HasPathSegment> = Visitor<(), Value::PathSegment>
 pub type RootVisitor = Visitor<(), String>;
 
-impl HasRoot for Visitor<(), String> {
+impl HasRoot for RootVisitor {
     type Root = Self;
     fn root(self) -> Self {
         self
