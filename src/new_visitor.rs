@@ -107,17 +107,17 @@ where Value: HasPathSegment
 pub trait HasRelativeAccess<'a>: HasPathSegment {
     fn relative<RelativeType, K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
     where K: Into<<Self as HasPathSegment>::PathSegment>,
-        //   &'a Self: HasRoot,
+          &'a Self: HasRoot,
           &'a Self: Into<RelativeType>,
           &'a Self: HasParent<'a>,
           <&'a Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
-        //   <&'a Self as HasRoot>::Root: Into<RelativeType>
+          <&'a Self as HasRoot>::Root: Into<RelativeType>
     {
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {
             let segment = segment.into();
             match segment.kind() {
-                // PathSegment::Root => Some(self.root().into()),
+                PathSegment::Root => Some(self.root().into()),
                 PathSegment::Self_ => self.relative(path),
                 PathSegment::Super => {
                     Some(self.parent().into())
