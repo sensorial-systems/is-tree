@@ -117,6 +117,11 @@ where Value: HasPathSegment
     }
 }
 
+pub trait HasRelativeAccess: HasPathSegment {
+    type Relative;
+    fn relative(&self, path: impl IntoIterator<Item = Self::PathSegment>) -> Option<Self::Relative>;
+}
+
 impl<'a, Parent, Value> Visitor<Parent, Value>
 where Value: HasPathSegment
 {
@@ -126,6 +131,8 @@ where Value: HasPathSegment
           Value: KnowsParentVisitor<'a>,
           &'a Value::ParentVisitor: Into<RelativeType>,
           Self: HasRoot,
+          &'a Self: HasParent<'a>,
+          <&'a Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
           &'a <Self as HasRoot>::Root: Into<RelativeType>
     {
         let mut path = path.into_iter();
@@ -135,9 +142,7 @@ where Value: HasPathSegment
                 PathSegment::Root => Some(self.root().into()),
                 PathSegment::Self_ => self.relative(path),
                 PathSegment::Super => {
-                    // TODO: Make it safer.
-                    let result: &Value::ParentVisitor = unsafe { std::mem::transmute(&self.parent) };
-                    Some(result.into())
+                    Some(self.parent().into())
                 },
                 _ => todo!("Not implemented yet")
                 // Identifier::Super => self
