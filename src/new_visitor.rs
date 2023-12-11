@@ -1,6 +1,6 @@
 use crate::{*, knows_parent::KnowsParent};
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Visitor<Parent, Value>
 where Value: HasPathSegment
 {
@@ -16,16 +16,6 @@ where Value: HasPathSegment {
         self.value.path_segment()
     }
 
-}
-
-impl Default for Visitor<(), String> {
-    fn default() -> Self {
-        Visitor {
-            parent: Default::default(),
-            value: Default::default(),
-            path: Default::default()
-        }
-    }
 }
 
 pub type RootVisitor = Visitor<(), String>;
