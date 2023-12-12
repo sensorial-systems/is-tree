@@ -9,6 +9,10 @@ where Value: HasPathSegment
     pub path: Path<Value::PathSegment>
 }
 
+impl<Parent, Value> IsVisitor for Visitor<Parent, Value>
+where Value: HasPathSegment
+{}
+
 impl<'a, Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment {
     type PathSegment = Value::PathSegment;
@@ -123,7 +127,7 @@ where Value: HasPathSegment
         Self { value, parent, path }
     }
 
-    pub fn child<'a, Child>(&'a self, value: Child) -> Visitor<Child::ParentVisitor, Child>
+    pub fn visit<'a, Child>(&'a self, value: Child) -> Visitor<Child::ParentVisitor, Child>
     where Child: HasPathSegment<PathSegment = Value::PathSegment>,
           Child: KnowsParentVisitor<'a>,
           &'a Self: Into<Child::ParentVisitor>

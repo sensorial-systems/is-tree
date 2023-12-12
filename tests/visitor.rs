@@ -10,6 +10,8 @@ pub struct Library {
     root_module: Module
 }
 
+impl HasRootVisitor for &Library {}
+
 impl HasPathSegment for Library {
     type PathSegment = String;
     fn path_segment(&self) -> &Self::PathSegment {
@@ -220,10 +222,10 @@ fn new_visitor() {
     let b = &a.root_module;
     let c = &b.children[0];
     let d = &c.children[0];
-    let a: LibraryVisitor = Visitor::new(a);
-    let b: ModuleVisitor = a.child(b);
-    let c: ModuleVisitor = b.child(c);
-    let d: ModuleVisitor = c.child(d);
+    let a: LibraryVisitor = a.visit();
+    let b: ModuleVisitor = a.visit(b);
+    let c: ModuleVisitor = b.visit(c);
+    let d: ModuleVisitor = c.visit(d);
 
     assert_eq!(a.path.to_string(), "a");
     assert_eq!(b.path.to_string(), "a::b");
