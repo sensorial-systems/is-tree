@@ -227,14 +227,14 @@ fn new_visitor() {
     assert_eq!(c.path.to_string(), "a::b::c");
     assert_eq!(d.path.to_string(), "a::b::c::d");
 
-    assert_eq!(*a.parent().path_segment(), "");
+    assert_eq!(*a.parent().path_segment(), ""); // TODO: Can this be ()? Do this after the FIXME bellow.
     assert_eq!(*b.parent().path_segment(), "a");
     assert_eq!(*c.parent().path_segment(), "b");
     assert_eq!(*d.parent().path_segment(), "c");
     assert_eq!(*c.parent().parent().path_segment(), "a");
     assert_eq!(*d.parent().parent().parent().path_segment(), "a");
 
-    assert_eq!(*a.root().path_segment(), "");
+    assert_eq!(*a.root().path_segment(), "a"); // FIXME: This should be "a", not "".
     assert_eq!(*b.root().path_segment(), "a");
     assert_eq!(*c.root().path_segment(), "a");
     assert_eq!(*d.root().path_segment(), "a");
