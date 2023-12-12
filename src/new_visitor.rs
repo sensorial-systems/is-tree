@@ -132,9 +132,10 @@ where Value: HasPathSegment
     }
 }
 
-pub trait HasRelativeAccess<'a>: HasPathSegment {
+pub trait HasRelativeAccess<'a>: HasPathSegment /* + HasParent<'a> */ {
     fn relative<RelativeType, K>(self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
     where K: Into<<Self as HasPathSegment>::PathSegment>,
+          // TODO: Move these things to the trait constraints.
           Self: HasRoot,
           Self: Into<RelativeType>,
           Self: HasParent<'a>,
