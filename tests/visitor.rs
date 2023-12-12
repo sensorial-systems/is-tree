@@ -227,7 +227,7 @@ fn new_visitor() {
     assert_eq!(c.path.to_string(), "a::b::c");
     assert_eq!(d.path.to_string(), "a::b::c::d");
 
-    // assert_eq!(*a.parent().path_segment(), "");
+    assert_eq!(*a.parent().path_segment(), "");
     assert_eq!(*b.parent().path_segment(), "a");
     assert_eq!(*c.parent().path_segment(), "b");
     assert_eq!(*d.parent().path_segment(), "c");

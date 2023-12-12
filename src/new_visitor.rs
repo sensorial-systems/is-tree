@@ -81,21 +81,21 @@ where Value: HasPathSegment, Value::PathSegment: Default
 // Visitor knows parent
 //
 
-impl<'a, Value> KnowsParent<'a> for &'a Visitor<Value::ParentVisitor, Value>
-where Value: HasPathSegment + KnowsParentVisitor<'a>,
+impl<'a, Parent, Value> KnowsParent<'a> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment,
 {
-    type Parent = Value::ParentVisitor;
+    type Parent = Parent;
 }
 
 //
 // Visitor has parent
 //
 
-impl<'a, Value> HasParent<'a> for &'a Visitor<Value::ParentVisitor, Value>
-where Value: KnowsParentVisitor<'a> + HasPathSegment,
-      Value::ParentVisitor: Clone
+impl<'a, Parent, Value> HasParent<'a> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment,
+      Parent: Clone
 {
-    fn parent(self) -> Value::ParentVisitor {
+    fn parent(self) -> Parent {
         self.parent.clone()
     }
 }
