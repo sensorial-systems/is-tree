@@ -103,10 +103,10 @@ where Value: HasPathSegment,
 
 impl<'a, Parent, Value> HasParent<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment,
-      Parent: Clone
+      Parent: Copy
 {
     fn parent(self) -> Parent {
-        self.parent.clone()
+        self.parent
     }
 }
 
