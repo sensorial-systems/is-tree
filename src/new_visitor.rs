@@ -63,6 +63,20 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>
     }
 }
 
+impl<'a, Value> KnowsParent<'a> for RootVisitor<Value>
+where Value: HasPathSegment + HasRelativeAccessType<'a>
+{
+    type Parent = Self;
+}
+
+impl<'a, Value> HasParent<'a> for RootVisitor<Value>
+where Value: HasPathSegment + HasRelativeAccessType<'a>
+{
+    fn parent(self) -> Self {
+        self
+    }
+}
+
 pub trait HasRelativeAccessType<'a> {
     type RelativeType;
 }
@@ -147,22 +161,22 @@ pub trait HasRelativeAccess<'a>:
       HasRelativeAccessType<'a>
     + HasPathSegment
     + Into<Self::RelativeType>
+    + HasParent<'a>
+    + HasRoot<'a>
+    where
+    Self::Parent: Into<Self::RelativeType>,
+    Self::Root: Into<Self::RelativeType>
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as HasPathSegment>::PathSegment>,
-          // TODO: Move these things to the trait constraints.
-        //   Self: HasRoot<'a>,
-        //   Self: HasParent<'a>,
-        //   <Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
-        //   <Self as HasRoot<'a>>::Root: Into<RelativeType>
     {
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {
             let segment = segment.into();
             match segment.kind() {
-                // PathSegment::Root => Some(self.root().into()),
+                PathSegment::Root => Some(self.root().into()),
                 PathSegment::Self_ => self.relative(path),
-                // PathSegment::Super => Some(self.parent().into()),
+                PathSegment::Super => Some(self.parent().into()),
                 _ => todo!("Not implemented yet")
                 // Identifier::Super => self
                 //     .parent
@@ -183,10 +197,10 @@ pub trait HasRelativeAccess<'a>:
 }
 
 impl<'a, Parent, Value> HasRelativeAccess<'a> for &'a Visitor<Parent, Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a> + KnowsParentVisitor<'a>,
+where Value: HasPathSegment + HasRelativeAccessType<'a> + KnowsParentVisitor<'a, ParentVisitor = Parent>,
+      Parent: Copy,
+      Parent: Into<Self::RelativeType>,
       Self: Into<Self::RelativeType>,
-      Self: HasPathSegment {}
-
-// impl<'a, Parent, Value> HasRelativeAccess<'a> for Visitor<Parent, Value>
-// where Value: HasPathSegment + KnowsParentVisitor<'a>,
-//       Self: HasPathSegment {}
+      Self: HasPathSegment,
+      &'a Parent: HasRoot<'a>,
+        <&'a Parent as HasRoot<'a>>::Root: Into<Self::RelativeType> {}

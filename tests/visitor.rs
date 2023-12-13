@@ -255,7 +255,7 @@ fn new_visitor() {
     assert_eq!(c.path().to_string(), "a::b::c");
     assert_eq!(d.path().to_string(), "a::b::c::d");
 
-    assert_eq!(*a.parent().path_segment(), ());
+    assert_eq!(*a.parent().path_segment(), "a"); // Root's parent is itself. Will it create any kind of problem?
     assert_eq!(*b.parent().path_segment(), "a");
     assert_eq!(*c.parent().path_segment(), "b");
     assert_eq!(*d.parent().path_segment(), "c");
@@ -270,8 +270,8 @@ fn new_visitor() {
     assert_eq!(*a.relative(vec![String::self_() ]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*b.relative(vec![String::self_() ]).unwrap().as_module() .unwrap().path_segment(), "b");
-    // assert_eq!(*b.relative::<Visitors, _>(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*b.relative::<Visitors, _>(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
     // // TODO: Make it work:
     // // assert_eq!(*c.relative::<Visitors, _>(vec![String::super_(), String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
 }
