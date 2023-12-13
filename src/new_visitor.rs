@@ -29,6 +29,18 @@ where Value: HasPathSegment {
     }
 }
 
+impl<'a, Parent, Value> HasRelativeAccessType<'a> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment + HasRelativeAccessType<'a>
+{
+    type RelativeType = Value::RelativeType;
+}
+
+impl<'a, Parent, Value> HasRelativeAccessType<'a> for Visitor<Parent, Value>
+where Value: HasPathSegment + HasRelativeAccessType<'a>
+{
+    type RelativeType = Value::RelativeType;
+}
+
 pub type RootVisitor<Value> = Visitor<(), Value>;
 
 
@@ -43,7 +55,7 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
 }
 
 impl<'a, Value> HasRoot<'a> for RootVisitor<Value>
-where Value: HasPathSegment
+where Value: HasPathSegment + HasRelativeAccessType<'a>
 {
     type Root = Self;
     fn root(self) -> Self {
@@ -51,20 +63,23 @@ where Value: HasPathSegment
     }
 }
 
+pub trait HasRelativeAccessType<'a> {
+    type RelativeType;
+}
 
 impl<'a, Value> HasRelativeAccess<'a> for RootVisitor<Value>
-where Value: HasPathSegment
+where Value: HasPathSegment + HasRelativeAccessType<'a>
 {
-    fn relative<RelativeType, K>(self, _path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+    fn relative<K>(self, _path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as HasPathSegment>::PathSegment>,
-              Self: Into<RelativeType>,
+              Self: Into<Self::RelativeType>,
     {
         Some(self.into())
     }
 }
 
 impl<'a, Value> RootVisitor<Value>
-where Value: HasPathSegment, Value::PathSegment: Default
+where Value: HasPathSegment + HasRelativeAccessType<'a>, Value::PathSegment: Default
 {
     pub fn new(value: Value) -> Self {
         let parent = Default::default();
@@ -128,12 +143,14 @@ where Value: HasPathSegment,
 
 }
 
-pub trait HasRelativeAccess<'a>: HasPathSegment /* + HasParent<'a> */ {
-    fn relative<RelativeType, K>(self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
+pub trait HasRelativeAccess<'a>:
+      HasRelativeAccessType<'a>
+    + HasPathSegment /* + HasParent<'a> */ {
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as HasPathSegment>::PathSegment>,
           // TODO: Move these things to the trait constraints.
         //   Self: HasRoot<'a>,
-          Self: Into<RelativeType>,
+          Self: Into<Self::RelativeType>,
         //   Self: HasParent<'a>,
         //   <Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
         //   <Self as HasRoot<'a>>::Root: Into<RelativeType>
@@ -165,7 +182,7 @@ pub trait HasRelativeAccess<'a>: HasPathSegment /* + HasParent<'a> */ {
 }
 
 impl<'a, Parent, Value> HasRelativeAccess<'a> for &'a Visitor<Parent, Value>
-where Value: HasPathSegment + KnowsParentVisitor<'a>,
+where Value: HasPathSegment + HasRelativeAccessType<'a> + KnowsParentVisitor<'a>,
       Self: HasPathSegment {}
 
 // impl<'a, Parent, Value> HasRelativeAccess<'a> for Visitor<Parent, Value>

@@ -1,4 +1,4 @@
-use crate::{new_visitor::RootVisitor, HasPathSegment};
+use crate::{new_visitor::{RootVisitor, HasRelativeAccessType}, HasPathSegment};
 
 pub trait IsVisitor {}
 
@@ -18,8 +18,8 @@ impl<T: HasRootVisitor> KnowsVisitor for T {
     type Visitor = RootVisitor<T>;
 }
 
-impl<T> HasVisitor for T
-where T: HasRootVisitor + HasPathSegment,
+impl<'a, T> HasVisitor for T
+where T: HasRootVisitor + HasPathSegment + HasRelativeAccessType<'a>,
       T::PathSegment: Default
 {
     fn visit(self) -> Self::Visitor {
