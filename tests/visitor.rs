@@ -169,6 +169,31 @@ pub enum Visitors<'a> {
     Module(&'a ModuleVisitor<'a>)
 }
 
+impl<'a> HasRoot<'a> for Visitors<'a> {
+    type Root = LibraryVisitor<'a>;
+    fn root(self) -> Self::Root {
+        match self {
+            Visitors::Library(library) => library,
+            Visitors::Module(module) => module.parent().root()
+        }
+    }
+}
+
+impl<'a> HasRelativeAccessType<'a> for Visitors<'a> {
+    type RelativeType = Visitors<'a>;
+}
+
+impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+        where K: Into<<Self as HasPathSegment>::PathSegment>
+    {
+        match self {
+            Visitors::Library(library) => library.relative(path),
+            Visitors::Module(module) => module.relative(path)
+        }
+    }
+}
+
 impl<'a> KnowsParent<'a> for Visitors<'a> {
     type Parent = Visitors<'a>;
 }
