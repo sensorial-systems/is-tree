@@ -62,6 +62,15 @@ pub enum ModuleVisitorParent<'a> {
     Module(&'a ModuleVisitor<'a>)
 }
 
+impl<'a> HasPath<String> for ModuleVisitorParent<'a> {
+    fn path(&self) -> Path<String> {
+        match self {
+            ModuleVisitorParent::Library(library) => library.path(),
+            ModuleVisitorParent::Module(module) => module.path()
+        }
+    }
+}
+
 // TODO: Enable this:
 // impl<'a> HasRelativeAccess<'a> for ModuleVisitorParent<'a>
 // {
@@ -222,19 +231,19 @@ fn new_visitor() {
     let c: ModuleVisitor = b.visit(c);
     let d: ModuleVisitor = c.visit(d);
 
-    assert_eq!(a.path.to_string(), "a");
-    assert_eq!(b.path.to_string(), "a::b");
-    assert_eq!(c.path.to_string(), "a::b::c");
-    assert_eq!(d.path.to_string(), "a::b::c::d");
+    assert_eq!(a.path().to_string(), "a");
+    assert_eq!(b.path().to_string(), "a::b");
+    assert_eq!(c.path().to_string(), "a::b::c");
+    assert_eq!(d.path().to_string(), "a::b::c::d");
 
-    assert_eq!(*a.parent().path_segment(), ""); // TODO: Can this be ()? Do this after the FIXME bellow.
+    assert_eq!(*a.parent().path_segment(), ());
     assert_eq!(*b.parent().path_segment(), "a");
     assert_eq!(*c.parent().path_segment(), "b");
     assert_eq!(*d.parent().path_segment(), "c");
     assert_eq!(*c.parent().parent().path_segment(), "a");
     assert_eq!(*d.parent().parent().parent().path_segment(), "a");
 
-    assert_eq!(*a.root().path_segment(), "a"); // FIXME: This should be "a", not "".
+    assert_eq!(*a.root().path_segment(), "a");
     assert_eq!(*b.root().path_segment(), "a");
     assert_eq!(*c.root().path_segment(), "a");
     assert_eq!(*d.root().path_segment(), "a");

@@ -1,12 +1,11 @@
 use crate::{*, knows_parent::KnowsParent};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Copy, Default)]
 pub struct Visitor<Parent, Value>
 where Value: HasPathSegment
 {
     pub parent: Parent,
-    pub value: Value,
-    pub path: Path<Value::PathSegment>
+    pub value: Value
 }
 
 impl<Parent, Value> IsVisitor for Visitor<Parent, Value>
@@ -14,7 +13,8 @@ where Value: HasPathSegment
 {}
 
 impl<'a, Parent, Value> HasPathSegment for Visitor<Parent, Value>
-where Value: HasPathSegment {
+where Value: HasPathSegment
+{
     type PathSegment = Value::PathSegment;
     fn path_segment(&self) -> &Self::PathSegment {
         self.value.path_segment()
@@ -29,27 +29,27 @@ where Value: HasPathSegment {
     }
 }
 
-pub type RootVisitor<Value> = Visitor<<Value as HasPathSegment>::PathSegment, Value>;
+pub type RootVisitor<Value> = Visitor<(), Value>;
 
 
-impl<'a, Parent, Value> HasRoot<'a> for &'a Visitor<Parent, Value>
-where Value: HasPathSegment,
-      &'a Parent: HasRoot<'a>
+impl<'a, Value> HasRoot<'a> for &'a Visitor<Value::ParentVisitor, Value>
+where Value: HasPathSegment + KnowsParentVisitor<'a>,
+      &'a Value::ParentVisitor: HasRoot<'a>
 {
-    type Root = <&'a Parent as HasRoot<'a>>::Root;
+    type Root = <&'a Value::ParentVisitor as HasRoot<'a>>::Root;
     fn root(self) -> Self::Root {
         self.parent.root()
     }
 }
 
-// impl<'a, Value> HasRoot<'a> for &'a RootVisitor<Value>
-// where Value: HasPathSegment
-// {
-//     type Root = Self;
-//     fn root(self) -> Self {
-//         self
-//     }
-// }
+impl<'a, Value> HasRoot<'a> for RootVisitor<Value>
+where Value: HasPathSegment
+{
+    type Root = Self;
+    fn root(self) -> Self {
+        self
+    }
+}
 
 
 impl<'a, Value> HasRelativeAccess<'a> for RootVisitor<Value>
@@ -71,9 +71,8 @@ impl<'a, Value> RootVisitor<Value>
 where Value: HasPathSegment, Value::PathSegment: Default
 {
     pub fn new(value: Value) -> Self {
-        let path = Path::default().join(value.path_segment().clone());
         let parent = Default::default();
-        Self { parent, value, path }
+        Self { parent, value }
     }
 }
 
@@ -107,14 +106,8 @@ where Value: HasPathSegment,
 impl<Parent, Value> Visitor<Parent, Value>
 where Value: HasPathSegment
 {
-    pub fn new_with_parent(value: Value, parent: Parent) -> Self {
-        let path = Path::default().join(value.path_segment().clone());
-        Self { value, parent, path }
-    }
-
-    pub fn new_with_parent_and_path(parent: Parent, value: Value, path: Path<Value::PathSegment>) -> Self {
-        let path = path.join(value.path_segment().clone());
-        Self { value, parent, path }
+    pub fn new_with_parent(parent: Parent, value: Value) -> Self {
+        Self { parent, value }
     }
 
     pub fn visit<'a, Child>(&'a self, value: Child) -> Visitor<Child::ParentVisitor, Child>
@@ -122,8 +115,21 @@ where Value: HasPathSegment
           Child: KnowsParentVisitor<'a>,
           &'a Self: Into<Child::ParentVisitor>
     {
-        Visitor::new_with_parent_and_path(self.into(), value, self.path.clone())
+        Visitor::new_with_parent(self.into(), value)
     }
+}
+
+impl<Parent, Value> HasPath<Value::PathSegment> for Visitor<Parent, Value>
+where Value: HasPathSegment,
+      Parent: HasPath<Value::PathSegment>
+{
+    fn path(&self) -> Path<Value::PathSegment>
+    {
+        let mut path = self.parent.path();
+        path.segments.push(self.value.path_segment().clone());
+        path
+    }
+
 }
 
 pub trait HasRelativeAccess<'a>: HasPathSegment /* + HasParent<'a> */ {
