@@ -198,9 +198,7 @@ pub trait HasRelativeAccess<'a>:
 
 impl<'a, Parent, Value> HasRelativeAccess<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment + HasRelativeAccessType<'a> + KnowsParentVisitor<'a, ParentVisitor = Parent>,
-      Parent: Copy,
-      Parent: Into<Self::RelativeType>,
-      Self: Into<Self::RelativeType>,
-      Self: HasPathSegment,
+      Parent: Copy + Into<Self::RelativeType>,
+      Self: Into<Self::RelativeType> + HasPathSegment,
       &'a Parent: HasRoot<'a>,
-        <&'a Parent as HasRoot<'a>>::Root: Into<Self::RelativeType> {}
+      <&'a Parent as HasRoot<'a>>::Root: Into<Self::RelativeType> {}
