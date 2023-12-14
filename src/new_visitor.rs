@@ -93,16 +93,6 @@ where Value: Copy + HasPathSegment + HasGet<'a>,
     }
 }
 
-// impl<'a, Value> HasGet<'a> for RootVisitor<Value>
-// where Value: HasPathSegment + HasGet<'a> + KnowsParentVisitor<'a, ParentVisitor = RootVisitor<Value>>
-// {
-//     fn get<K>(self, key: K) -> Option<Self::GetType>
-//         where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
-//     {
-//         self.value.get(key).map(|value| self.visit(value))
-//     }
-// }
-
 impl<'a, Value> HasRoot<'a> for RootVisitor<Value>
 where Value: HasPathSegment
 {
