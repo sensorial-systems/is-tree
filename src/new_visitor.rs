@@ -1,4 +1,4 @@
-use crate::{*, knows_parent::KnowsParent};
+use crate::{*, knows_parent::KnowsParent, has_get::KnowsGetType};
 
 #[derive(Clone, Copy, Default)]
 pub struct Visitor<Parent, Value>
@@ -54,8 +54,14 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
     }
 }
 
+// impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
+// where Value: HasPathSegment + HasRelativeAccessType<'a>
+// {
+//     type GetType = Value;
+// }
+
 impl<'a, Value> HasRoot<'a> for RootVisitor<Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a>
+where Value: HasPathSegment
 {
     type Root = Self;
     fn root(self) -> Self {
@@ -64,13 +70,13 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>
 }
 
 impl<'a, Value> KnowsParent<'a> for RootVisitor<Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a>
+where Value: HasPathSegment
 {
     type Parent = Self;
 }
 
 impl<'a, Value> HasParent<'a> for RootVisitor<Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a>
+where Value: HasPathSegment
 {
     fn parent(self) -> Self {
         self
