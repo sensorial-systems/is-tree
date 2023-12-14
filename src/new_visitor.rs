@@ -1,4 +1,4 @@
-use crate::{*, knows_parent::KnowsParent, has_get::KnowsGetType};
+use crate::{*, knows_parent::KnowsParent, has_get::{KnowsGetType, HasGet}};
 
 #[derive(Clone, Copy, Default)]
 pub struct Visitor<Parent, Value>
@@ -8,9 +8,29 @@ where Value: HasPathSegment
     pub value: Value
 }
 
-impl<Parent, Value> IsVisitor for Visitor<Parent, Value>
+impl<'a, Value> IsVisitor<'a, Value> for RootVisitor<Value>
 where Value: HasPathSegment
-{}
+{
+    fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
+    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
+          Child: KnowsParentVisitor<'a>,
+          Self: Into<Child::ParentVisitor>
+    {
+        Visitor::new_with_parent(self.into(), value)
+    }
+}
+
+impl<'a, Parent, Value> IsVisitor<'a, Value> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment
+{
+    fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
+        where Child: HasPathSegment<PathSegment = <Value as HasPathSegment>::PathSegment>,
+              Child: KnowsParentVisitor<'a>,
+              Self: Into<Child::ParentVisitor>
+    {
+        Visitor::new_with_parent(self.into(), value)
+    }
+}
 
 impl<'a, Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment
@@ -54,10 +74,34 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
     }
 }
 
-// impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
-// where Value: HasPathSegment + HasRelativeAccessType<'a>
+impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
+where Value: HasPathSegment + KnowsGetType<'a>,
+      Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+{
+    type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
+}
+
+impl<'a, Value> HasGet<'a> for RootVisitor<Value>
+where Value: HasPathSegment + HasGet<'a>,
+      Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+      Self::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+      Self: Copy + Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>
+{
+    fn get<K>(self, key: K) -> Option<Self::GetType>
+    where K: Into<<Self::GetType as HasPathSegment>::PathSegment> {
+        None
+        // self.value.get(key).map(|value| self.visit(value))
+    }
+}
+
+// impl<'a, Value> HasGet<'a> for RootVisitor<Value>
+// where Value: HasPathSegment + HasGet<'a> + KnowsParentVisitor<'a, ParentVisitor = RootVisitor<Value>>
 // {
-//     type GetType = Value;
+//     fn get<K>(self, key: K) -> Option<Self::GetType>
+//         where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
+//     {
+//         self.value.get(key).map(|value| self.visit(value))
+//     }
 // }
 
 impl<'a, Value> HasRoot<'a> for RootVisitor<Value>
@@ -147,14 +191,6 @@ where Value: HasPathSegment
 {
     pub fn new_with_parent(parent: Parent, value: Value) -> Self {
         Self { parent, value }
-    }
-
-    pub fn visit<'a, Child>(&'a self, value: Child) -> Visitor<Child::ParentVisitor, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
-          Child: KnowsParentVisitor<'a>,
-          &'a Self: Into<Child::ParentVisitor>
-    {
-        Visitor::new_with_parent(self.into(), value)
     }
 }
 
