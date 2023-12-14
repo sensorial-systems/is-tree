@@ -2,6 +2,7 @@ use enum_as_inner::EnumAsInner;
 
 use ::is_tree::*;
 
+use ::is_tree::has_get::{KnowsGetType, HasGet};
 use ::is_tree::knows_parent::KnowsParent;
 use ::is_tree::new_visitor::{Visitor, RootVisitor, HasRelativeAccess, HasRelativeAccessType};
 
@@ -11,6 +12,35 @@ pub struct Library {
 }
 
 impl HasRootVisitor for &Library {}
+
+impl<'a> KnowsGetType<'a> for &'a Library {
+    type GetType = &'a Module;
+}
+
+impl<'a> HasGet<'a> for &'a Library {
+    fn get<K>(self, key: K) -> Option<Self::GetType>
+    where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
+    {
+        if &key.into() == self.path_segment() {
+            Some(&self.root_module)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a> KnowsGetType<'a> for &'a Module {
+    type GetType = &'a Module;
+}
+
+impl<'a> HasGet<'a> for &'a Module {
+    fn get<K>(self, key: K) -> Option<Self::GetType>
+        where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
+    {
+        let key = key.into();
+        self.children.iter().find(|child| &key == child.path_segment())
+    }
+}
 
 impl HasPathSegment for Library {
     type PathSegment = String;
