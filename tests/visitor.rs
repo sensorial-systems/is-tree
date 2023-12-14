@@ -322,6 +322,9 @@ fn new_visitor() {
     assert_eq!(*c.root().path_segment(), "a");
     assert_eq!(*d.root().path_segment(), "a");
 
+    // Make it work:
+    // a.get(vec![String::from("b")]).unwrap();
+
     assert_eq!(*a.relative(vec![String::self_() ]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*b.relative(vec![String::self_() ]).unwrap().as_module() .unwrap().path_segment(), "b");
