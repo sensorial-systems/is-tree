@@ -1,6 +1,11 @@
 use super::*;
 
-pub type RootVisitor<Value> = Visitor<(), Value>;
+#[derive(Clone, Copy, Default)]
+pub struct RootVisitor<Value>
+where Value: HasPathSegment
+{
+    pub value: Value
+}
 
 impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
 where Value: HasPathSegment + KnowsGetType<'a>,
@@ -47,6 +52,15 @@ where Value: HasPathSegment
     }
 }
 
+impl<'a, Value> HasRoot<'a> for &'a RootVisitor<Value>
+where Value: HasPathSegment
+{
+    type Root = Self;
+    fn root(self) -> Self {
+        self
+    }
+}
+
 impl<'a, Value> KnowsParent<'a> for RootVisitor<Value>
 where Value: HasPathSegment
 {
@@ -65,8 +79,7 @@ impl<'a, Value> RootVisitor<Value>
 where Value: HasPathSegment + HasRelativeAccessType<'a>, Value::PathSegment: Default
 {
     pub fn new(value: Value) -> Self {
-        let parent = Default::default();
-        Self { parent, value }
+        Self { value }
     }
 }
 
@@ -87,4 +100,31 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>,
     {
         Some(self.into())
     }
+}
+
+impl<'a, Value> HasPathSegment for RootVisitor<Value>
+where Value: HasPathSegment
+{
+    type PathSegment = Value::PathSegment;
+    fn path_segment(&self) -> &Self::PathSegment {
+        self.value.path_segment()
+    }
+}
+
+impl<'a, Value> HasRelativeAccessType<'a> for RootVisitor<Value>
+where Value: HasPathSegment + HasRelativeAccessType<'a>
+{
+    type RelativeType = Value::RelativeType;
+}
+
+impl<Value> HasPath<Value::PathSegment> for RootVisitor<Value>
+where Value: HasPathSegment
+{
+    fn path(&self) -> Path<Value::PathSegment>
+    {
+        let mut path = Path::default();
+        path.segments.push(self.value.path_segment().clone());
+        path
+    }
+
 }
