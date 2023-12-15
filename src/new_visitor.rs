@@ -63,6 +63,11 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>
 
 pub type RootVisitor<Value> = Visitor<(), Value>;
 
+impl<'a, Value> KnowsParentVisitor<'a> for RootVisitor<Value>
+where Value: HasPathSegment + KnowsParentVisitor<'a>
+{
+    type ParentVisitor = Value::ParentVisitor;
+}
 
 impl<'a, Value> HasRoot<'a> for &'a Visitor<Value::ParentVisitor, Value>
 where Value: HasPathSegment + KnowsParentVisitor<'a>,
@@ -84,7 +89,6 @@ where Value: HasPathSegment + KnowsGetType<'a>,
 impl<'a, Value> HasGet<'a> for RootVisitor<Value>
 where Value: Copy + HasPathSegment + HasGet<'a>,
       Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
-      Self::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
       Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
@@ -161,6 +165,12 @@ where Value: HasPathSegment,
 //
 // Visitor has parent
 //
+
+impl<'a, Parent, Value> KnowsParentVisitor<'a> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment + KnowsParentVisitor<'a>,
+{
+    type ParentVisitor = Value::ParentVisitor;
+}
 
 impl<'a, Parent, Value> HasParent<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment,

@@ -21,7 +21,7 @@ impl<'a> HasGet<'a> for &'a Library {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
     {
-        if &key.into() == self.path_segment() {
+        if &key.into() == self.root_module.path_segment() {
             Some(&self.root_module)
         } else {
             None
@@ -322,14 +322,13 @@ fn new_visitor() {
     assert_eq!(*c.root().path_segment(), "a");
     assert_eq!(*d.root().path_segment(), "a");
 
-    // Make it work:
-    // a.get(vec![String::from("b")]).unwrap();
+    assert_eq!(a.get("b").unwrap().path_segment(), "b");
+    // assert_eq!(b.get("c")
 
-    assert_eq!(*a.relative(vec![String::self_() ]).unwrap().as_library().unwrap().path_segment(), "a");
-    assert_eq!(*a.relative(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
-    assert_eq!(*b.relative(vec![String::self_() ]).unwrap().as_module() .unwrap().path_segment(), "b");
-    assert_eq!(*b.relative(vec![String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
-    assert_eq!(*b.relative(vec![String::root()  ]).unwrap().as_library().unwrap().path_segment(), "a");
-    // // TODO: Make it work:
-    assert_eq!(*c.relative(vec![String::super_(), String::super_()]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative(vec!["self"]).unwrap().as_module() .unwrap().path_segment(), "b");
+    assert_eq!(*b.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*c.relative(vec!["super", "super"]).unwrap().as_library().unwrap().path_segment(), "a");
 }
