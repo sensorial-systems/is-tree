@@ -113,24 +113,6 @@ impl<'a> HasPath<String> for ModuleVisitorParent<'a> {
     }
 }
 
-// TODO: Enable this:
-// impl<'a> HasRelativeAccess<'a> for ModuleVisitorParent<'a>
-// {
-//     fn relative<RelativeType, K>(self, path: impl IntoIterator<Item = K>) -> Option<RelativeType>
-//         where K: Into<<Self as HasPathSegment>::PathSegment>,
-//               Self: HasRoot,
-//               Self: Into<RelativeType>,
-//               Self: HasParent<'a>,
-//               <Self as KnowsParent<'a>>::Parent: Into<RelativeType>,
-//               <Self as HasRoot>::Root: Into<RelativeType>,
-//     {
-//         match self {
-//             ModuleVisitorParent::Library(library) => library.relative(path),
-//             ModuleVisitorParent::Module(module) => module.relative(path)
-//         }
-//     }
-// }
-
 impl<'a> KnowsParent<'a> for ModuleVisitorParent<'a> {
     type Parent = Visitors<'a>;
 }
@@ -330,4 +312,5 @@ fn new_visitor() {
     assert_eq!(*b.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*b.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*c.relative(vec!["super", "super"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(a.relative(vec!["b", "c"]).unwrap().as_module().unwrap().path_segment(), "c");
 }
