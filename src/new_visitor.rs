@@ -1,7 +1,8 @@
 pub mod root_visitor;
 pub use root_visitor::*;
 
-use crate::{*, knows_parent::KnowsParent, has_get::{KnowsGetType, HasGet}};
+use crate::{knows_parent::KnowsParent, has_get::{KnowsGetType, HasGet}, Path, PathSegment};
+use crate::traits::*;
 
 #[derive(Clone, Copy, Default)]
 pub struct Visitor<Parent, Value>
