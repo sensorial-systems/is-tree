@@ -79,11 +79,29 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
     }
 }
 
+impl<'a, Parent, Value> KnowsGetType<'a> for &'a Visitor<Parent, Value>
+where Value: HasPathSegment + KnowsGetType<'a>,
+      Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>
+{
+    type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
+}
+
 impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
 where Value: HasPathSegment + KnowsGetType<'a>,
       Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
 {
     type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
+}
+
+impl<'a, Parent, Value> HasGet<'a> for &'a Visitor<Parent, Value>
+where Value: Copy + HasPathSegment + HasGet<'a>,
+      Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+      Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
+{
+    fn get<K>(self, key: K) -> Option<Self::GetType>
+    where K: Into<<Self::GetType as HasPathSegment>::PathSegment> {
+        self.value.get(key).map(|value| self.visit(value))
+    }
 }
 
 impl<'a, Value> HasGet<'a> for RootVisitor<Value>
