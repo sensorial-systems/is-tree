@@ -98,6 +98,7 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>,
     fn relative<K>(self, _path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as HasPathSegment>::PathSegment>,
     {
+        
         Some(self.into())
     }
 }

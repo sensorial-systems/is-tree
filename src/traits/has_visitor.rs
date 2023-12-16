@@ -1,4 +1,6 @@
-use crate::{new_visitor::{RootVisitor, HasRelativeAccessType, Visitor}, HasPathSegment, KnowsParentVisitor};
+use crate::{new_visitor::{RootVisitor, Visitor}, HasPathSegment, KnowsParentVisitor};
+
+use crate::traits::*;
 
 pub trait IsVisitor<'a, Value>
 where Value: HasPathSegment
