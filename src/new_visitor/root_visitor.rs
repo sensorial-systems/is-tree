@@ -85,22 +85,37 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>, Value::PathSegment: Def
 
 impl<'a, Value> HasRelativeAccess<'a> for RootVisitor<Value>
 where Value: HasPathSegment + HasRelativeAccessType<'a>,
-      Self: Into<Self::RelativeType>,
+      Self: Into<Self::RelativeType> + HasPathSegment + HasRoot<'a>,
 
       Value::RelativeType:
       HasRelativeAccess<'a>
     + HasRelativeAccessType<'a, RelativeType = Self::RelativeType>
-    + HasPathSegment<PathSegment = Self::PathSegment>
+    + HasPathSegment<PathSegment = <Self as HasPathSegment>::PathSegment>
     + HasParent<'a>
-    + HasRoot<'a, Root = Self::Root>,
+    + HasRoot<'a, Root = <Self as HasRoot<'a>>::Root>,
     <Value::RelativeType as KnowsParent<'a>>::Parent: Into<Self::RelativeType>
 {
-    fn relative<K>(self, _path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as HasPathSegment>::PathSegment>,
     {
-        
-        Some(self.into())
-    }
+        let mut path = path.into_iter();
+        if let Some(segment) = path.next() {
+            let segment = segment.into();
+            match segment.kind() {
+                PathSegment::Root => Some(self.into()),
+                PathSegment::Self_ | PathSegment::Super => self.relative(path),
+                 PathSegment::Other(_segment) => todo!("Not implemented yet")
+                // PathSegment::Other(segment) => self
+                //     .value
+                //     .get(segment.clone())
+                //     .and_then(|branch|
+                //         self.child(branch)
+                //             .relative(path))
+            }
+        } else {
+            Some(self.into())
+        }
+}
 }
 
 impl<'a, Value> HasPathSegment for RootVisitor<Value>

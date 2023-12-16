@@ -1,7 +1,7 @@
 pub mod root_visitor;
 pub use root_visitor::*;
 
-use crate::{knows_parent::KnowsParent, has_get::{KnowsGetType, HasGet}, Path};
+use crate::{knows_parent::KnowsParent, has_get::{KnowsGetType, HasGet}, Path, PathSegment};
 use crate::traits::*;
 
 #[derive(Clone, Copy, Default)]
@@ -126,15 +126,44 @@ where Value: HasPathSegment,
 impl<'a, Parent, Value> HasRelativeAccess<'a> for Visitor<Parent, Value>
 where Value: HasPathSegment + HasRelativeAccessType<'a> + KnowsParentVisitor<'a, ParentVisitor = Parent>,
       Parent: Copy + Into<Self::RelativeType>,
-      Self: Into<Self::RelativeType> + HasPathSegment,
+      Self: Into<Self::RelativeType> + HasPathSegment + HasRoot<'a>,
+      <Self as HasRoot<'a>>::Root: Into<Self::RelativeType>,
       Parent: HasRoot<'a>,
       <Parent as HasRoot<'a>>::Root: Into<Self::RelativeType>,
  
       Value::RelativeType:
       HasRelativeAccess<'a>
     + HasRelativeAccessType<'a, RelativeType = Self::RelativeType>
-    + HasPathSegment<PathSegment = Self::PathSegment>
+    + HasPathSegment<PathSegment = <Self as HasPathSegment>::PathSegment>
     + HasParent<'a>
-    + HasRoot<'a, Root = Self::Root>,
+    + HasRoot<'a, Root = <Self as HasRoot<'a>>::Root>,
     <Value::RelativeType as KnowsParent<'a>>::Parent: Into<Self::RelativeType>
-{}
+{
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    where K: Into<<Self as HasPathSegment>::PathSegment>
+    {
+            let mut path = path.into_iter();
+            if let Some(segment) = path.next() {
+                let segment = segment.into();
+                match segment.kind() {
+                    PathSegment::Root => Some(self.root().into()),
+                    PathSegment::Self_ => self.relative(path),
+                    PathSegment::Super => self.parent().into().relative(path),
+                    _ => todo!("Not implemented yet")
+                    // Identifier::Super => self
+                    //     .parent
+                    //     .as_ref()
+                    //     .and_then(|parent| parent.relative(path)),
+                    // Identifier::Other(segment) => self
+                    //     .value
+                    //     .get(segment.clone())
+                    //     .and_then(|branch|
+                    //         self.child(branch)
+                    //             .relative(path)
+                    //     )
+                }
+            } else {
+                Some(self.into())
+            }    
+    }
+}
