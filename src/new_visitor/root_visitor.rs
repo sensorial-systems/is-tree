@@ -76,7 +76,7 @@ where Value: HasPathSegment
 }
 
 impl<'a, Value> RootVisitor<Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a>, Value::PathSegment: Default
+where Value: HasPathSegment + KnowsRelativeAccessType<'a>, Value::PathSegment: Default
 {
     pub fn new(value: Value) -> Self {
         Self { value }
@@ -84,12 +84,12 @@ where Value: HasPathSegment + HasRelativeAccessType<'a>, Value::PathSegment: Def
 }
 
 impl<'a, Value> HasRelativeAccess<'a> for RootVisitor<Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a>,
+where Value: HasPathSegment + KnowsRelativeAccessType<'a>,
       Self: Into<Self::RelativeType> + HasPathSegment + HasRoot<'a>,
 
       Value::RelativeType:
       HasRelativeAccess<'a>
-    + HasRelativeAccessType<'a, RelativeType = Self::RelativeType>
+    + KnowsRelativeAccessType<'a, RelativeType = Self::RelativeType>
     + HasPathSegment<PathSegment = <Self as HasPathSegment>::PathSegment>
     + HasParent<'a>
     + HasRoot<'a, Root = <Self as HasRoot<'a>>::Root>,
@@ -127,8 +127,8 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Value> HasRelativeAccessType<'a> for RootVisitor<Value>
-where Value: HasPathSegment + HasRelativeAccessType<'a>
+impl<'a, Value> KnowsRelativeAccessType<'a> for RootVisitor<Value>
+where Value: HasPathSegment + KnowsRelativeAccessType<'a>
 {
     type RelativeType = Value::RelativeType;
 }

@@ -32,7 +32,7 @@ impl<'a, T: HasRootVisitor> KnowsVisitor<'a, T> for T {
 }
 
 impl<'a, T> HasVisitor<'a, T> for T
-where T: HasRootVisitor + HasPathSegment + HasRelativeAccessType<'a>,
+where T: HasRootVisitor + HasPathSegment + KnowsRelativeAccessType<'a>,
       T::PathSegment: Default
 {
     fn visit(self) -> Self::Visitor {
