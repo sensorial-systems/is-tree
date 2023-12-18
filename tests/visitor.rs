@@ -89,8 +89,90 @@ impl HasPathSegment for &Module {
     }
 }
 
+#[derive(Clone)]
+pub enum ModuleParentVisitor<'a> {
+    Library(LibraryVisitor<'a>),
+    Module(ModuleVisitor<'a>)
+}
+
+impl<'a> From<LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
+    fn from(visitor: LibraryVisitor<'a>) -> Self {
+        Self::Library(visitor)
+    }
+}
+
+// impl<'a> From<&'a ModuleParentVisitor<'a>> for ModuleParentVisitor<'a> {
+//     fn from(visitor: &'a ModuleParentVisitor<'a>) -> Self {
+//         visitor.clone()
+//     }
+// }
+
+impl<'a> From<ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
+    fn from(visitor: ModuleVisitor<'a>) -> Self {
+        Self::Module(visitor)
+    }
+}
+
+impl<'a> From<&'a ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
+    fn from(visitor: &'a ModuleVisitor<'a>) -> Self {
+        Self::Module(visitor.clone())
+    }
+}
+
+impl<'a> HasPath<String> for ModuleParentVisitor<'a> {
+    fn path(&self) -> Path<String> {
+        match self {
+            ModuleParentVisitor::Library(library) => library.path(),
+            ModuleParentVisitor::Module(module) => module.path()
+        }
+    }
+}
+
+impl<'a> HasPathSegment for ModuleParentVisitor<'a> {
+    type PathSegment = String;
+    fn path_segment(&self) -> &Self::PathSegment {
+        match self {
+            ModuleParentVisitor::Library(library) => library.path_segment(),
+            ModuleParentVisitor::Module(module) => module.path_segment()
+        }
+    }
+}
+
+impl<'a> HasRoot<'a> for ModuleParentVisitor<'a> {
+    type Root = LibraryVisitor<'a>;
+    fn root(self) -> Self::Root {
+        match self {
+            ModuleParentVisitor::Library(library) => library,
+            ModuleParentVisitor::Module(module) => module.parent().root()
+        }
+    }
+}
+
+impl<'a> HasRoot<'a> for &'a ModuleParentVisitor<'a> {
+    type Root = LibraryVisitor<'a>;
+    fn root(self) -> Self::Root {
+        match self {
+            ModuleParentVisitor::Library(library) => library.clone(),
+            ModuleParentVisitor::Module(module) => module.parent().root()
+        }
+    }
+}
+
+impl<'a> KnowsParent<'a> for &'a ModuleParentVisitor<'a> {
+    type Parent = ModuleParentVisitor<'a>;
+}
+
+impl<'a> HasParent<'a> for &'a ModuleParentVisitor<'a> {
+    fn parent(self) -> ModuleParentVisitor<'a> {
+        match self {
+            ModuleParentVisitor::Library(library) => ModuleParentVisitor::Library(library.clone()),
+            ModuleParentVisitor::Module(module) => module.parent().clone()
+        }
+    }
+}
+
 impl<'a> KnowsParentVisitor<'a> for &'a Module {
-    type ParentVisitor = LibraryVisitor<'a>;
+    type ParentVisitor = ModuleParentVisitor<'a>;
 }
 
 impl<'a> KnowsParentVisitor<'a> for &'a Library {
@@ -98,7 +180,7 @@ impl<'a> KnowsParentVisitor<'a> for &'a Library {
 }
 
 type LibraryVisitor<'a> = RootVisitor<&'a Library>;
-type ModuleVisitor<'a> = Visitor<LibraryVisitor<'a>, &'a Module>;
+type ModuleVisitor<'a> = Visitor<ModuleParentVisitor<'a>, &'a Module>;
 
 #[derive(EnumAsInner)]
 pub enum Visitors<'a> {
@@ -110,7 +192,17 @@ impl<'a> HasRoot<'a> for Visitors<'a> {
     type Root = LibraryVisitor<'a>;
     fn root(self) -> Self::Root {
         match self {
-            Visitors::Library(library) => library,
+            Visitors::Library(library) => library.clone(),
+            Visitors::Module(module) => module.parent().root()
+        }
+    }
+}
+
+impl<'a> HasRoot<'a> for &'a Visitors<'a> {
+    type Root = LibraryVisitor<'a>;
+    fn root(self) -> Self::Root {
+        match self {
+            Visitors::Library(library) => library.clone(),
             Visitors::Module(module) => module.parent().root()
         }
     }
@@ -120,7 +212,21 @@ impl<'a> KnowsRelativeAccessType<'a> for Visitors<'a> {
     type RelativeType = Visitors<'a>;
 }
 
-// impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
+impl<'a> KnowsRelativeAccessType<'a> for &'a Visitors<'a> {
+    type RelativeType = Visitors<'a>;
+}
+
+impl<'a> HasPathSegment for &'a Visitors<'a> {
+    type PathSegment = String;
+    fn path_segment(&self) -> &Self::PathSegment {
+        match self {
+            Visitors::Library(library) => library.path_segment(),
+            Visitors::Module(module) => module.path_segment()
+        }
+    }
+}
+
+// impl<'a> HasRelativeAccess<'a> for &'a Visitors<'a> {
 //     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
 //         where K: Into<<Self as HasPathSegment>::PathSegment>
 //     {
@@ -130,6 +236,25 @@ impl<'a> KnowsRelativeAccessType<'a> for Visitors<'a> {
 //         }
 //     }
 // }
+
+// impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
+//     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+//     where K: Into<<Self as HasPathSegment>::PathSegment> {
+//         match self {
+//             Visitors::Library(library) => library.relative(path),
+//             Visitors::Module(module) => module.relative(path)
+//         }
+//     }
+// }
+
+impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
+    fn from(visitor: ModuleParentVisitor<'a>) -> Self {
+        match visitor {
+            ModuleParentVisitor::Library(library) => Self::Library(library),
+            ModuleParentVisitor::Module(module) => Self::Module(module)
+        }
+    }
+}
 
 impl<'a> KnowsParent<'a> for Visitors<'a> {
     type Parent = Visitors<'a>;
@@ -199,31 +324,31 @@ fn new_visitor() {
     };
     let a = &library;
     let b = &a.root_module;
-    // let c = &b.children[0];
-    // let d = &c.children[0];
+    let c = &b.children[0];
+    let d = &c.children[0];
     let a: LibraryVisitor = a.visit();
     let b: ModuleVisitor = a.visit(b);
-    // let c: ModuleVisitor = b.visit(c);
-    // let d: ModuleVisitor = c.visit(d);
+    let c: ModuleVisitor = b.visit(c);
+    let d: ModuleVisitor = c.visit(d);
 
     assert_eq!(a.path().to_string(), "a");
     assert_eq!(b.path().to_string(), "a::b");
-    // assert_eq!(c.path().to_string(), "a::b::c");
-    // assert_eq!(d.path().to_string(), "a::b::c::d");
+    assert_eq!(c.path().to_string(), "a::b::c");
+    assert_eq!(d.path().to_string(), "a::b::c::d");
 
     assert_eq!(*a.parent().path_segment(), "a"); // Root's parent is itself. Will it create any kind of problem?
     assert_eq!(*b.parent().path_segment(), "a");
-    // assert_eq!(*c.parent().path_segment(), "b");
-    // assert_eq!(*d.parent().path_segment(), "c");
-    // assert_eq!(*c.parent().parent().path_segment(), "a");
-    // assert_eq!(*d.parent().parent().parent().path_segment(), "a");
+    assert_eq!(*c.parent().path_segment(), "b");
+    assert_eq!(*d.parent().path_segment(), "c");
+    assert_eq!(*c.parent().parent().path_segment(), "a");
+    assert_eq!(*d.parent().parent().parent().path_segment(), "a");
 
     assert_eq!(*a.root().path_segment(), "a");
     assert_eq!(*b.root().path_segment(), "a");
-    // assert_eq!(*c.root().path_segment(), "a");
-    // assert_eq!(*d.root().path_segment(), "a");
+    assert_eq!(*c.root().path_segment(), "a");
+    assert_eq!(*d.root().path_segment(), "a");
 
-    // assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
+    assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
 
     // assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     // assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");

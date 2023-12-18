@@ -17,7 +17,6 @@ pub struct Visitor<Parent, Value> {
     internal: Rc<Internal<Parent, Value>>
 }
 
-
 impl<'a, Parent, Value> IsVisitor<'a, Value> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment
 {
@@ -57,11 +56,11 @@ where Value: HasPathSegment + KnowsRelativeAccessType<'a>
 
 impl<'a, Value> HasRoot<'a> for &'a Visitor<Value::ParentVisitor, Value>
 where Value: HasPathSegment + KnowsParentVisitor<'a>,
-      Value::ParentVisitor: HasRoot<'a> + Copy
+      Value::ParentVisitor: HasRoot<'a> + Clone
 {
     type Root = <Value::ParentVisitor as HasRoot<'a>>::Root;
     fn root(self) -> Self::Root {
-        self.internal.parent.root()
+        self.internal.parent.clone().root()
     }
 }
 
@@ -73,13 +72,13 @@ where Value: HasPathSegment + KnowsGetType<'a>,
 }
 
 impl<'a, Parent, Value> HasGet<'a> for &'a Visitor<Parent, Value>
-where Value: Copy + HasPathSegment + HasGet<'a>,
+where Value: Clone + HasPathSegment + HasGet<'a>,
       Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
       Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as HasPathSegment>::PathSegment> {
-        self.internal.value.get(key).map(|value| self.visit(value))
+        self.internal.value.clone().get(key).map(|value| self.visit(value))
     }
 }
 
@@ -105,10 +104,10 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
 
 impl<'a, Parent, Value> HasParent<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment,
-      Parent: Copy
+      Parent: Clone
 {
     fn parent(self) -> Parent {
-        self.internal.parent
+        self.internal.parent.clone()
     }
 }
 
@@ -153,7 +152,7 @@ where Value: HasPathSegment,
 
 impl<'a, Parent, Value> HasRelativeAccess<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment + KnowsRelativeAccessType<'a> + KnowsParentVisitor<'a, ParentVisitor = Parent>,
-      Parent: Copy + Into<Self::RelativeType>,
+      Parent: Clone + Into<Self::RelativeType>,
       Self: Into<Self::RelativeType> + HasPathSegment + HasRoot<'a>,
       <Self as HasRoot<'a>>::Root: Into<Self::RelativeType>,
       Parent: HasRoot<'a>,
@@ -174,9 +173,9 @@ where Value: HasPathSegment + KnowsRelativeAccessType<'a> + KnowsParentVisitor<'
             if let Some(segment) = path.next() {
                 let segment = segment.into();
                 match segment.kind() {
-                    PathSegment::Root => Some(self.root().into()),
-                    PathSegment::Self_ => self.relative(path),
-                    PathSegment::Super => self.parent().into().relative(path),
+                    // PathSegment::Root => Some(self.root().into()),
+                    // PathSegment::Self_ => self.relative(path),
+                    // PathSegment::Super => self.parent().into().relative(path),
                     _ => todo!("Not implemented yet")
                     // Identifier::Super => self
                     //     .parent
