@@ -17,7 +17,7 @@ pub struct Visitor<Parent, Value> {
     internal: Rc<Internal<Parent, Value>>
 }
 
-impl<'a, Parent, Value> IsVisitor<'a, Value> for Visitor<Parent, Value>
+impl<'a, Parent, Value> IsVisitor<'a, Value> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment
 {
     fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
@@ -28,7 +28,6 @@ where Value: HasPathSegment
         Visitor::new_with_parent(self.into(), value)
     }
 }
-
 
 impl<'a, Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment
@@ -46,7 +45,7 @@ where Value: HasPathSegment + KnowsRelativeAccessType<'a>
 }
 
 
-impl<'a, Value> HasRoot<'a> for Visitor<Value::ParentVisitor, Value>
+impl<'a, Value> HasRoot<'a> for &'a Visitor<Value::ParentVisitor, Value>
 where Value: HasPathSegment + KnowsParentVisitor<'a>,
       Value::ParentVisitor: HasRoot<'a> + Clone
 {
@@ -56,14 +55,14 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
     }
 }
 
-impl<'a, Parent, Value> KnowsGetType<'a> for Visitor<Parent, Value>
+impl<'a, Parent, Value> KnowsGetType<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment + KnowsGetType<'a>,
       Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>
 {
     type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
 }
 
-impl<'a, Parent, Value> HasGet<'a> for Visitor<Parent, Value>
+impl<'a, Parent, Value> HasGet<'a> for &'a Visitor<Parent, Value>
 where Value: Clone + HasPathSegment + HasGet<'a>,
       Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
       Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
@@ -78,7 +77,7 @@ where Value: Clone + HasPathSegment + HasGet<'a>,
 // Visitor knows parent
 //
 
-impl<'a, Parent, Value> KnowsParent<'a> for Visitor<Parent, Value>
+impl<'a, Parent, Value> KnowsParent<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment,
 {
     type Parent = Parent;
@@ -94,7 +93,7 @@ where Value: HasPathSegment + KnowsParentVisitor<'a>,
     type ParentVisitor = Value::ParentVisitor;
 }
 
-impl<'a, Parent, Value> HasParent<'a> for Visitor<Parent, Value>
+impl<'a, Parent, Value> HasParent<'a> for &'a Visitor<Parent, Value>
 where Value: HasPathSegment,
       Parent: Clone
 {
