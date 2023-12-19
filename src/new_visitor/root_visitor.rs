@@ -1,30 +1,28 @@
 use super::*;
 
 #[derive(Clone, Copy, Default)]
-pub struct RootVisitor<Value>
-where Value: HasPathSegment
-{
+pub struct RootVisitor<Value> {
     pub value: Value
 }
 
 impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
-where Value: HasPathSegment + KnowsGetType<'a>,
-      Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+where Value: KnowsPathSegment + KnowsGetType<'a>,
+      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
 {
     type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
 }
 
 impl<'a, Value> KnowsParentVisitor<'a> for RootVisitor<Value>
-where Value: HasPathSegment + KnowsParentVisitor<'a>
+where Value: KnowsPathSegment + KnowsParentVisitor<'a>
 {
     type ParentVisitor = Value::ParentVisitor;
 }
 
 impl<'a, Value> IsVisitor<'a, Value> for RootVisitor<Value>
-where Value: HasPathSegment
+where Value: KnowsPathSegment
 {
     fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
+    where Child: KnowsPathSegment<PathSegment = Value::PathSegment>,
           Child: KnowsParentVisitor<'a>,
           Self: Into<Child::ParentVisitor>
     {
@@ -33,72 +31,62 @@ where Value: HasPathSegment
 }
 
 impl<'a, Value> HasGet<'a> for RootVisitor<Value>
-where Value: Copy + HasPathSegment + HasGet<'a>,
-      Value::GetType: HasPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+where Value: Copy + KnowsPathSegment + HasGet<'a>,
+      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
       Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
-    where K: Into<<Self::GetType as HasPathSegment>::PathSegment> {
+    where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
         self.value.get(key).map(|value| self.visit(value))
     }
 }
 
-impl<'a, Value> HasRoot<'a> for RootVisitor<Value>
-where Value: HasPathSegment
-{
+impl<'a, Value> HasRoot<'a> for RootVisitor<Value> {
     type Root = Self;
     fn root(self) -> Self {
         self
     }
 }
 
-impl<'a, Value> HasRoot<'a> for &'a RootVisitor<Value>
-where Value: HasPathSegment
-{
+impl<'a, Value> HasRoot<'a> for &'a RootVisitor<Value> {
     type Root = Self;
     fn root(self) -> Self {
         self
     }
 }
 
-impl<'a, Value> KnowsParent<'a> for RootVisitor<Value>
-where Value: HasPathSegment
-{
+impl<'a, Value> KnowsParent<'a> for RootVisitor<Value> {
     type Parent = Self;
 }
 
-impl<'a, Value> HasParent<'a> for RootVisitor<Value>
-where Value: HasPathSegment
-{
+impl<'a, Value> HasParent<'a> for RootVisitor<Value> {
     fn parent(self) -> Self {
         self
     }
 }
 
-impl<'a, Value> RootVisitor<Value>
-where Value: HasPathSegment + KnowsRelativeAccessType<'a>, Value::PathSegment: Default
-{
+impl<'a, Value> RootVisitor<Value> {
     pub fn new(value: Value) -> Self {
         Self { value }
     }
 }
 
 impl<'a, Value> HasRelativeAccess<'a> for RootVisitor<Value>
-where Value: HasPathSegment + KnowsRelativeAccessType<'a>,
-      Self: Into<Self::RelativeType> + HasPathSegment + HasRoot<'a> + HasGet<'a>,
+where Value: KnowsPathSegment + KnowsRelativeAccessType<'a>,
+      Self: Into<Self::RelativeType> + KnowsPathSegment + HasRoot<'a> + HasGet<'a>,
       <Self as KnowsGetType<'a>>::GetType:
         Into<Self::RelativeType>
-        + HasPathSegment<PathSegment = Self::PathSegment>,
+        + KnowsPathSegment<PathSegment = Self::PathSegment>,
       Value::RelativeType:
         HasRelativeAccess<'a>
       + KnowsRelativeAccessType<'a, RelativeType = Self::RelativeType>
-      + HasPathSegment<PathSegment = <Self as HasPathSegment>::PathSegment>
+      + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>
       + HasParent<'a>
       + HasRoot<'a, Root = <Self as HasRoot<'a>>::Root>,
     <Value::RelativeType as KnowsParent<'a>>::Parent: Into<Self::RelativeType>
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
-        where K: Into<<Self as HasPathSegment>::PathSegment>,
+        where K: Into<<Self as KnowsPathSegment>::PathSegment>,
     {
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {
@@ -114,17 +102,22 @@ where Value: HasPathSegment + KnowsRelativeAccessType<'a>,
 }
 }
 
+impl<'a, Value> KnowsPathSegment for RootVisitor<Value>
+where Value: KnowsPathSegment
+{
+    type PathSegment = Value::PathSegment;
+}
+
 impl<'a, Value> HasPathSegment for RootVisitor<Value>
 where Value: HasPathSegment
 {
-    type PathSegment = Value::PathSegment;
     fn path_segment(&self) -> &Self::PathSegment {
         self.value.path_segment()
     }
 }
 
 impl<'a, Value> KnowsRelativeAccessType<'a> for RootVisitor<Value>
-where Value: HasPathSegment + KnowsRelativeAccessType<'a>
+where Value: KnowsRelativeAccessType<'a>
 {
     type RelativeType = Value::RelativeType;
 }

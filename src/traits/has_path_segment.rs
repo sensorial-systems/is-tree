@@ -10,9 +10,11 @@ impl<PathSegment> HasPath<PathSegment> for () {
     }
 }
 
-pub trait HasPathSegment {
+pub trait KnowsPathSegment {
     type PathSegment: IsPathSegment;
+}
 
+pub trait HasPathSegment: KnowsPathSegment {
     fn path_segment(&self) -> &Self::PathSegment;
 
     fn is(&self, identifier: impl PartialEq<Self::PathSegment>) -> bool {
@@ -21,22 +23,31 @@ pub trait HasPathSegment {
 
 }
 
-impl HasPathSegment for String {
+impl KnowsPathSegment for String {
     type PathSegment = Self;
+}
+
+impl HasPathSegment for String {
     fn path_segment(&self) -> &Self::PathSegment {
         self
     }
 }
 
-impl HasPathSegment for () {
+impl KnowsPathSegment for () {
     type PathSegment = ();
+}
+
+impl KnowsPathSegment for &() {
+    type PathSegment = ();
+}
+
+impl HasPathSegment for () {
     fn path_segment(&self) -> &Self::PathSegment {
         self
     }
 }
 
 impl HasPathSegment for &() {
-    type PathSegment = ();
     fn path_segment(&self) -> &Self::PathSegment {
         self
     }

@@ -1,30 +1,30 @@
-use crate::{new_visitor::{RootVisitor, Visitor}, HasPathSegment, KnowsParentVisitor};
+use crate::{new_visitor::{RootVisitor, Visitor}, KnowsPathSegment, KnowsParentVisitor};
 
 use crate::traits::*;
 
 pub trait IsVisitor<'a, Value>
-where Value: HasPathSegment
+where Value: KnowsPathSegment
 {
     fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
-    where Child: HasPathSegment<PathSegment = Value::PathSegment>,
+    where Child: KnowsPathSegment<PathSegment = Value::PathSegment>,
           Child: KnowsParentVisitor<'a>,
           Self: Into<Child::ParentVisitor>;
 }
 
 pub trait KnowsVisitor<'a, Value>
-where Value: HasPathSegment
+where Value: KnowsPathSegment
 {
     type Visitor: IsVisitor<'a, Value>;
 }
 
 pub trait HasVisitor<'a, Value>: KnowsVisitor<'a, Value>
-where Value: HasPathSegment
+where Value: KnowsPathSegment
 {
     fn visit(self) -> Self::Visitor;
 }
 
 pub trait HasRootVisitor
-where Self: Sized + HasPathSegment
+where Self: Sized + KnowsPathSegment
 {}
 
 impl<'a, T: HasRootVisitor> KnowsVisitor<'a, T> for T {
@@ -32,7 +32,7 @@ impl<'a, T: HasRootVisitor> KnowsVisitor<'a, T> for T {
 }
 
 impl<'a, T> HasVisitor<'a, T> for T
-where T: HasRootVisitor + HasPathSegment + KnowsRelativeAccessType<'a>,
+where T: HasRootVisitor + KnowsPathSegment + KnowsRelativeAccessType<'a>,
       T::PathSegment: Default
 {
     fn visit(self) -> Self::Visitor {

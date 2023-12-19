@@ -21,7 +21,7 @@ impl<'a> KnowsGetType<'a> for &'a Library {
 
 impl<'a> HasGet<'a> for &'a Library {
     fn get<K>(self, key: K) -> Option<Self::GetType>
-    where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
+    where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
         if &key.into() == self.root_module.path_segment() {
             Some(&self.root_module)
@@ -37,15 +37,18 @@ impl<'a> KnowsGetType<'a> for &'a Module {
 
 impl<'a> HasGet<'a> for &'a Module {
     fn get<K>(self, key: K) -> Option<Self::GetType>
-        where K: Into<<Self::GetType as HasPathSegment>::PathSegment>
+        where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
         let key = key.into();
         self.children.iter().find(|child| &key == child.path_segment())
     }
 }
 
-impl HasPathSegment for Library {
+impl KnowsPathSegment for Library {
     type PathSegment = String;
+}
+
+impl HasPathSegment for Library {
     fn path_segment(&self) -> &Self::PathSegment {
         &self.name
     }
@@ -63,8 +66,11 @@ impl<'a> KnowsRelativeAccessType<'a> for &'a Library {
     type RelativeType = Visitors<'a>;
 }
 
-impl HasPathSegment for &Library {
+impl KnowsPathSegment for &Library {
     type PathSegment = String;
+}
+
+impl HasPathSegment for &Library {
     fn path_segment(&self) -> &Self::PathSegment {
         &self.name
     }
@@ -75,15 +81,21 @@ pub struct Module {
     children: Vec<Module>
 }
 
-impl HasPathSegment for Module {
+impl KnowsPathSegment for Module {
     type PathSegment = String;
+}
+
+impl HasPathSegment for Module {
     fn path_segment(&self) -> &Self::PathSegment {
         &self.name
     }
 }
 
-impl HasPathSegment for &Module {
+impl KnowsPathSegment for &Module {
     type PathSegment = String;
+}
+
+impl HasPathSegment for &Module {
     fn path_segment(&self) -> &Self::PathSegment {
         &self.name
     }
@@ -128,8 +140,11 @@ impl<'a> HasPath<String> for ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> HasPathSegment for ModuleParentVisitor<'a> {
+impl<'a> KnowsPathSegment for ModuleParentVisitor<'a> {
     type PathSegment = String;
+}
+
+impl<'a> HasPathSegment for ModuleParentVisitor<'a> {
     fn path_segment(&self) -> &Self::PathSegment {
         match self {
             ModuleParentVisitor::Library(library) => library.path_segment(),
@@ -216,8 +231,11 @@ impl<'a> KnowsRelativeAccessType<'a> for &'a Visitors<'a> {
     type RelativeType = Visitors<'a>;
 }
 
-impl<'a> HasPathSegment for &'a Visitors<'a> {
+impl<'a> KnowsPathSegment for &'a Visitors<'a> {
     type PathSegment = String;
+}
+
+impl<'a> HasPathSegment for &'a Visitors<'a> {
     fn path_segment(&self) -> &Self::PathSegment {
         match self {
             Visitors::Library(library) => library.path_segment(),
@@ -269,8 +287,11 @@ impl<'a> HasParent<'a> for Visitors<'a> {
     }
 }
 
-impl<'a> HasPathSegment for Visitors<'a> {
+impl<'a> KnowsPathSegment for Visitors<'a> {
     type PathSegment = String;
+}
+
+impl<'a> HasPathSegment for Visitors<'a> {
     fn path_segment(&self) -> &Self::PathSegment {
         match self {
             Visitors::Library(visitor) => visitor.path_segment(),

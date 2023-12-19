@@ -70,8 +70,11 @@ impl<S: Into<PathSegment>> From<S> for Module {
     }
 }
 
-impl HasPathSegment for Module {
+impl KnowsPathSegment for Module {
     type PathSegment = PathSegment;
+}
+
+impl HasPathSegment for Module {
     fn path_segment(&self) -> &Self::PathSegment {
         &self.identifier
     }
