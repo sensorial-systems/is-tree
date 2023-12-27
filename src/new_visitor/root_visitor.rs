@@ -94,11 +94,11 @@ where
     Value: KnowsRelativeAccessType<'a> + KnowsPathSegment + 'a,
     Self: Into<Self::RelativeType> + HasRoot<'a>,
 
-    RootVisitor<Value>: Into<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
-    Visitor<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor, <Self as KnowsGetType<'a>>::GetType>: Into<Self::RelativeType>,
+    // RootVisitor<Value>: Into<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
+    // Visitor<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor, <Self as KnowsGetType<'a>>::GetType>: Into<Self::RelativeType>,
 
-    Self: HasGet<'a>,
-    <Self as KnowsGetType<'a>>::GetType: KnowsParentVisitor<'a> + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment> + KnowsRelativeAccessType<'a, RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType> + 'a,
+    // Self: HasGet<'a>,
+    // <Self as KnowsGetType<'a>>::GetType: KnowsParentVisitor<'a> + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment> + KnowsRelativeAccessType<'a, RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType> + 'a,
 
     &'a Self::RelativeType:
         HasRelativeAccess<'a,
@@ -117,14 +117,15 @@ where
             match segment.kind() {
                 PathSegment::Root => Some(self.into()),
                 PathSegment::Self_ | PathSegment::Super => self.relative(path),
-                PathSegment::Other(_segment) => self
-                    .get(segment)
-                    .and_then(|value| {
-                        let myself = self.clone();
-                        // let visitor = myself.visit(value);
-                        // visitor.into().relative(path)
-                        todo!("Hahaha")
-                    }),
+                // PathSegment::Other(_segment) => self
+                //     .get(segment)
+                //     .and_then(|value| {
+                //         let myself = self.clone();
+                //         // let visitor = myself.visit(value);
+                //         // visitor.into().relative(path)
+                //         todo!("Hahaha")
+                //     }),
+                _ => todo!("relative access")
             }
         } else {
             Some(self.into())
