@@ -181,10 +181,10 @@ where
     &'a Parent: HasRoot<'a, Root = <Self as KnowsRoot<'a>>::Root>,
     &'a Value::RelativeType: HasRoot<'a, Root = <Self as KnowsRoot<'a>>::Root>,
 
+    <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
     // Self: HasGet<'a>,
     // <Self as KnowsGetType<'a>>::GetType: Into<Self::RelativeType>,
     // &'a Value::RelativeType: HasGet<'a>,
-
     &'a Value::RelativeType:
       HasRelativeAccess<'a>
     + KnowsRelativeAccessType<'a, RelativeType = Self::RelativeType>
@@ -200,7 +200,12 @@ where
                 match segment.kind() {
                     PathSegment::Root => Some(self.root().into()),
                     PathSegment::Self_ => self.relative(path),
-                    // PathSegment::Super => self.parent().into().relative(path),
+                    PathSegment::Super => {
+                        // FIXME: This is a hack.
+                        let parent = self.parent();
+                        let parent = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&parent) };
+                        parent.relative(path)
+                    },
                     _ => todo!("relative access")
                     // PathSegment::Other(_segment) => self.get(segment).and_then(|value| value.into().relative(path))
                 }

@@ -106,7 +106,7 @@ where
             PathSegment = <Self as KnowsPathSegment>::PathSegment
         >
         + HasParent<'a>
-        + HasRoot<'a, Root = <Self as KnowsRoot<'a>>::Root>,
+        + HasRoot<'a>,
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as KnowsPathSegment>::PathSegment>,
