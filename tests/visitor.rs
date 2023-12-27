@@ -119,6 +119,12 @@ impl<'a> From<LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
 //     }
 // }
 
+impl<'a> From<&'a LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
+    fn from(visitor: &'a LibraryVisitor<'a>) -> Self {
+        Self::Library(visitor.clone())
+    }
+}
+
 impl<'a> From<ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
     fn from(visitor: ModuleVisitor<'a>) -> Self {
         Self::Module(visitor)
@@ -379,12 +385,14 @@ fn new_visitor() {
     assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative(vec!["b"]).unwrap().as_module().unwrap().path_segment(), "b");
+    assert_eq!(*a.relative(vec!["b"]).unwrap().as_module().unwrap().path_segment(), "b");
     
     assert_eq!(*b.relative(vec!["self"]).unwrap().as_module() .unwrap().path_segment(), "b");
     assert_eq!(*b.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*b.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*b.relative(vec!["c"]).unwrap().as_module() .unwrap().path_segment(), "c");
+    assert_eq!(*b.relative(vec!["c"]).unwrap().as_module() .unwrap().path_segment(), "c");
     assert_eq!(*c.relative(vec!["super", "super"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative(vec!["b", "c"]).unwrap().as_module().unwrap().path_segment(), "c");
+    assert_eq!(*a.relative(vec!["b", "c"]).unwrap().as_module().unwrap().path_segment(), "c");
+
+    assert_eq!(*c.relative(vec!["root", "b", "super", "b", "c", "super", "self"]).unwrap().as_module().unwrap().path_segment(), "b");
 }

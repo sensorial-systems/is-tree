@@ -181,10 +181,14 @@ where
     &'a Parent: HasRoot<'a, Root = <Self as KnowsRoot<'a>>::Root>,
     &'a Value::RelativeType: HasRoot<'a, Root = <Self as KnowsRoot<'a>>::Root>,
 
+    Self: HasGet<'a>,
+    <Self as KnowsGetType<'a>>::GetType:
+        KnowsParentVisitor<'a>
+        + Into<Self::RelativeType>
+        + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
+    Self: Into<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
+
     <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
-    // Self: HasGet<'a>,
-    // <Self as KnowsGetType<'a>>::GetType: Into<Self::RelativeType>,
-    // &'a Value::RelativeType: HasGet<'a>,
     &'a Value::RelativeType:
       HasRelativeAccess<'a>
     + KnowsRelativeAccessType<'a, RelativeType = Self::RelativeType>
@@ -198,16 +202,27 @@ where
             if let Some(segment) = path.next() {
                 let segment = segment.into();
                 match segment.kind() {
-                    PathSegment::Root => Some(self.root().into()),
                     PathSegment::Self_ => self.relative(path),
+                    PathSegment::Root => {
+                        // FIXME: This is a hack.
+                        let root = self.root();
+                        let root = root.into();
+                        let root = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&root) };
+                        root.relative(path)
+                    },
                     PathSegment::Super => {
                         // FIXME: This is a hack.
                         let parent = self.parent();
+                        let parent = parent.into();
                         let parent = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&parent) };
                         parent.relative(path)
                     },
-                    _ => todo!("relative access")
-                    // PathSegment::Other(_segment) => self.get(segment).and_then(|value| value.into().relative(path))
+                    PathSegment::Other(_segment) => self.get(segment).and_then(|value| {
+                        // FIXME: This is a hack.
+                        let visitor = value.into();
+                        let visitor = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&visitor) };
+                        visitor.relative(path)
+                    })
                 }
             } else {
                 Some(self.into())

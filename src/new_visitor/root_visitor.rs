@@ -8,6 +8,7 @@ pub struct RootVisitor<Value> {
 impl<'a, Value> KnowsParentVisitor<'a> for RootVisitor<Value>
 where Value: KnowsPathSegment + KnowsParentVisitor<'a>
 {
+    // TODO: Change it to = Self?
     type ParentVisitor = Value::ParentVisitor;
 }
 
@@ -37,7 +38,7 @@ where Value: Copy + KnowsPathSegment + HasGet<'a>,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
-        self.value.get(key).map(|value| Visitor::new_with_parent(self.into(), value))
+        self.value.get(key).map(|value| self.visit(value))
     }
 }
 
@@ -49,13 +50,13 @@ where Value: KnowsPathSegment + KnowsGetType<'a>,
 }
 
 impl<'a, Value> HasGet<'a> for &'a RootVisitor<Value>
-where Value: Copy + KnowsPathSegment + HasGet<'a>,
+where Value: Clone + Copy + KnowsPathSegment + HasGet<'a>,
       Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
-      Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
+      RootVisitor<Value>: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
-        self.value.get(key).map(|value| Visitor::new_with_parent(self.into(), value))
+        self.value.get(key).map(|value| (*self).clone().visit(value))
     }
 }
 
@@ -91,14 +92,18 @@ impl<'a, Value> RootVisitor<Value> {
 
 impl<'a, Value> HasRelativeAccess<'a> for &'a RootVisitor<Value>
 where
-    Value: KnowsRelativeAccessType<'a> + KnowsPathSegment + 'a,
+    Value: Copy + KnowsPathSegment + HasGet<'a>,
+      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+      Self: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
+    Value: KnowsRelativeAccessType<'a> + KnowsPathSegment + Clone + Copy + 'a,
     Self: Into<Self::RelativeType> + HasRoot<'a>,
 
-    // RootVisitor<Value>: Into<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
-    // Visitor<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor, <Self as KnowsGetType<'a>>::GetType>: Into<Self::RelativeType>,
-
-    // Self: HasGet<'a>,
-    // <Self as KnowsGetType<'a>>::GetType: KnowsParentVisitor<'a> + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment> + KnowsRelativeAccessType<'a, RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType> + 'a,
+    Self: HasGet<'a>,
+    <Self as KnowsGetType<'a>>::GetType:
+        KnowsParentVisitor<'a>
+        + Into<Self::RelativeType>
+        + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
+    RootVisitor<Value>: Into<<<Self as KnowsGetType<'a>>::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
 
     &'a Self::RelativeType:
         HasRelativeAccess<'a,
@@ -115,17 +120,16 @@ where
         if let Some(segment) = path.next() {
             let segment = segment.into();
             match segment.kind() {
-                PathSegment::Root => Some(self.into()),
+                PathSegment::Root => self.relative(path),
                 PathSegment::Self_ | PathSegment::Super => self.relative(path),
-                // PathSegment::Other(_segment) => self
-                //     .get(segment)
-                //     .and_then(|value| {
-                //         let myself = self.clone();
-                //         // let visitor = myself.visit(value);
-                //         // visitor.into().relative(path)
-                //         todo!("Hahaha")
-                //     }),
-                _ => todo!("relative access")
+                PathSegment::Other(_segment) => 
+                    self
+                        .get(segment)
+                        .and_then(|value| {
+                            let visitor = value.into();
+                            let visitor = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&visitor) };
+                            visitor.relative(path)
+                        }),
             }
         } else {
             Some(self.into())
