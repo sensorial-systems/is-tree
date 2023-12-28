@@ -201,29 +201,15 @@ where
             let mut path = path.into_iter();
             if let Some(segment) = path.next() {
                 let segment = segment.into();
-                match segment.kind() {
-                    PathSegment::Self_ => self.relative(path),
-                    PathSegment::Root => {
-                        // FIXME: This is a hack.
-                        let root = self.root();
-                        let root = root.into();
-                        let root = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&root) };
-                        root.relative(path)
-                    },
-                    PathSegment::Super => {
-                        // FIXME: This is a hack.
-                        let parent = self.parent();
-                        let parent = parent.into();
-                        let parent = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&parent) };
-                        parent.relative(path)
-                    },
-                    PathSegment::Other(_segment) => self.get(segment).and_then(|value| {
-                        // FIXME: This is a hack.
-                        let visitor = value.into();
-                        let visitor = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&visitor) };
-                        visitor.relative(path)
-                    })
-                }
+                let visitor = match segment.kind() {
+                    PathSegment::Self_ => self.into(),
+                    PathSegment::Root => self.root().into(),
+                    PathSegment::Super => self.parent().into(),
+                    PathSegment::Other(_) => self.get(segment)?.into()
+                };
+                // FIXME: This is a hack.
+                let visitor = unsafe { std::mem::transmute::<_, &'a Value::RelativeType>(&visitor) };
+                visitor.relative(path)
             } else {
                 Some(self.into())
             }    

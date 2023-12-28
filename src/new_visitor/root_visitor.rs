@@ -8,8 +8,7 @@ pub struct RootVisitor<Value> {
 impl<'a, Value> KnowsParentVisitor<'a> for RootVisitor<Value>
 where Value: KnowsPathSegment + KnowsParentVisitor<'a>
 {
-    // TODO: Change it to = Self?
-    type ParentVisitor = Value::ParentVisitor;
+    type ParentVisitor = Self;
 }
 
 impl<'a, Value> IsVisitor<'a, Value> for RootVisitor<Value>
@@ -120,12 +119,12 @@ where
         if let Some(segment) = path.next() {
             let segment = segment.into();
             match segment.kind() {
-                PathSegment::Root => self.relative(path),
-                PathSegment::Self_ | PathSegment::Super => self.relative(path),
+                PathSegment::Root | PathSegment::Self_ | PathSegment::Super => self.relative(path),
                 PathSegment::Other(_segment) => 
                     self
                         .get(segment)
                         .and_then(|value| {
+                            // FIXME: This is a hack.
                             let visitor = value.into();
                             let visitor = unsafe { std::mem::transmute::<_, &'a Self::RelativeType>(&visitor) };
                             visitor.relative(path)
@@ -163,12 +162,6 @@ where Value: HasPathSegment
     fn path_segment(&self) -> &Self::PathSegment {
         self.value.path_segment()
     }
-}
-
-impl<'a, Value> KnowsRelativeAccessType<'a> for RootVisitor<Value>
-where Value: KnowsRelativeAccessType<'a>
-{
-    type RelativeType = Value::RelativeType;
 }
 
 impl<'a, Value> KnowsRelativeAccessType<'a> for &'a RootVisitor<Value>

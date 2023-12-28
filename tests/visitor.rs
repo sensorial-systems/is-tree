@@ -6,8 +6,6 @@ use ::is_tree::has_get::{KnowsGetType, HasGet};
 use ::is_tree::knows_parent::KnowsParent;
 use ::is_tree::new_visitor::{Visitor, RootVisitor};
 
-// use ::is_tree::traits::*;
-
 pub struct Library {
     name: String,
     root_module: Module
@@ -112,12 +110,6 @@ impl<'a> From<LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
         Self::Library(visitor)
     }
 }
-
-// impl<'a> From<&'a ModuleParentVisitor<'a>> for ModuleParentVisitor<'a> {
-//     fn from(visitor: &'a ModuleParentVisitor<'a>) -> Self {
-//         visitor.clone()
-//     }
-// }
 
 impl<'a> From<&'a LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
     fn from(visitor: &'a LibraryVisitor<'a>) -> Self {
