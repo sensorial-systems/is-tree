@@ -1,38 +1,29 @@
-use std::rc::Rc;
-
-use crate::{HasPathSegment, Visitor, IsTree};
-
-pub struct TreeVisitor<'a, Value>
-where Value: HasPathSegment,
-{
-    stack: Vec<Rc<Visitor<'a, Value>>>,
+pub struct TreeVisitor<Visitor> {
+    stack: Vec<Visitor>,
 }
 
-impl<'a, Value> TreeVisitor<'a, Value>
-where
-    Value: HasPathSegment + IsTree,
+impl<Visitor> TreeVisitor<Visitor>
+where Visitor: Clone
 {
-    pub fn new(root: &'a Value) -> Self {
-        let visitor = Visitor::new(root, Default::default(), Default::default());
+    pub fn new<Value: Into<Visitor>>(root: Value) -> Self {
         let stack = Vec::new();
         let mut iterator = Self { stack };
-        iterator.build(visitor);
+        iterator.build(root);
         iterator
     }
 
-    fn build(&mut self, visitor: Rc<Visitor<'a, Value>>) {
+    fn build<Value: Into<Visitor>>(&mut self, visitor: Value) {
+        let visitor = visitor.into();
         self.stack.push(visitor.clone());
-        for child in visitor.value.branches() {
-            let visitor = visitor.child(child);
-            self.build(visitor);
-        }
+        // for child in visitor.branches() {
+        //     let visitor = visitor.child(child);
+        //     self.build(visitor);
+        // }
     }
 }
 
-impl<'a, Value> Iterator for TreeVisitor<'a, Value>
-where Value: HasPathSegment
-{
-    type Item = Rc<Visitor<'a, Value>>;
+impl<Visitor> Iterator for TreeVisitor<Visitor> {
+    type Item = Visitor;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.stack.pop()
