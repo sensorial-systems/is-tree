@@ -1,10 +1,4 @@
-pub mod tree_update;
-pub mod has_branches;
-
-pub use tree_update::*;
-pub use has_branches::*;
-
-use crate::{HasPathSegment, TreeVisitor};
+use crate::{HasPathSegment, TreeVisitor, TreeUpdate, HasBranches};
 
 pub trait IsTree<'a>: HasPathSegment + TreeUpdate<Self> + HasBranches<'a, Self> + Sized{
     fn iter(&self) -> TreeVisitor<&Self>

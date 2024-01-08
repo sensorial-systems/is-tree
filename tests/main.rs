@@ -10,7 +10,7 @@ pub struct Module {
     children: HashMap<PathSegment, Module>
 }
 
-use std::{collections::HashMap, vec, borrow::{Borrow, BorrowMut}};
+use std::{collections::HashMap, vec};
 
 impl TreeUpdate<Module> for Module {
     fn add_branch(&mut self, child: impl Into<Self>) -> &mut Self

@@ -12,7 +12,11 @@ pub mod has_relative_access;
 
 pub mod is_path_segment;
 pub mod is_tree;
+pub mod tree_update;
+pub mod has_branches;
 
+pub use has_branches::*;
+pub use tree_update::*;
 pub use knows_parent::*;
 pub use knows_parent_visitor::*;
 pub use has_parent::*;
