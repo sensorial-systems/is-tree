@@ -7,7 +7,7 @@ pub struct TreeIterator<'a, Value> {
 
 impl<'a, Value> TreeIterator<'a, Value>
 where
-    Value: IsTree,
+    Value: IsTree<'a>,
 {
     pub fn new(root: &'a Value) -> Self {
         let stack = Vec::new();
@@ -39,7 +39,7 @@ pub struct TreeIteratorMut<'a, Value> {
 
 impl<'a, Value> TreeIteratorMut<'a, Value>
 where
-    Value: IsTree,
+    Value: IsTree<'a>,
 {
     pub fn new(root: &'a mut Value) -> Self {
         let stack = Vec::new();
