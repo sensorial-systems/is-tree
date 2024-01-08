@@ -4,7 +4,7 @@ use ::is_tree::*;
 
 use ::is_tree::has_get::{KnowsGetType, HasGet};
 use ::is_tree::knows_parent::KnowsParent;
-use ::is_tree::new_visitor::{Visitor, RootVisitor};
+use ::is_tree::visitor::{Visitor, RootVisitor};
 
 pub struct Library {
     name: String,

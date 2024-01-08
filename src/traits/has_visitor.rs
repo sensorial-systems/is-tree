@@ -1,4 +1,4 @@
-use crate::{new_visitor::{RootVisitor, Visitor}, KnowsPathSegment, KnowsParentVisitor};
+use crate::{visitor::{RootVisitor, Visitor}, KnowsPathSegment, KnowsParentVisitor};
 
 use crate::traits::*;
 
