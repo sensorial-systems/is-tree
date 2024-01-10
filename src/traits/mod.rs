@@ -27,4 +27,4 @@ pub use has_visitor::*;
 pub use has_relative_access::*;
 
 pub use is_path_segment::*;
-pub use is_tree::*;
+pub use self::is_tree::*;
