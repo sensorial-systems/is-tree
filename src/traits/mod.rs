@@ -22,7 +22,7 @@ pub use knows_parent_visitor::*;
 pub use has_parent::*;
 pub use has_root::*;
 pub use has_path_segment::*;
-pub use has_path_get::*;
+// pub use has_path_get::*;
 pub use has_visitor::*;
 pub use has_relative_access::*;
 

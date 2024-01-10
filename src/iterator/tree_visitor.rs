@@ -2,7 +2,7 @@ pub struct TreeVisitor<Visitor> {
     stack: Vec<Visitor>,
 }
 
-impl<Visitor> TreeVisitor<Visitor>
+impl<'a, Visitor> TreeVisitor<Visitor>
 where Visitor: Clone
 {
     pub fn new<Value: Into<Visitor>>(root: Value) -> Self {
@@ -16,8 +16,8 @@ where Visitor: Clone
         let visitor = visitor.into();
         self.stack.push(visitor.clone());
         // for child in visitor.branches() {
-        //     let visitor = visitor.child(child);
-        //     self.build(visitor);
+            // let visitor = visitor.child(child);
+            // self.build(visitor);
         // }
     }
 }

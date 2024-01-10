@@ -7,14 +7,16 @@ use crate::{knows_parent::KnowsParent, has_get::{KnowsGetType, HasGet}, Path, Pa
 use crate::traits::*;
 
 #[derive(Clone, Default)]
-struct Internal<Parent, Value> {
-    parent: Parent,
-    value: Value
+// FIXME: Make this private.
+pub struct Internal<Parent, Value> {
+    pub parent: Parent,
+    pub value: Value
 }
 
 #[derive(Clone, Default)]
 pub struct Visitor<Parent, Value> {
-    internal: Rc<Internal<Parent, Value>>
+    // FIXME: Make this private.
+    pub internal: Rc<Internal<Parent, Value>>
 }
 
 impl<'a, Parent, Value> IsVisitor<'a, Value> for &'a Visitor<Parent, Value>

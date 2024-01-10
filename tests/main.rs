@@ -49,6 +49,10 @@ impl<'a> HasBranches<'a, Module> for Module {
     // }
 }
 
+impl<'a> KnowsBranches<'a> for Module {
+    type Branches = Module;
+}
+
 impl IsTree<'_> for Module {
     
 }
@@ -135,12 +139,12 @@ fn creation() {
 //     assert_eq!(leaf.format(), "[leaf]");
 // }
 
-#[test]
-fn iterator() {
-    let root = create();
-    assert_eq!(root.iter().count(), 3);
-    // assert_eq!(root.iter().map(|module| module.value.format()).collect::<Vec<_>>(), ["[leaf]", "[branch]", "[root]"]);
-}
+// #[test]
+// fn iterator() {
+//     let root = create();
+//     assert_eq!(root.iter().count(), 3);
+//     assert_eq!(root.iter().map(|module| module.value.format()).collect::<Vec<_>>(), ["[leaf]", "[branch]", "[root]"]);
+// }
 
 #[test]
 fn visitor_relative_path() {

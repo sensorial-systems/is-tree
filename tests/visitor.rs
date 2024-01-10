@@ -322,6 +322,48 @@ impl<'a> From<ModuleVisitor<'a>> for Visitors<'a> {
     }
 }
 
+pub trait KnowsBranches<'a> {
+    type Branches;
+}
+
+pub trait HasBranches<'a>: KnowsBranches<'a> {
+    fn branches(self) -> Box<dyn Iterator<Item = Self::Branches> + 'a>;
+}
+
+impl<'a> KnowsBranches<'a> for &'a Module {
+    type Branches = &'a Module;
+}
+
+impl<'a> HasBranches<'a> for &'a Module {
+    fn branches(self) -> Box<dyn Iterator<Item = Self::Branches> + 'a> {
+        Box::new(self.children.iter())
+    }
+}
+
+impl<'a> KnowsBranches<'a> for &'a mut Module {
+    type Branches = &'a mut Module;
+}
+
+impl<'a> HasBranches<'a> for &'a mut Module {
+    fn branches(self) -> Box<dyn Iterator<Item = Self::Branches> + 'a> {
+        Box::new(self.children.iter_mut())
+    }
+}
+
+impl<'a, Parent, Value> KnowsBranches<'a> for &'a Visitor<Parent, Value> {
+    type Branches = Visitors<'a>;
+}
+
+// impl<'a, Parent, Value> HasBranches<'a> for &'a Visitor<Parent, Value>
+// where Value: HasBranches<'a> + KnowsPathSegment,
+//       Self::Branches: KnowsPathSegment<PathSegment = <Value as KnowsPathSegment>::PathSegment> + KnowsParentVisitor<'a>,
+//       Self: Into<<Self::Branches as KnowsParentVisitor<'a>>::ParentVisitor>
+// {
+//     fn branches(self) -> Box<dyn Iterator<Item = Self::Branches> + 'a> {
+//         Box::new(self.internal.value.branches().map(|value| self.visit(value)))
+//     }
+// }
+
 #[test]
 fn new_visitor() {
     let library = Library {
@@ -334,7 +376,20 @@ fn new_visitor() {
                     children: vec![
                         Module {
                             name: String::from("d"),
-                            children: vec![]
+                            children: vec![
+                                Module {
+                                    name: String::from("1"),
+                                    children: vec![]
+                                },
+                                Module {
+                                    name: String::from("2"),
+                                    children: vec![]
+                                },
+                                Module {
+                                    name: String::from("3"),
+                                    children: vec![]
+                                }
+                            ]
                         }
                     ]
                 }
@@ -387,4 +442,6 @@ fn new_visitor() {
     assert_eq!(*a.relative(vec!["b", "c"]).unwrap().as_module().unwrap().path_segment(), "c");
 
     assert_eq!(*c.relative(vec!["root", "b", "super", "b", "c", "super", "self"]).unwrap().as_module().unwrap().path_segment(), "b");
+
+    // assert_eq!(d.branches().count(), 3);
 }
