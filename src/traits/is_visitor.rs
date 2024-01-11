@@ -1,9 +1,9 @@
 use crate::{KnowsVisitor, KnowsParent, KnowsValue};
 
 pub trait IsVisitor<'a>: Sized {
-    fn visit<Child: KnowsVisitor<'a>>(self, value: Child) -> Child::Visitor
+    fn visit<Child: KnowsVisitor<'a>>(&'a self, value: Child) -> Child::Visitor
     where Child::Visitor: VisitorConstructor<'a, Owned = Child::Visitor> + KnowsParent<'a> + KnowsValue<'a, Value = Child>,
-          Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent>
+          &'a Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent>
     {
         Child::Visitor::new_with_parent(self.into(), value)
     }

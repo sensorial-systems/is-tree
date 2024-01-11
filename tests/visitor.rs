@@ -402,33 +402,33 @@ fn new_visitor() {
     };
     let a = &library;
     let b = &a.root_module;
-    // let c = &b.children[0];
-    // let d = &c.children[0];
+    let c = &b.children[0];
+    let d = &c.children[0];
     let a: LibraryVisitor = a.visit();
     let b: ModuleVisitor = a.visit(b);
-    // let c: ModuleVisitor = b.visit(c);
-    // let d: ModuleVisitor = c.visit(d);
+    let c: ModuleVisitor = b.visit(c);
+    let d: ModuleVisitor = c.visit(d);
 
     assert_eq!(a.path().to_string(), "a");
     assert_eq!(b.path().to_string(), "a::b");
-    // assert_eq!(c.path().to_string(), "a::b::c");
-    // assert_eq!(d.path().to_string(), "a::b::c::d");
+    assert_eq!(c.path().to_string(), "a::b::c");
+    assert_eq!(d.path().to_string(), "a::b::c::d");
 
     let visitors = Visitors::from(a.clone());
 
     assert_eq!(*visitors.parent().path_segment(), "a");
     assert_eq!(*a.parent().path_segment(), "a"); // Root's parent is itself. Will it create any kind of problem?
     assert_eq!(*b.parent().path_segment(), "a");
-    // assert_eq!(*c.parent().path_segment(), "b");
-    // assert_eq!(*d.parent().path_segment(), "c");
-    // assert_eq!(*c.parent().parent().path_segment(), "a");
-    // assert_eq!(*d.parent().parent().parent().path_segment(), "a");
+    assert_eq!(*c.parent().path_segment(), "b");
+    assert_eq!(*d.parent().path_segment(), "c");
+    assert_eq!(*c.parent().parent().path_segment(), "a");
+    assert_eq!(*d.parent().parent().parent().path_segment(), "a");
 
     assert_eq!(*visitors.root().path_segment(), "a");
     assert_eq!(*a.root().path_segment(), "a");
     assert_eq!(*b.root().path_segment(), "a");
-    // assert_eq!(*c.root().path_segment(), "a");
-    // assert_eq!(*d.root().path_segment(), "a");
+    assert_eq!(*c.root().path_segment(), "a");
+    assert_eq!(*d.root().path_segment(), "a");
 
     // assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
     // assert_eq!(visitors.get("b").unwrap().get("c").unwrap().path_segment(), "c");
