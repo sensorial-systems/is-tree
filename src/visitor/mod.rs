@@ -12,16 +12,14 @@ mod has_parent;
 mod knows_parent_visitor;
 
 #[derive(Clone, Default)]
-// FIXME: Make this private.
-pub struct Internal<Parent, Value> {
-    pub parent: Parent,
-    pub value: Value
+struct Internal<Parent, Value> {
+    parent: Parent,
+    value: Value
 }
 
 #[derive(Clone, Default)]
 pub struct Visitor<Parent, Value> {
-    // FIXME: Make this private.
-    pub internal: Rc<Internal<Parent, Value>>
+    internal: Rc<Internal<Parent, Value>>
 }
 
 impl<Parent, Value> Visitor<Parent, Value> {
