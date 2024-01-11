@@ -26,21 +26,23 @@ where Value: KnowsPathSegment + KnowsGetType<'a>,
 
 impl<'a, Value> KnowsGetType<'a> for &'a RootVisitor<Value>
 where Value: KnowsPathSegment + KnowsGetType<'a>,
-      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
+      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a> + KnowsVisitor<'a>,
 {
     type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
 }
 
 impl<'a, Value> HasGet<'a> for &'a RootVisitor<Value>
 where Value: Copy + KnowsPathSegment + HasGet<'a>,
-      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a>,
-      RootVisitor<Value>: Into<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor>,
+      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a> + KnowsVisitor<'a>,
+      <Value::GetType as KnowsVisitor<'a>>::Visitor: KnowsParent<'a>,
+      Self::GetType: VisitorConstructor<'a, Value = Value::GetType>,
+    //   &'a
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
         self.value.get(key).map(|value| {
             todo!()
-        //     (*self).clone().visit(value)
+            // self.visit(value)
         })
     }
 }

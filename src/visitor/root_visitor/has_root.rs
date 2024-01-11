@@ -1,5 +1,9 @@
 use crate::{RootVisitor, HasRoot, KnowsRoot};
 
+impl<'a, Value> KnowsRoot<'a> for RootVisitor<Value> {
+    type Root = RootVisitor<Value>;
+}
+
 impl<'a, Value> KnowsRoot<'a> for &'a RootVisitor<Value> {
     type Root = RootVisitor<Value>;
 }
