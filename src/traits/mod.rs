@@ -8,6 +8,7 @@ pub mod has_path_get;
 pub mod has_visitor;
 pub mod has_get;
 pub mod has_relative_access;
+pub mod has_value;
 
 pub mod is_path_segment;
 pub mod is_tree;
@@ -16,6 +17,7 @@ pub mod has_branches;
 pub mod is_visitor;
 pub mod has_root_visitor;
 
+pub use has_value::*;
 pub use is_visitor::*;
 pub use has_branches::*;
 pub use tree_update::*;
