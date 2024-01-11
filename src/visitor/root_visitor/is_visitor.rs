@@ -1,8 +1,6 @@
-use crate::{IsVisitor, RootVisitor, KnowsPathSegment, Visitor, KnowsParentVisitor};
+use crate::{IsVisitor, RootVisitor, Visitor, KnowsParentVisitor};
 
-impl<'a, Value> IsVisitor<'a> for RootVisitor<Value>
-where Value: KnowsPathSegment
-{
+impl<'a, Value> IsVisitor<'a> for RootVisitor<Value> {
     fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
     where Child: KnowsParentVisitor<'a>,
           Self: Into<Child::ParentVisitor>
