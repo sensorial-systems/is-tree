@@ -1,6 +1,5 @@
 // TODO: Organize traits.
 
-pub mod knows_parent;
 pub mod knows_parent_visitor;
 pub mod has_parent;
 pub mod has_root;
@@ -20,7 +19,6 @@ pub mod has_root_visitor;
 pub use is_visitor::*;
 pub use has_branches::*;
 pub use tree_update::*;
-pub use knows_parent::*;
 pub use knows_parent_visitor::*;
 pub use has_parent::*;
 pub use has_root::*;
