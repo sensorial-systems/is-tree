@@ -1,7 +1,15 @@
-use crate::{Visitor, KnowsParentVisitor, HasValue};
+use crate::{KnowsVisitor, KnowsParent, KnowsValue};
 
-pub trait IsVisitor<'a>: HasValue<'a> {
-    fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
-    where Child: KnowsParentVisitor<'a>,
-          Self: Into<Child::ParentVisitor>;
+pub trait IsVisitor<'a>: Sized {
+    fn visit<Child: KnowsVisitor<'a>>(self, value: Child) -> Child::Visitor
+    where Child::Visitor: VisitorConstructor<'a, Owned = Child::Visitor> + KnowsParent<'a> + KnowsValue<'a, Value = Child>,
+          Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent>
+    {
+        Child::Visitor::new_with_parent(self.into(), value)
+    }
+}
+
+pub trait VisitorConstructor<'a> {
+    type Owned: KnowsParent<'a> + KnowsValue<'a>;
+    fn new_with_parent(parent: <Self::Owned as KnowsParent<'a>>::Parent, value: <Self::Owned as KnowsValue<'a>>::Value) -> Self::Owned;
 }
