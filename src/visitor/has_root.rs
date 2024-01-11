@@ -1,22 +1,19 @@
-use crate::{KnowsRoot, Visitor, KnowsParentVisitor, HasRoot};
+use crate::{KnowsRoot, Visitor, HasRoot};
 
-impl<'a, Value> KnowsRoot<'a> for Visitor<Value::ParentVisitor, Value>
-where Value: KnowsParentVisitor<'a>,
-      Value::ParentVisitor: KnowsRoot<'a> + Clone
+impl<'a, Parent, Value> KnowsRoot<'a> for Visitor<Parent, Value>
+where Parent: KnowsRoot<'a>
 {
-    type Root = <Value::ParentVisitor as KnowsRoot<'a>>::Root;
+    type Root = Parent::Root;
 }
 
-impl<'a, Value> KnowsRoot<'a> for &'a Visitor<Value::ParentVisitor, Value>
-where Value: KnowsParentVisitor<'a>,
-      Value::ParentVisitor: KnowsRoot<'a> + Clone
+impl<'a, Parent, Value> KnowsRoot<'a> for &'a Visitor<Parent, Value>
+where Parent: KnowsRoot<'a>
 {
-    type Root = <Value::ParentVisitor as KnowsRoot<'a>>::Root;
+    type Root = Parent::Root;
 }
 
-impl<'a, Value> HasRoot<'a> for &'a Visitor<Value::ParentVisitor, Value>
-where Value: KnowsParentVisitor<'a>,
-      Value::ParentVisitor: HasRoot<'a> + Clone
+impl<'a, Parent, Value> HasRoot<'a> for &'a Visitor<Parent, Value>
+where Parent: HasRoot<'a> + Clone
 {
     fn root(self) -> Self::Root {
         self.internal.parent.clone().root()
