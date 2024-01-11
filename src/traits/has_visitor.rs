@@ -1,21 +1,13 @@
-use crate::{visitor::{RootVisitor, Visitor}, KnowsPathSegment, KnowsParentVisitor};
+use crate::{RootVisitor, KnowsPathSegment};
 
 use crate::traits::*;
-
-pub trait IsVisitor<'a, Value>
-where Value: KnowsPathSegment
-{
-    fn visit<Child>(self, value: Child) -> Visitor<Child::ParentVisitor, Child>
-    where Child: KnowsPathSegment<PathSegment = Value::PathSegment>,
-          Child: KnowsParentVisitor<'a>,
-          Self: Into<Child::ParentVisitor>;
-}
 
 pub trait KnowsVisitor<'a, Value>
 where Value: KnowsPathSegment
 {
-    type Visitor: IsVisitor<'a, Value>;
+    type Visitor: IsVisitor<'a>;
 }
+
 
 pub trait HasVisitor<'a, Value>: KnowsVisitor<'a, Value>
 where Value: KnowsPathSegment
