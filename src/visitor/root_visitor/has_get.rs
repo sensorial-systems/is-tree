@@ -1,4 +1,4 @@
-use crate::{has_get::{KnowsGetType, HasGet}, RootVisitor, KnowsPathSegment, Visitor, KnowsParentVisitor, KnowsVisitor, IsVisitor, KnowsValue, KnowsParent, VisitorConstructor};
+use crate::{has_get::{KnowsGetType, HasGet}, RootVisitor, KnowsPathSegment, KnowsVisitor, IsVisitor, KnowsValue, KnowsParent, VisitorConstructor};
 
 impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
 where Value: KnowsPathSegment + KnowsGetType<'a>,
@@ -25,24 +25,23 @@ where Value: KnowsPathSegment + KnowsGetType<'a>,
 // }
 
 impl<'a, Value> KnowsGetType<'a> for &'a RootVisitor<Value>
-where Value: KnowsPathSegment + KnowsGetType<'a>,
-      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a> + KnowsVisitor<'a>,
+where Value: KnowsGetType<'a>,
+      Value::GetType: KnowsVisitor<'a>
 {
-    type GetType = Visitor<<Value::GetType as KnowsParentVisitor<'a>>::ParentVisitor, Value::GetType>;
+    type GetType = <Value::GetType as KnowsVisitor<'a>>::Visitor;
 }
 
 impl<'a, Value> HasGet<'a> for &'a RootVisitor<Value>
-where Value: Copy + KnowsPathSegment + HasGet<'a>,
-      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsParentVisitor<'a> + KnowsVisitor<'a>,
-      <Value::GetType as KnowsVisitor<'a>>::Visitor: KnowsParent<'a>,
-      Self::GetType: VisitorConstructor<'a, Value = Value::GetType>,
-    //   &'a
+where Value: Copy + HasGet<'a>,
+      Value::GetType: KnowsPathSegment + KnowsVisitor<'a>,
+      <Value::GetType as KnowsVisitor<'a>>::Visitor: KnowsPathSegment<PathSegment = <Value::GetType as KnowsPathSegment>::PathSegment>,
+      Self::GetType: VisitorConstructor<'a, Value = Value::GetType> + KnowsParent<'a> + KnowsValue<'a, Value = Value::GetType>,
+      Self: Into<<Self::GetType as KnowsParent<'a>>::Parent> + 'a,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
         self.value.get(key).map(|value| {
-            todo!()
-            // self.visit(value)
+            self.visit(value)
         })
     }
 }
