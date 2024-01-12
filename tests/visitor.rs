@@ -194,14 +194,6 @@ impl<'a> HasParent<'a> for &'a ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> KnowsParentVisitor<'a> for &'a Module {
-    type ParentVisitor = ModuleParentVisitor<'a>;
-}
-
-impl<'a> KnowsParentVisitor<'a> for &'a Library {
-    type ParentVisitor = LibraryVisitor<'a>;
-}
-
 type LibraryVisitor<'a> = RootVisitor<&'a Library>;
 type ModuleVisitor<'a> = Visitor<ModuleParentVisitor<'a>, &'a Module>;
 
@@ -431,7 +423,7 @@ fn new_visitor() {
     assert_eq!(*d.root().path_segment(), "a");
 
     assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
-    // assert_eq!(visitors.get("b").unwrap().get("c").unwrap().path_segment(), "c");
+    assert_eq!(visitors.get("b").unwrap().get("c").unwrap().path_segment(), "c");
 
     // assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     // assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
