@@ -9,7 +9,6 @@ mod has_relative_access;
 mod has_root;
 mod has_get;
 mod has_parent;
-mod knows_parent_visitor;
 
 #[derive(Clone, Default)]
 struct Internal<Parent, Value> {
