@@ -6,12 +6,12 @@ use ::is_tree::has_get::{KnowsGetType, HasGet};
 use ::is_tree::KnowsParent;
 use ::is_tree::visitor::{Visitor, RootVisitor};
 
+impl HasRootVisitor for &Library {} // replace it with:
+// #[derive(HasRootVisitor)]
 pub struct Library {
     name: String,
     root_module: Module
 }
-
-impl HasRootVisitor for &Library {}
 
 impl<'a> KnowsGetType<'a> for &'a Library {
     type GetType = &'a Module;
