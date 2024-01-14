@@ -261,16 +261,16 @@ impl<'a> HasGet<'a> for &'a Visitors<'a> {
     }
 }
 
-// impl<'a> HasRelativeAccess<'a> for &'a Visitors<'a> {
-//     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
-//         where K: Into<<Self as KnowsPathSegment>::PathSegment>
-//     {
-//         match self {
-//             Visitors::Library(library) => library.relative(path),
-//             Visitors::Module(module) => module.relative(path)
-//         }
-//     }
-// }
+impl<'a> HasRelativeAccess<'a> for &'a Visitors<'a> {
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+        where K: Into<<Self as KnowsPathSegment>::PathSegment>
+    {
+        match self {
+            Visitors::Library(library) => library.relative(path),
+            Visitors::Module(module) => module.relative(path)
+        }
+    }
+}
 
 impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
     fn from(visitor: ModuleParentVisitor<'a>) -> Self {
@@ -425,19 +425,19 @@ fn new_visitor() {
     assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
     assert_eq!(visitors.get("b").unwrap().get("c").unwrap().path_segment(), "c");
 
-    // assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative(vec!["b"]).unwrap().as_module().unwrap().path_segment(), "b");
+    assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative(vec!["b"]).unwrap().as_module().unwrap().path_segment(), "b");
     
-    // assert_eq!(*b.relative(vec!["self"]).unwrap().as_module() .unwrap().path_segment(), "b");
-    // assert_eq!(*b.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*b.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*b.relative(vec!["c"]).unwrap().as_module() .unwrap().path_segment(), "c");
-    // assert_eq!(*c.relative(vec!["super", "super"]).unwrap().as_library().unwrap().path_segment(), "a");
-    // assert_eq!(*a.relative(vec!["b", "c"]).unwrap().as_module().unwrap().path_segment(), "c");
+    assert_eq!(*b.relative(vec!["self"]).unwrap().as_module() .unwrap().path_segment(), "b");
+    assert_eq!(*b.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*b.relative(vec!["c"]).unwrap().as_module() .unwrap().path_segment(), "c");
+    assert_eq!(*c.relative(vec!["super", "super"]).unwrap().as_library().unwrap().path_segment(), "a");
+    assert_eq!(*a.relative(vec!["b", "c"]).unwrap().as_module().unwrap().path_segment(), "c");
 
-    // assert_eq!(*c.relative(vec!["root", "b", "super", "b", "c", "super", "self"]).unwrap().as_module().unwrap().path_segment(), "b");
+    assert_eq!(*c.relative(vec!["root", "b", "super", "b", "c", "super", "self"]).unwrap().as_module().unwrap().path_segment(), "b");
 
     // assert_eq!(d.branches().count(), 3);
 }
