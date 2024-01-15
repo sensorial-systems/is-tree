@@ -1,11 +1,11 @@
 use crate::{KnowsVisitor, KnowsParent, KnowsValue};
 
 pub trait IsVisitor<'a>: KnowsParent<'a> + KnowsValue<'a> {
-    fn visit<Child: KnowsVisitor<'a>>(&'a self, value: Child) -> Child::Visitor
+    fn visit<Child: KnowsVisitor<'a>>(&self, value: Child) -> Child::Visitor
     where Child::Visitor: VisitorConstructor<'a, Value = Child>,
-          &'a Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent>
+          Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent> + Clone
     {
-        Child::Visitor::new_with_parent(self.into(), value)
+        Child::Visitor::new_with_parent(self.clone().into(), value)
     }
 }
 

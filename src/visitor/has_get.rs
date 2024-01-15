@@ -36,7 +36,7 @@ where Value: Clone + KnowsPathSegment + HasGet<'a>,
       Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor<'a>,
       <Value::GetType as KnowsVisitor<'a>>::Visitor: KnowsPathSegment<PathSegment = Value::PathSegment>,
       Self::GetType: VisitorConstructor<'a, Value = Value::GetType> + KnowsParent<'a> + KnowsValue<'a, Value = Value::GetType>,
-      Self: Into<<Self::GetType as KnowsParent<'a>>::Parent> + 'a,
+      Visitor<Parent, Value>: Into<<Self::GetType as KnowsParent<'a>>::Parent> + Clone,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
