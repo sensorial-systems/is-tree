@@ -1,7 +1,11 @@
-use crate::traits::*;
+use crate::{traits::*, RootVisitor};
 
 pub trait KnowsVisitor {
     type Visitor: IsVisitor;
+}
+
+impl<T: HasRootVisitor> KnowsVisitor for T {
+    type Visitor = RootVisitor<T>;
 }
 
 pub trait HasVisitor: KnowsVisitor {
