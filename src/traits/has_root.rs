@@ -1,16 +1,16 @@
-pub trait KnowsRoot<'a> {
+pub trait KnowsRoot {
     type Root;
 }
 
-pub trait HasRoot<'a>: KnowsRoot<'a> {
+pub trait HasRoot: KnowsRoot {
     fn root(self) -> Self::Root;
 }
 
-impl<'a> KnowsRoot<'a> for &String {
+impl<'a> KnowsRoot for &String {
     type Root = Self;
 }
 
-impl<'a> HasRoot<'a> for &String {
+impl<'a> HasRoot for &String {
     fn root(self) -> Self::Root {
         self
     }

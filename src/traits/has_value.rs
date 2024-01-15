@@ -1,7 +1,7 @@
-pub trait KnowsValue<'a> {
+pub trait KnowsValue {
     type Value;
 }
 
-pub trait HasValue<'a>: KnowsValue<'a> {
+pub trait HasValue: KnowsValue {
     fn value(self) -> Self::Value;
 }

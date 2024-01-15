@@ -1,33 +1,33 @@
 use crate::{KnowsRelativeAccessType, RootVisitor, HasRelativeAccess, KnowsPathSegment, has_get::{HasGet, KnowsGetType}, HasRoot, PathSegment, HasParent, IsPathSegment, KnowsVisitor, KnowsParent};
 
-impl<'a, Value> KnowsRelativeAccessType<'a> for &'a RootVisitor<Value>
-where Value: KnowsRelativeAccessType<'a>
+impl<'a, Value> KnowsRelativeAccessType for &'a RootVisitor<Value>
+where Value: KnowsRelativeAccessType
 {
     type RelativeType = Value::RelativeType;
 }
 
-impl<'a, Value> HasRelativeAccess<'a> for &'a RootVisitor<Value>
+impl<'a, Value> HasRelativeAccess for &'a RootVisitor<Value>
 where
-    Value: Copy + KnowsPathSegment + HasGet<'a>,
-      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor<'a>,
-      Self: Into<<<Value::GetType as KnowsVisitor<'a>>::Visitor as KnowsParent<'a>>::Parent>,
-    Value: KnowsRelativeAccessType<'a> + KnowsPathSegment + Clone + Copy + 'a,
-    Self: Into<Self::RelativeType> + HasRoot<'a>,
+    Value: Copy + KnowsPathSegment + HasGet,
+      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor,
+      Self: Into<<<Value::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
+    Value: KnowsRelativeAccessType + KnowsPathSegment + Clone + Copy + 'a,
+    Self: Into<Self::RelativeType> + HasRoot,
 
-    Self: HasGet<'a>,
-    <Self as KnowsGetType<'a>>::GetType:
-        KnowsVisitor<'a>
+    Self: HasGet,
+    <Self as KnowsGetType>::GetType:
+        KnowsVisitor
         + Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
-    RootVisitor<Value>: Into<<<<Self as KnowsGetType<'a>>::GetType as KnowsVisitor<'a>>::Visitor as KnowsParent<'a>>::Parent>,
+    RootVisitor<Value>: Into<<<<Self as KnowsGetType>::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
 
     &'a Self::RelativeType:
-        HasRelativeAccess<'a,
-            RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType,
+        HasRelativeAccess<
+            RelativeType = <Self as KnowsRelativeAccessType>::RelativeType,
             PathSegment = <Self as KnowsPathSegment>::PathSegment
         >
-        + HasParent<'a>
-        + HasRoot<'a>,
+        + HasParent
+        + HasRoot,
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as KnowsPathSegment>::PathSegment>,

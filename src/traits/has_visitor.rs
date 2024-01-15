@@ -1,14 +1,14 @@
 use crate::traits::*;
 
-pub trait KnowsVisitor<'a> {
-    type Visitor: IsVisitor<'a>;
+pub trait KnowsVisitor {
+    type Visitor: IsVisitor;
 }
 
-pub trait HasVisitor<'a>: KnowsVisitor<'a> {
+pub trait HasVisitor: KnowsVisitor {
     fn visit(self) -> Self::Visitor;
 }
 
-impl<'a, T> HasVisitor<'a> for T
+impl<T> HasVisitor for T
 where T: HasRootVisitor
 {
     fn visit(self) -> Self::Visitor {

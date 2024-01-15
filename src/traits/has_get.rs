@@ -1,10 +1,10 @@
 use crate::KnowsPathSegment;
 
-pub trait KnowsGetType<'a> {
+pub trait KnowsGetType {
     type GetType;
 }
 
-pub trait HasGet<'a>: KnowsGetType<'a>
+pub trait HasGet: KnowsGetType
 where Self::GetType: KnowsPathSegment
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>

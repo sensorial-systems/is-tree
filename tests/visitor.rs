@@ -13,11 +13,11 @@ pub struct Library {
     root_module: Module
 }
 
-impl<'a> KnowsGetType<'a> for &'a Library {
+impl<'a> KnowsGetType for &'a Library {
     type GetType = &'a Module;
 }
 
-impl<'a> HasGet<'a> for &'a Library {
+impl<'a> HasGet for &'a Library {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
@@ -29,11 +29,11 @@ impl<'a> HasGet<'a> for &'a Library {
     }
 }
 
-impl<'a> KnowsGetType<'a> for &'a Module {
+impl<'a> KnowsGetType for &'a Module {
     type GetType = &'a Module;
 }
 
-impl<'a> HasGet<'a> for &'a Module {
+impl<'a> HasGet for &'a Module {
     fn get<K>(self, key: K) -> Option<Self::GetType>
         where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
@@ -52,15 +52,11 @@ impl HasPathSegment for Library {
     }
 }
 
-impl<'a> KnowsRelativeAccessType<'a> for &'a Module {
+impl<'a> KnowsRelativeAccessType for &'a Module {
     type RelativeType = Visitors<'a>;
 }
 
-impl<'a> KnowsRelativeAccessType<'a> for Library {
-    type RelativeType = Visitors<'a>;
-}
-
-impl<'a> KnowsRelativeAccessType<'a> for &'a Library {
+impl<'a> KnowsRelativeAccessType for &'a Library {
     type RelativeType = Visitors<'a>;
 }
 
@@ -93,7 +89,7 @@ impl KnowsPathSegment for &Module {
     type PathSegment = String;
 }
 
-impl<'a> KnowsVisitor<'a> for &'a Module {
+impl<'a> KnowsVisitor for &'a Module {
     type Visitor = ModuleVisitor<'a>;
 }
 
@@ -155,15 +151,15 @@ impl<'a> HasPathSegment for ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> KnowsRoot<'a> for ModuleParentVisitor<'a> {
+impl<'a> KnowsRoot for ModuleParentVisitor<'a> {
     type Root = LibraryVisitor<'a>;
 }
 
-impl<'a> KnowsRoot<'a> for &'a ModuleParentVisitor<'a> {
+impl<'a> KnowsRoot for &'a ModuleParentVisitor<'a> {
     type Root = LibraryVisitor<'a>;
 }
 
-impl<'a> HasRoot<'a> for ModuleParentVisitor<'a> {
+impl<'a> HasRoot for ModuleParentVisitor<'a> {
     fn root(self) -> Self::Root {
         match self {
             ModuleParentVisitor::Library(library) => library,
@@ -172,7 +168,7 @@ impl<'a> HasRoot<'a> for ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> HasRoot<'a> for &'a ModuleParentVisitor<'a> {
+impl<'a> HasRoot for &'a ModuleParentVisitor<'a> {
     fn root(self) -> Self::Root {
         match self {
             ModuleParentVisitor::Library(library) => library.clone(),
@@ -181,11 +177,11 @@ impl<'a> HasRoot<'a> for &'a ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> KnowsParent<'a> for &'a ModuleParentVisitor<'a> {
+impl<'a> KnowsParent for &'a ModuleParentVisitor<'a> {
     type Parent = ModuleParentVisitor<'a>;
 }
 
-impl<'a> HasParent<'a> for &'a ModuleParentVisitor<'a> {
+impl<'a> HasParent for &'a ModuleParentVisitor<'a> {
     fn parent(self) -> ModuleParentVisitor<'a> {
         match self {
             ModuleParentVisitor::Library(library) => ModuleParentVisitor::Library(library.clone()),
@@ -203,11 +199,11 @@ pub enum Visitors<'a> {
     Module(ModuleVisitor<'a>)
 }
 
-impl<'a> KnowsRoot<'a> for &'a Visitors<'a> {
+impl<'a> KnowsRoot for &'a Visitors<'a> {
     type Root = LibraryVisitor<'a>;
 }
 
-impl<'a> HasRoot<'a> for &'a Visitors<'a> {
+impl<'a> HasRoot for &'a Visitors<'a> {
     fn root(self) -> Self::Root {
         match self {
             Visitors::Library(library) => library.clone(),
@@ -216,7 +212,7 @@ impl<'a> HasRoot<'a> for &'a Visitors<'a> {
     }
 }
 
-impl<'a> KnowsRelativeAccessType<'a> for &'a Visitors<'a> {
+impl<'a> KnowsRelativeAccessType for &'a Visitors<'a> {
     type RelativeType = Visitors<'a>;
 }
 
@@ -246,11 +242,11 @@ impl<'a> HasPathSegment for Visitors<'a> {
     }
 }
 
-impl<'a> KnowsGetType<'a> for &'a Visitors<'a> {
+impl<'a> KnowsGetType for &'a Visitors<'a> {
     type GetType = Visitors<'a>;
 }
 
-impl<'a> HasGet<'a> for &'a Visitors<'a> {
+impl<'a> HasGet for &'a Visitors<'a> {
     fn get<K>(self, key: K) -> Option<Self::GetType>
         where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
@@ -261,7 +257,7 @@ impl<'a> HasGet<'a> for &'a Visitors<'a> {
     }
 }
 
-impl<'a> HasRelativeAccess<'a> for &'a Visitors<'a> {
+impl<'a> HasRelativeAccess for &'a Visitors<'a> {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as KnowsPathSegment>::PathSegment>
     {
@@ -281,11 +277,11 @@ impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
     }
 }
 
-impl<'a> KnowsParent<'a> for &'a Visitors<'a> {
+impl<'a> KnowsParent for &'a Visitors<'a> {
     type Parent = Visitors<'a>;
 }
 
-impl<'a> HasParent<'a> for &'a Visitors<'a> {
+impl<'a> HasParent for &'a Visitors<'a> {
     fn parent(self) -> Visitors<'a> {
         match self {
             Visitors::Library(visitor) => visitor.into(),
@@ -318,15 +314,15 @@ impl<'a> From<ModuleVisitor<'a>> for Visitors<'a> {
     }
 }
 
-pub trait KnowsBranches<'a> {
+pub trait KnowsBranches {
     type Branches;
 }
 
-pub trait HasBranches<'a>: KnowsBranches<'a> {
+pub trait HasBranches<'a>: KnowsBranches {
     fn branches(self) -> Box<dyn Iterator<Item = Self::Branches> + 'a>;
 }
 
-impl<'a> KnowsBranches<'a> for &'a Module {
+impl<'a> KnowsBranches for &'a Module {
     type Branches = &'a Module;
 }
 
@@ -336,7 +332,7 @@ impl<'a> HasBranches<'a> for &'a Module {
     }
 }
 
-impl<'a> KnowsBranches<'a> for &'a mut Module {
+impl<'a> KnowsBranches for &'a mut Module {
     type Branches = &'a mut Module;
 }
 
@@ -346,7 +342,7 @@ impl<'a> HasBranches<'a> for &'a mut Module {
     }
 }
 
-impl<'a, Parent, Value> KnowsBranches<'a> for &'a Visitor<Parent, Value> {
+impl<'a, Parent, Value> KnowsBranches for &'a Visitor<Parent, Value> {
     type Branches = Visitors<'a>;
 }
 

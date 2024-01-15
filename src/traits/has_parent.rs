@@ -1,7 +1,7 @@
-pub trait KnowsParent<'a> {
+pub trait KnowsParent {
     type Parent;
 }
 
-pub trait HasParent<'a>: KnowsParent<'a> {
+pub trait HasParent: KnowsParent {
     fn parent(self) -> Self::Parent;
 }
