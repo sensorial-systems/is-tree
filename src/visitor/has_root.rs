@@ -1,6 +1,6 @@
 use crate::{KnowsRoot, Visitor, HasRoot};
 
-impl<'a, Parent, Value> KnowsRoot for Visitor<Parent, Value>
+impl<Parent, Value> KnowsRoot for Visitor<Parent, Value>
 where Parent: KnowsRoot
 {
     type Root = Parent::Root;

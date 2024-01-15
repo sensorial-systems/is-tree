@@ -33,12 +33,12 @@ impl IsPathSegment for String {
 
 impl IsPathSegment for () {
     fn root() -> Self {
-        ()
+        
     }
     fn self_() -> Self {
-        ()
+        
     }
     fn super_() -> Self {
-        ()
+        
     }
 }

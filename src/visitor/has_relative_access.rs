@@ -1,6 +1,6 @@
 use crate::{KnowsRelativeAccessType, Visitor, PathSegment, KnowsPathSegment, HasParent, HasRelativeAccess, KnowsParent, has_get::{KnowsGetType, HasGet}, KnowsRoot, HasRoot, IsPathSegment, KnowsVisitor};
 
-impl<'a, Parent, Value> KnowsRelativeAccessType for Visitor<Parent, Value>
+impl<Parent, Value> KnowsRelativeAccessType for Visitor<Parent, Value>
 where Value: KnowsRelativeAccessType
 {
     type RelativeType = Value::RelativeType;

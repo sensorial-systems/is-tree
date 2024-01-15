@@ -10,7 +10,7 @@ pub struct RootVisitor<Value> {
     pub value: Value
 }
 
-impl<'a, Value> RootVisitor<Value> {
+impl<Value> RootVisitor<Value> {
     pub fn new(value: Value) -> Self {
         Self { value }
     }

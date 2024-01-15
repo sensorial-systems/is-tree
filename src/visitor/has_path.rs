@@ -1,6 +1,6 @@
 use crate::{KnowsPathSegment, Visitor, HasPathSegment, Path, HasPath};
 
-impl<'a, Parent, Value> KnowsPathSegment for Visitor<Parent, Value>
+impl<Parent, Value> KnowsPathSegment for Visitor<Parent, Value>
 where Value: KnowsPathSegment
 {
     type PathSegment = Value::PathSegment;
@@ -12,7 +12,7 @@ where Value: KnowsPathSegment
     type PathSegment = Value::PathSegment;
 }
 
-impl<'a, Parent, Value> HasPathSegment for Visitor<Parent, Value>
+impl<Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment
 {
     fn path_segment(&self) -> &Self::PathSegment {
@@ -20,7 +20,7 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Parent, Value> HasPath<Value::PathSegment> for Visitor<Parent, Value>
+impl<Parent, Value> HasPath<Value::PathSegment> for Visitor<Parent, Value>
 where Value: HasPathSegment,
       Parent: HasPath<Value::PathSegment>
 {

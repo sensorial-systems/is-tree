@@ -2,7 +2,7 @@ pub struct TreeVisitor<Visitor> {
     stack: Vec<Visitor>,
 }
 
-impl<'a, Visitor> TreeVisitor<Visitor>
+impl<Visitor> TreeVisitor<Visitor>
 where Visitor: Clone
 {
     pub fn new<Value: Into<Visitor>>(root: Value) -> Self {

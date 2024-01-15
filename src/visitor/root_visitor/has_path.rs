@@ -1,12 +1,12 @@
 use crate::{KnowsPathSegment, RootVisitor, HasPathSegment, HasPath, Path};
 
-impl<'a, Value> KnowsPathSegment for RootVisitor<Value>
+impl<Value> KnowsPathSegment for RootVisitor<Value>
 where Value: KnowsPathSegment
 {
     type PathSegment = Value::PathSegment;
 }
 
-impl<'a, Value> HasPathSegment for RootVisitor<Value>
+impl<Value> HasPathSegment for RootVisitor<Value>
 where Value: HasPathSegment
 {
     fn path_segment(&self) -> &Self::PathSegment {
