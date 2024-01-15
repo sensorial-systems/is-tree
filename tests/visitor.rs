@@ -2,10 +2,6 @@ use enum_as_inner::EnumAsInner;
 
 use ::is_tree::*;
 
-use ::is_tree::has_get::{KnowsGetType, HasGet};
-use ::is_tree::KnowsParent;
-use ::is_tree::visitor::{Visitor, RootVisitor};
-
 impl HasRootVisitor for &Library {} // replace it with:
 // #[derive(HasRootVisitor)]
 pub struct Library {
