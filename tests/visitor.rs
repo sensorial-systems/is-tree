@@ -302,12 +302,6 @@ impl<'a> From<LibraryVisitor<'a>> for Visitors<'a> {
     }
 }
 
-impl<'a> From<&ModuleVisitor<'a>> for Visitors<'a> {
-    fn from(visitor: &ModuleVisitor<'a>) -> Self {
-        Self::Module(visitor.clone())
-    }
-}
-
 impl<'a> From<ModuleVisitor<'a>> for Visitors<'a> {
     fn from(visitor: ModuleVisitor<'a>) -> Self {
         Self::Module(visitor)

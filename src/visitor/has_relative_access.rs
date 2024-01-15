@@ -14,13 +14,15 @@ where Value: KnowsRelativeAccessType
 
 impl<'a, Parent, Value> HasRelativeAccess for &'a Visitor<Parent, Value>
 where
-    Self: Into<Self::RelativeType> + KnowsPathSegment,
-    Parent: Into<Self::RelativeType> + Clone + 'a,
-    Value: KnowsPathSegment + KnowsRelativeAccessType + KnowsVisitor + 'a,
+    Visitor<Parent, Value>: Into<Self::RelativeType> + Clone,
+    Self: KnowsPathSegment,
+    Parent: ToOwned + Clone,
+    Parent::Owned: Into<Self::RelativeType>,
+    Value: KnowsPathSegment + KnowsRelativeAccessType + KnowsVisitor,
 
     Self: HasRoot,
-    <Self as KnowsRoot>::Root: Into<Self::RelativeType>,
-    &'a Parent: HasRoot<Root = <Self as KnowsRoot>::Root>,
+    <Self as KnowsRoot>::Root: ToOwned,
+    <<Self as KnowsRoot>::Root as ToOwned>::Owned: Into<Self::RelativeType>,
     &'a Value::RelativeType: HasRoot<Root = <Self as KnowsRoot>::Root>,
 
     Self: HasGet,
@@ -44,16 +46,16 @@ where
             if let Some(segment) = path.next() {
                 let segment = segment.into();
                 let visitor = match segment.kind() {
-                    PathSegment::Self_ => self.into(),
-                    PathSegment::Root => self.root().into(),
-                    PathSegment::Super => self.parent().into(),
+                    PathSegment::Self_ => self.clone().into(),
+                    PathSegment::Root => self.root().to_owned().into(),
+                    PathSegment::Super => self.parent().to_owned().into(),
                     PathSegment::Other(_) => self.get(segment)?.into()
                 };
                 // FIXME: This is a hack.
                 let visitor = unsafe { std::mem::transmute::<_, &'a Value::RelativeType>(&visitor) };
                 visitor.relative(path)
             } else {
-                Some(self.into())
+                Some(self.clone().into())
             }    
     }
 }
