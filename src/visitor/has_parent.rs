@@ -1,6 +1,6 @@
-use crate::{KnowsParent, Visitor, HasParent};
+use crate::{Visitor, HasParent, KnowsParent};
 
-impl<'a, Parent, Value> KnowsParent for &'a Visitor<Parent, Value> {
+impl<Parent, Value> KnowsParent for Visitor<Parent, Value> {
     type Parent = Parent;
 }
 

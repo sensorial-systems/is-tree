@@ -6,13 +6,6 @@ where Parent: KnowsRoot
     type Root = Parent::Root;
 }
 
-// TODO: Remove duplicity.
-impl<'a, Parent, Value> KnowsRoot for &'a Visitor<Parent, Value>
-where Parent: KnowsRoot
-{
-    type Root = Parent::Root;
-}
-
 impl<'a, Parent, Value> HasRoot for &'a Visitor<Parent, Value>
 where Parent: HasRoot + Clone
 {

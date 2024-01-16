@@ -60,10 +60,6 @@ impl<'a> KnowsRoot for ModuleParentVisitor<'a> {
     type Root = LibraryVisitor<'a>;
 }
 
-impl<'a> KnowsRoot for &'a ModuleParentVisitor<'a> {
-    type Root = LibraryVisitor<'a>;
-}
-
 impl<'a> HasRoot for ModuleParentVisitor<'a> {
     fn root(self) -> Self::Root {
         match self {

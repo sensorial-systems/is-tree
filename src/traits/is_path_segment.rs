@@ -30,15 +30,3 @@ impl IsPathSegment for String {
         "super".to_string()
     }
 }
-
-impl IsPathSegment for () {
-    fn root() -> Self {
-        
-    }
-    fn self_() -> Self {
-        
-    }
-    fn super_() -> Self {
-        
-    }
-}

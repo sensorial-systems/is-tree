@@ -24,5 +24,4 @@ where Value: HasPathSegment,
         path.segments.push(self.internal.value.path_segment().clone());
         path
     }
-
 }

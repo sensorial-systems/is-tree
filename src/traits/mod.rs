@@ -7,6 +7,7 @@ pub mod has_visitor;
 pub mod has_get;
 pub mod has_relative_access;
 pub mod has_value;
+pub mod has_visitor_constructor;
 
 pub mod is_path_segment;
 pub mod is_tree;
@@ -24,6 +25,7 @@ pub use has_path_segment::*;
 pub use has_get::*;
 pub use has_visitor::*;
 pub use has_relative_access::*;
+pub use has_visitor_constructor::*;
 
 pub use is_path_segment::*;
 pub use self::is_tree::*;

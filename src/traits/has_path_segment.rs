@@ -4,26 +4,8 @@ pub trait HasPath<PathSegment> {
     fn path(&self) -> Path<PathSegment>;
 }
 
-impl<PathSegment> HasPath<PathSegment> for () {
-    fn path(&self) -> Path<PathSegment> {
-        Default::default()
-    }
-}
-
 pub trait KnowsPathSegment {
     type PathSegment: IsPathSegment;
-}
-
-// TODO: Remove the need of this:
-impl<T: KnowsPathSegment> KnowsPathSegment for &T {
-    type PathSegment = T::PathSegment;
-}
-
-// TODO: Remove the need of this:
-impl<T: HasPathSegment> HasPathSegment for &T {
-    fn path_segment(&self) -> &Self::PathSegment {
-        (*self).path_segment()
-    }
 }
 
 pub trait HasPathSegment: KnowsPathSegment {
@@ -35,22 +17,15 @@ pub trait HasPathSegment: KnowsPathSegment {
 
 }
 
-impl KnowsPathSegment for String {
-    type PathSegment = Self;
+
+// TODO: Remove duplicity
+impl<T: KnowsPathSegment> KnowsPathSegment for &T {
+    type PathSegment = T::PathSegment;
 }
 
-impl HasPathSegment for String {
+// TODO: Remove duplicity
+impl<T: HasPathSegment> HasPathSegment for &T {
     fn path_segment(&self) -> &Self::PathSegment {
-        self
-    }
-}
-
-impl KnowsPathSegment for () {
-    type PathSegment = ();
-}
-
-impl HasPathSegment for () {
-    fn path_segment(&self) -> &Self::PathSegment {
-        self
+        (*self).path_segment()
     }
 }

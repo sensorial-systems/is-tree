@@ -6,13 +6,6 @@ where Value: KnowsRelativeAccessType
     type RelativeType = Value::RelativeType;
 }
 
-// TODO: Remove duplicity.
-impl<'a, Parent, Value> KnowsRelativeAccessType for &'a Visitor<Parent, Value>
-where Value: KnowsRelativeAccessType
-{
-    type RelativeType = Value::RelativeType;
-}
-
 impl<'a, Parent, Value> HasRelativeAccess for &'a Visitor<Parent, Value>
 where
     Visitor<Parent, Value>: Into<Self::RelativeType> + Clone,
