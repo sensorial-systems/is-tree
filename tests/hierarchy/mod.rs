@@ -40,11 +40,11 @@ fn new_visitor() {
             ]
         }
     };
-    let a = &library;
+    let a = library;
     let b = &a.root_module;
     let c = &b.children[0];
     let d = &c.children[0];
-    let a: LibraryVisitor = a.visit();
+    let a: LibraryVisitor = a.visitor();
     let b: ModuleVisitor = a.visit(b);
     let c: ModuleVisitor = b.visit(c);
     let d: ModuleVisitor = c.visit(d);

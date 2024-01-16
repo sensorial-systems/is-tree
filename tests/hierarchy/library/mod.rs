@@ -4,8 +4,6 @@ pub use visitor::*;
 use ::is_tree::*;
 use super::{module::*, Visitors};
 
-impl HasRootVisitor for &Library {} // replace it with:
-// #[derive(HasRootVisitor)]
 pub struct Library {
     pub name: String,
     pub root_module: Module
