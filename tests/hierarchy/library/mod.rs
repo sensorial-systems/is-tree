@@ -1,3 +1,6 @@
+pub mod visitor;
+pub use visitor::*;
+
 use ::is_tree::*;
 use super::{module::*, Visitors};
 
@@ -7,8 +10,6 @@ pub struct Library {
     pub name: String,
     pub root_module: Module
 }
-
-pub type LibraryVisitor<'a> = RootVisitor<&'a Library>;
 
 impl<'a> KnowsGetType for &'a Library {
     type GetType = &'a Module;
