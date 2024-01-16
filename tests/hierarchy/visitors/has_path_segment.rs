@@ -2,6 +2,7 @@ use is_tree::{KnowsPathSegment, HasPathSegment};
 
 use super::Visitors;
 
+
 impl<'a> KnowsPathSegment for Visitors<'a> {
     type PathSegment = String;
 }

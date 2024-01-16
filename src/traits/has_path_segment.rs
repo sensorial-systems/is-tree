@@ -14,10 +14,12 @@ pub trait KnowsPathSegment {
     type PathSegment: IsPathSegment;
 }
 
+// TODO: Remove the need of this:
 impl<T: KnowsPathSegment> KnowsPathSegment for &T {
     type PathSegment = T::PathSegment;
 }
 
+// TODO: Remove the need of this:
 impl<T: HasPathSegment> HasPathSegment for &T {
     fn path_segment(&self) -> &Self::PathSegment {
         (*self).path_segment()
