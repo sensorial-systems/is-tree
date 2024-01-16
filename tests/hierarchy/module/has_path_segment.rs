@@ -11,13 +11,3 @@ impl HasPathSegment for Module {
         &self.name
     }
 }
-
-impl KnowsPathSegment for &Module {
-    type PathSegment = String;
-}
-
-impl HasPathSegment for &Module {
-    fn path_segment(&self) -> &Self::PathSegment {
-        &self.name
-    }
-}

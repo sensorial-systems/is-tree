@@ -2,7 +2,7 @@ use is_tree::{KnowsRelativeAccessType, HasRelativeAccess, KnowsPathSegment};
 
 use super::Visitors;
 
-impl<'a> KnowsRelativeAccessType for &'a Visitors<'a> {
+impl<'a> KnowsRelativeAccessType for &Visitors<'a> {
     type RelativeType = Visitors<'a>;
 }
 

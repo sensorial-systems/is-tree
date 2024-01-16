@@ -14,20 +14,6 @@ where Value: HasPathSegment
     }
 }
 
-impl<'a, Value> KnowsPathSegment for &'a RootVisitor<Value>
-where Value: KnowsPathSegment
-{
-    type PathSegment = Value::PathSegment;
-}
-
-impl<'a, Value> HasPathSegment for &'a RootVisitor<Value>
-where Value: HasPathSegment
-{
-    fn path_segment(&self) -> &Self::PathSegment {
-        self.value.path_segment()
-    }
-}
-
 impl<Value> HasPath<Value::PathSegment> for RootVisitor<Value>
 where Value: HasPathSegment
 {

@@ -4,11 +4,11 @@ use crate::hierarchy::LibraryVisitor;
 
 use super::Visitors;
 
-impl<'a> KnowsRoot for &'a Visitors<'a> {
+impl<'a> KnowsRoot for &Visitors<'a> {
     type Root = LibraryVisitor<'a>;
 }
 
-impl<'a> HasRoot for &'a Visitors<'a> {
+impl<'a> HasRoot for &Visitors<'a> {
     fn root(self) -> Self::Root {
         match self {
             Visitors::Library(library) => library.clone(),

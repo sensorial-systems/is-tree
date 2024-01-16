@@ -6,12 +6,6 @@ where Value: KnowsPathSegment
     type PathSegment = Value::PathSegment;
 }
 
-impl<'a, Parent, Value> KnowsPathSegment for &'a Visitor<Parent, Value>
-where Value: KnowsPathSegment
-{
-    type PathSegment = Value::PathSegment;
-}
-
 impl<Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment
 {

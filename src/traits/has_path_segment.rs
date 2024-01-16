@@ -14,6 +14,16 @@ pub trait KnowsPathSegment {
     type PathSegment: IsPathSegment;
 }
 
+impl<T: KnowsPathSegment> KnowsPathSegment for &T {
+    type PathSegment = T::PathSegment;
+}
+
+impl<T: HasPathSegment> HasPathSegment for &T {
+    fn path_segment(&self) -> &Self::PathSegment {
+        (*self).path_segment()
+    }
+}
+
 pub trait HasPathSegment: KnowsPathSegment {
     fn path_segment(&self) -> &Self::PathSegment;
 
@@ -37,17 +47,7 @@ impl KnowsPathSegment for () {
     type PathSegment = ();
 }
 
-impl KnowsPathSegment for &() {
-    type PathSegment = ();
-}
-
 impl HasPathSegment for () {
-    fn path_segment(&self) -> &Self::PathSegment {
-        self
-    }
-}
-
-impl HasPathSegment for &() {
     fn path_segment(&self) -> &Self::PathSegment {
         self
     }

@@ -23,6 +23,7 @@ impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
     }
 }
 
+// TODO: Remove this.
 impl<'a> From<&LibraryVisitor<'a>> for Visitors<'a> {
     fn from(visitor: &LibraryVisitor<'a>) -> Self {
         Self::Library(visitor.clone())

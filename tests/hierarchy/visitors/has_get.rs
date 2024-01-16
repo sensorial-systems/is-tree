@@ -2,11 +2,11 @@ use is_tree::{KnowsGetType, HasGet, KnowsPathSegment};
 
 use super::Visitors;
 
-impl<'a> KnowsGetType for &'a Visitors<'a> {
+impl<'a> KnowsGetType for &Visitors<'a> {
     type GetType = Visitors<'a>;
 }
 
-impl<'a> HasGet for &'a Visitors<'a> {
+impl<'a> HasGet for &Visitors<'a> {
     fn get<K>(self, key: K) -> Option<Self::GetType>
         where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
