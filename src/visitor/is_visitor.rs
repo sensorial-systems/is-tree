@@ -16,10 +16,12 @@ where Value: Clone
     }
 }
 
+// TODO: Remove duplicity.
 impl<'a, Parent, Value> KnowsValue for &'a Visitor<Parent, Value> {
     type Value = Value;
 }
 
+// TODO: Remove duplicity.
 impl<'a, Parent, Value> HasValue for &'a Visitor<Parent, Value>
 where Value: Clone
 {

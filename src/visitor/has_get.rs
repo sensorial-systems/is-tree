@@ -7,26 +7,10 @@ where Value: KnowsGetType,
     type GetType = <Value::GetType as KnowsVisitor>::Visitor;
 }
 
-// TODO: Check if this is still necessary.
-// impl<'a, Parent, Value> HasGet for Visitor<Parent, Value>
-// where Value: Clone + HasGet,
-//       Value::GetType: KnowsPathSegment + KnowsVisitor,
-//       <Value::GetType as KnowsVisitor>::Visitor: KnowsPathSegment<PathSegment = <Value::GetType as KnowsPathSegment>::PathSegment>,
-//       Self::GetType: VisitorConstructor<Value = Value::GetType> + KnowsParent + KnowsValue<Value = Value::GetType>,
-//       &'a Self: Into<<Self::GetType as KnowsParent>::Parent> + 'a,
-// {
-//     fn get<K>(self, key: K) -> Option<Self::GetType>
-//     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
-//         self.internal.value.clone().get(key).map(|value|
-//             self.visit(value)
-//         )
-//     }
-// }
-
+// TODO: Remove duplicity.
 impl<'a, Parent, Value> KnowsGetType for &'a Visitor<Parent, Value>
-where Value: KnowsGetType + KnowsPathSegment,
-      Value::GetType: KnowsVisitor,
-      <Value::GetType as KnowsVisitor>::Visitor: KnowsPathSegment<PathSegment = Value::PathSegment>
+where Value: KnowsGetType,
+      Value::GetType: KnowsVisitor
 {
     type GetType = <Value::GetType as KnowsVisitor>::Visitor;
 }

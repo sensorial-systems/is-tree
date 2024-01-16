@@ -4,6 +4,7 @@ impl<Value> KnowsRoot for RootVisitor<Value> {
     type Root = RootVisitor<Value>;
 }
 
+// TODO: Remove duplicity.
 impl<'a, Value> KnowsRoot for &'a RootVisitor<Value> {
     type Root = RootVisitor<Value>;
 }

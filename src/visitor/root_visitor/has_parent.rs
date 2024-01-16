@@ -4,6 +4,7 @@ impl<Value> KnowsParent for RootVisitor<Value> {
     type Parent = RootVisitor<Value>;
 }
 
+// TODO: Remove this duplicity.
 impl<'a, Value> KnowsParent for &'a RootVisitor<Value> {
     type Parent = RootVisitor<Value>;
 }
