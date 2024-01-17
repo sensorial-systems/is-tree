@@ -6,7 +6,7 @@ where Value: KnowsRelativeAccessType
     type RelativeType = Value::RelativeType;
 }
 
-impl<'a, Parent, Value> HasRelativeAccess for &'a Visitor<Parent, Value>
+impl<'a, Parent, Value> HasRelativeAccess for Visitor<Parent, Value>
 where
     Visitor<Parent, Value>: Into<Self::RelativeType> + Clone,
     Self: KnowsPathSegment,
@@ -27,14 +27,14 @@ where
     Visitor<Parent, Value>: Into<<<<Visitor<Parent, Value> as KnowsGetType>::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
 
     <Self as KnowsParent>::Parent: Into<Self::RelativeType>,
-    &'a Value::RelativeType:
+    Value::RelativeType:
         HasRelativeAccess<
             RelativeType = <Self as KnowsRelativeAccessType>::RelativeType,
             PathSegment = <Self as KnowsPathSegment>::PathSegment
         >,
     Value::RelativeType: HasParent
 {
-    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>
     {
         let mut path = path.into_iter();
@@ -46,8 +46,6 @@ where
                 PathSegment::Super => self.parent().to_owned().into(),
                 PathSegment::Other(_) => self.get(segment)?.into()
             };
-            // FIXME: This is a hack.
-            let visitor = unsafe { std::mem::transmute::<_, &'a Value::RelativeType>(&visitor) };
             visitor.relative(path)
         } else {
             Some(self.clone().into())

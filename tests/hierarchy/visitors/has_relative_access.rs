@@ -2,12 +2,12 @@ use is_tree::{KnowsRelativeAccessType, HasRelativeAccess, KnowsPathSegment};
 
 use super::Visitors;
 
-impl<'a> KnowsRelativeAccessType for &Visitors<'a> {
+impl<'a> KnowsRelativeAccessType for Visitors<'a> {
     type RelativeType = Visitors<'a>;
 }
 
-impl<'a> HasRelativeAccess for &'a Visitors<'a> {
-    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+impl<'a> HasRelativeAccess for Visitors<'a> {
+    fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as KnowsPathSegment>::PathSegment>
     {
         match self {
