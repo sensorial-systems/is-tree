@@ -9,10 +9,11 @@ where Value: KnowsRelativeAccessType
 impl<'a, Value> HasRelativeAccess for &'a RootVisitor<Value>
 where
     Value: Copy + KnowsPathSegment + HasGet,
-      Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor,
-      Self: Into<<<Value::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
+    Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor,
+    RootVisitor<Value>: Into<<<Value::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
     Value: KnowsRelativeAccessType + KnowsPathSegment + Clone + Copy + 'a,
-    Self: Into<Self::RelativeType> + HasRoot,
+    Self: HasRoot,
+    RootVisitor<Value>: Into<Self::RelativeType>,
 
     Self: HasGet,
     <Self as KnowsGetType>::GetType:
@@ -48,7 +49,7 @@ where
                         }),
             }
         } else {
-            Some(self.into())
+            Some(self.clone().into())
         }
-}
+    }
 }

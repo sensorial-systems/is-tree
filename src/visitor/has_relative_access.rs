@@ -24,7 +24,7 @@ where
         KnowsVisitor
         + Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
-    Self: Into<<<<Self as KnowsGetType>::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
+    Visitor<Parent, Value>: Into<<<<Self as KnowsGetType>::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
 
     <Self as KnowsParent>::Parent: Into<Self::RelativeType>,
     &'a Value::RelativeType:
@@ -36,20 +36,20 @@ where
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>
     {
-            let mut path = path.into_iter();
-            if let Some(segment) = path.next() {
-                let segment = segment.into();
-                let visitor = match segment.kind() {
-                    PathSegment::Self_ => self.clone().into(),
-                    PathSegment::Root => self.root().to_owned().into(),
-                    PathSegment::Super => self.parent().to_owned().into(),
-                    PathSegment::Other(_) => self.get(segment)?.into()
-                };
-                // FIXME: This is a hack.
-                let visitor = unsafe { std::mem::transmute::<_, &'a Value::RelativeType>(&visitor) };
-                visitor.relative(path)
-            } else {
-                Some(self.clone().into())
-            }    
+        let mut path = path.into_iter();
+        if let Some(segment) = path.next() {
+            let segment = segment.into();
+            let visitor = match segment.kind() {
+                PathSegment::Self_ => self.clone().into(),
+                PathSegment::Root => self.root().to_owned().into(),
+                PathSegment::Super => self.parent().to_owned().into(),
+                PathSegment::Other(_) => self.get(segment)?.into()
+            };
+            // FIXME: This is a hack.
+            let visitor = unsafe { std::mem::transmute::<_, &'a Value::RelativeType>(&visitor) };
+            visitor.relative(path)
+        } else {
+            Some(self.clone().into())
+        }    
     }
 }

@@ -16,23 +16,9 @@ impl<'a> From<LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
     }
 }
 
-// TODO: Remove this
-impl<'a> From<&'a LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
-    fn from(visitor: &'a LibraryVisitor<'a>) -> Self {
-        Self::Library(visitor.clone())
-    }
-}
-
 impl<'a> From<ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
     fn from(visitor: ModuleVisitor<'a>) -> Self {
         Self::Module(visitor)
-    }
-}
-
-// TODO: Remove this
-impl<'a> From<&'a ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
-    fn from(visitor: &'a ModuleVisitor<'a>) -> Self {
-        Self::Module(visitor.clone())
     }
 }
 
