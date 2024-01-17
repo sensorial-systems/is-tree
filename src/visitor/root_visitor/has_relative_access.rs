@@ -1,4 +1,4 @@
-use crate::{KnowsRelativeAccessType, RootVisitor, HasRelativeAccess, KnowsPathSegment, has_get::{HasGet, KnowsGetType}, PathSegment, IsPathSegment, KnowsVisitor, KnowsParent};
+use crate::*;
 
 impl<'a, Value> KnowsRelativeAccessType for RootVisitor<Value>
 where Value: KnowsRelativeAccessType
@@ -8,16 +8,12 @@ where Value: KnowsRelativeAccessType
 
 impl<'a, Value> HasRelativeAccess for RootVisitor<Value>
 where
-    Value: Copy + KnowsPathSegment + HasGet,
-    Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor,
-    RootVisitor<Value>: Into<<<Value::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
-    Value: KnowsRelativeAccessType + KnowsPathSegment + Clone + Copy + 'a,
-    RootVisitor<Value>: Into<Self::RelativeType>,
+    Self: Into<Self::RelativeType> + Clone,
+    Value: KnowsPathSegment + KnowsRelativeAccessType,
 
-    RootVisitor<Value>: HasGet,
-    <RootVisitor<Value> as KnowsGetType>::GetType:
-        KnowsVisitor
-        + Into<Self::RelativeType>
+    Self: HasGet,
+    <Self as KnowsGetType>::GetType:
+        Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
 
     Self::RelativeType:
