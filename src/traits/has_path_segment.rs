@@ -17,13 +17,10 @@ pub trait HasPathSegment: KnowsPathSegment {
 
 }
 
-
-// TODO: Remove duplicity
 impl<T: KnowsPathSegment> KnowsPathSegment for &T {
     type PathSegment = T::PathSegment;
 }
 
-// TODO: Remove duplicity
 impl<T: HasPathSegment> HasPathSegment for &T {
     fn path_segment(&self) -> &Self::PathSegment {
         (*self).path_segment()
