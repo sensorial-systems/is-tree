@@ -12,7 +12,7 @@ where Value: Copy + HasGet,
       Value::GetType: KnowsPathSegment + KnowsVisitor,
       <Value::GetType as KnowsVisitor>::Visitor: KnowsPathSegment<PathSegment = <Value::GetType as KnowsPathSegment>::PathSegment>,
       Self::GetType: HasVisitorConstructor<Value = Value::GetType> + KnowsParent + KnowsValue<Value = Value::GetType>,
-      RootVisitor<Value>: Into<<Self::GetType as KnowsParent>::Parent> + 'a,
+      RootVisitor<Value>: Into<<Self::GetType as KnowsParent>::Parent>,
 {
     fn get<K>(self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
