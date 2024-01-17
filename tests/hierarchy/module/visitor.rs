@@ -49,16 +49,16 @@ impl<'a> KnowsRoot for ModuleParentVisitor<'a> {
 }
 
 impl<'a> HasRoot for ModuleParentVisitor<'a> {
-    fn root(self) -> Self::Root {
+    fn root(&self) -> Self::Root {
         match self {
-            ModuleParentVisitor::Library(library) => library,
+            ModuleParentVisitor::Library(library) => library.clone(),
             ModuleParentVisitor::Module(module) => module.parent().root()
         }
     }
 }
 
 impl<'a> HasRoot for &'a ModuleParentVisitor<'a> {
-    fn root(self) -> Self::Root {
+    fn root(&self) -> Self::Root {
         match self {
             ModuleParentVisitor::Library(library) => library.clone(),
             ModuleParentVisitor::Module(module) => module.clone().parent().root()

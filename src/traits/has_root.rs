@@ -3,7 +3,7 @@ pub trait KnowsRoot {
 }
 
 pub trait HasRoot: KnowsRoot {
-    fn root(self) -> Self::Root;
+    fn root(&self) -> Self::Root;
 }
 
 // TODO: Remove duplicity.

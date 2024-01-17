@@ -12,7 +12,7 @@ where
     Value::GetType: KnowsPathSegment<PathSegment = Value::PathSegment> + KnowsVisitor,
     RootVisitor<Value>: Into<<<Value::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
     Value: KnowsRelativeAccessType + KnowsPathSegment + Clone + Copy + 'a,
-    Self: HasRoot,
+    RootVisitor<Value>: HasRoot,
     RootVisitor<Value>: Into<Self::RelativeType>,
 
     Self: HasGet,
@@ -26,8 +26,7 @@ where
         HasRelativeAccess<
             RelativeType = <Self as KnowsRelativeAccessType>::RelativeType,
             PathSegment = <Self as KnowsPathSegment>::PathSegment
-        >
-        + HasRoot,
+        >,
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
         where K: Into<<Self as KnowsPathSegment>::PathSegment>,

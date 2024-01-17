@@ -14,10 +14,10 @@ where
     Parent::Owned: Into<Self::RelativeType>,
     Value: KnowsPathSegment + KnowsRelativeAccessType + KnowsVisitor,
 
-    Self: HasRoot,
-    <Self as KnowsRoot>::Root: ToOwned,
-    <<Self as KnowsRoot>::Root as ToOwned>::Owned: Into<Self::RelativeType>,
-    &'a Value::RelativeType: HasRoot<Root = <Self as KnowsRoot>::Root>,
+    Visitor<Parent, Value>: HasRoot,
+    <Visitor<Parent, Value> as KnowsRoot>::Root: ToOwned + Clone,
+    <<Visitor<Parent, Value> as KnowsRoot>::Root as ToOwned>::Owned: Into<Self::RelativeType>,
+    Value::RelativeType: HasRoot<Root = <Self as KnowsRoot>::Root>,
 
     Self: HasGet,
     <Self as KnowsGetType>::GetType:
@@ -28,9 +28,10 @@ where
 
     <Self as KnowsParent>::Parent: Into<Self::RelativeType>,
     &'a Value::RelativeType:
-      HasRelativeAccess
-    + KnowsRelativeAccessType<RelativeType = Self::RelativeType>
-    + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
+        HasRelativeAccess<
+            RelativeType = <Self as KnowsRelativeAccessType>::RelativeType,
+            PathSegment = <Self as KnowsPathSegment>::PathSegment
+        >,
     Value::RelativeType: HasParent
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
