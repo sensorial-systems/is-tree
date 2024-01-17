@@ -3,7 +3,7 @@ pub trait KnowsParent {
 }
 
 pub trait HasParent: KnowsParent {
-    fn parent(self) -> Self::Parent;
+    fn parent(&self) -> Self::Parent;
 }
 
 // TODO: Remove duplicity

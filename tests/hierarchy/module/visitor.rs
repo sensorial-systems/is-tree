@@ -66,12 +66,12 @@ impl<'a> HasRoot for &'a ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> KnowsParent for &'a ModuleParentVisitor<'a> {
+impl<'a> KnowsParent for ModuleParentVisitor<'a> {
     type Parent = ModuleParentVisitor<'a>;
 }
 
-impl<'a> HasParent for &'a ModuleParentVisitor<'a> {
-    fn parent(self) -> ModuleParentVisitor<'a> {
+impl<'a> HasParent for ModuleParentVisitor<'a> {
+    fn parent(&self) -> ModuleParentVisitor<'a> {
         match self {
             ModuleParentVisitor::Library(library) => ModuleParentVisitor::Library(library.clone()),
             ModuleParentVisitor::Module(module) => module.clone().parent().clone()

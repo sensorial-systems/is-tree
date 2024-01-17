@@ -1,4 +1,4 @@
-use crate::{KnowsRelativeAccessType, RootVisitor, HasRelativeAccess, KnowsPathSegment, has_get::{HasGet, KnowsGetType}, HasRoot, PathSegment, HasParent, IsPathSegment, KnowsVisitor, KnowsParent};
+use crate::{KnowsRelativeAccessType, RootVisitor, HasRelativeAccess, KnowsPathSegment, has_get::{HasGet, KnowsGetType}, HasRoot, PathSegment, IsPathSegment, KnowsVisitor, KnowsParent};
 
 impl<'a, Value> KnowsRelativeAccessType for &'a RootVisitor<Value>
 where Value: KnowsRelativeAccessType
@@ -27,7 +27,6 @@ where
             RelativeType = <Self as KnowsRelativeAccessType>::RelativeType,
             PathSegment = <Self as KnowsPathSegment>::PathSegment
         >
-        + HasParent
         + HasRoot,
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>

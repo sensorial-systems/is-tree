@@ -30,8 +30,8 @@ where
     &'a Value::RelativeType:
       HasRelativeAccess
     + KnowsRelativeAccessType<RelativeType = Self::RelativeType>
-    + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>
-    + HasParent,
+    + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
+    Value::RelativeType: HasParent
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>

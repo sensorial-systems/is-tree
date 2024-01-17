@@ -4,10 +4,10 @@ impl<Value> KnowsParent for RootVisitor<Value> {
     type Parent = RootVisitor<Value>;
 }
 
-impl<'a, Value> HasParent for &'a RootVisitor<Value>
+impl<'a, Value> HasParent for RootVisitor<Value>
 where Value: Clone
 {
-    fn parent(self) -> Self::Parent {
+    fn parent(&self) -> Self::Parent {
         self.clone()
     }
 }
