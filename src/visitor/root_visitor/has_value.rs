@@ -4,8 +4,8 @@ impl<Value> KnowsValue for RootVisitor<Value> {
     type Value = Value;
 }
 
-impl<Value> HasValue for RootVisitor<Value> {
-    fn value(self) -> Self::Value {
-        self.value
+impl<Value: Clone> HasValue for RootVisitor<Value> {
+    fn value(&self) -> Self::Value {
+        self.value.clone()
     }
 }

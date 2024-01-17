@@ -7,7 +7,7 @@ impl<Parent, Value> KnowsValue for Visitor<Parent, Value> {
 impl<Parent, Value> HasValue for Visitor<Parent, Value>
 where Value: Clone
 {
-    fn value(self) -> Self::Value {
+    fn value(&self) -> Self::Value {
         self.internal.value.clone()
     }
 }
