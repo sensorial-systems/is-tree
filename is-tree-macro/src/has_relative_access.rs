@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use syn::{Data, DeriveInput};
 use quote::quote;
 
-pub fn impl_has_root(ast: &DeriveInput) -> TokenStream {
+pub fn impl_has_relative_access(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
     let _self = quote! { #name #generics };
@@ -14,7 +14,7 @@ pub fn impl_has_root(ast: &DeriveInput) -> TokenStream {
             let variant_name = &variant.ident;
             variants = quote! {
                 #variants
-                #name::#variant_name(value) => value.root(),
+                #name::#variant_name(value) => value.relative(path),
             };
         }
 
@@ -22,20 +22,22 @@ pub fn impl_has_root(ast: &DeriveInput) -> TokenStream {
         let variant = variant.fields.iter().next().expect("Variant must have at least one field");
 
         let gat = quote! {
-            <#variant as KnowsRoot>::Root
+            <#variant as KnowsRelativeAccessType>::RelativeType
         };
         
         quote! {
-            impl<'a> ::is_tree::KnowsRoot for #_self {
-                type Root = #gat;
+            impl<'a> ::is_tree::KnowsRelativeAccessType for #_self {
+                type RelativeType = #gat;
             }
     
-            impl<'a> ::is_tree::HasRoot for #_self {
-                fn root(&self) -> Self::Root {
-                    match self {
-                        #variants
-                    }
+            impl<'a> ::is_tree::HasRelativeAccess for #_self {
+                fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+                where K: Into<<Self as KnowsPathSegment>::PathSegment>
+            {
+                match self {
+                    #variants
                 }
+            }
             }
         }
     } else {

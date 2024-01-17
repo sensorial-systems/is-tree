@@ -1,5 +1,3 @@
-mod has_path_segment;
-
 use ::is_tree::*;
 
 use super::{super::LibraryVisitor, Module};

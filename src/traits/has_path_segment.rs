@@ -1,7 +1,7 @@
 use crate::{IsPathSegment, Path};
 
-pub trait HasPath<PathSegment> {
-    fn path(&self) -> Path<PathSegment>;
+pub trait HasPath: KnowsPathSegment {
+    fn path(&self) -> Path<Self::PathSegment>;
 }
 
 pub trait KnowsPathSegment {

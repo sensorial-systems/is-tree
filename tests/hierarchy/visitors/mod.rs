@@ -1,7 +1,3 @@
-mod has_path_segment;
-mod has_get;
-mod has_relative_access;
-
 use enum_as_inner::EnumAsInner;
 
 use super::{LibraryVisitor, ModuleVisitor, ModuleParentVisitor};

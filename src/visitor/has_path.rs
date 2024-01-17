@@ -14,9 +14,9 @@ where Value: HasPathSegment
     }
 }
 
-impl<Parent, Value> HasPath<Value::PathSegment> for Visitor<Parent, Value>
+impl<Parent, Value> HasPath for Visitor<Parent, Value>
 where Value: HasPathSegment,
-      Parent: HasPath<Value::PathSegment>
+      Parent: HasPath<PathSegment = Value::PathSegment>
 {
     fn path(&self) -> Path<Value::PathSegment>
     {
