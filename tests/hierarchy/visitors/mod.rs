@@ -1,14 +1,13 @@
-mod has_root;
 mod has_path_segment;
 mod has_get;
 mod has_relative_access;
-mod has_parent;
 
 use enum_as_inner::EnumAsInner;
 
 use super::{LibraryVisitor, ModuleVisitor, ModuleParentVisitor};
+use ::is_tree::*;
 
-#[derive(EnumAsInner)]
+#[derive(EnumAsInner, IsTree)]
 pub enum Visitors<'a> {
     Library(LibraryVisitor<'a>),
     Module(ModuleVisitor<'a>)

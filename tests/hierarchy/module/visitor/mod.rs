@@ -1,6 +1,4 @@
 mod has_path_segment;
-mod has_parent;
-mod has_root;
 
 use ::is_tree::*;
 
@@ -8,7 +6,7 @@ use super::{super::LibraryVisitor, Module};
 
 pub type ModuleVisitor<'a> = Visitor<ModuleParentVisitor<'a>, &'a Module>;
 
-#[derive(Clone)]
+#[derive(Clone, IsTree)]
 pub enum ModuleParentVisitor<'a> {
     Library(LibraryVisitor<'a>),
     Module(ModuleVisitor<'a>)
