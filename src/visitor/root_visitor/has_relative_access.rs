@@ -1,12 +1,12 @@
 use crate::*;
 
-impl<'a, Value> KnowsRelativeAccessType for RootVisitor<Value>
+impl<Value> KnowsRelativeAccessType for RootVisitor<Value>
 where Value: KnowsRelativeAccessType
 {
     type RelativeType = Value::RelativeType;
 }
 
-impl<'a, Value> HasRelativeAccess for RootVisitor<Value>
+impl<Value> HasRelativeAccess for RootVisitor<Value>
 where
     Self: Into<Self::RelativeType> + Clone,
     Value: KnowsPathSegment + KnowsRelativeAccessType,

@@ -7,7 +7,7 @@ where Value: KnowsGetType,
     type GetType = <Value::GetType as KnowsVisitor>::Visitor;
 }
 
-impl<'a, Value> HasGet for RootVisitor<Value>
+impl<Value> HasGet for RootVisitor<Value>
 where Value: Copy + HasGet,
       Value::GetType: KnowsPathSegment + KnowsVisitor,
       <Value::GetType as KnowsVisitor>::Visitor: KnowsPathSegment<PathSegment = <Value::GetType as KnowsPathSegment>::PathSegment>,

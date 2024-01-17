@@ -6,7 +6,7 @@ where Parent: KnowsRoot
     type Root = Parent::Root;
 }
 
-impl<'a, Parent, Value> HasRoot for Visitor<Parent, Value>
+impl<Parent, Value> HasRoot for Visitor<Parent, Value>
 where Parent: HasRoot
 {
     fn root(&self) -> Self::Root {
