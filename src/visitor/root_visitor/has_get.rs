@@ -1,4 +1,4 @@
-use crate::{has_get::{KnowsGetType, HasGet}, RootVisitor, KnowsPathSegment, KnowsVisitor, IsVisitor, KnowsValue, KnowsParent, HasVisitorConstructor};
+use crate::{has_get::{KnowsGetType, HasGet}, RootVisitor, KnowsPathSegment, KnowsVisitor, IsVisitor, KnowsParent, HasVisitorConstructor, HasValue};
 
 impl<Value> KnowsGetType for RootVisitor<Value>
 where Value: KnowsGetType,
@@ -8,16 +8,17 @@ where Value: KnowsGetType,
 }
 
 impl<Value> HasGet for RootVisitor<Value>
-where Value: Copy + HasGet,
+where Value: Clone + HasGet,
       Value::GetType: KnowsPathSegment + KnowsVisitor,
       <Value::GetType as KnowsVisitor>::Visitor: KnowsPathSegment<PathSegment = <Value::GetType as KnowsPathSegment>::PathSegment>,
-      Self::GetType: HasVisitorConstructor<Value = Value::GetType> + KnowsParent + KnowsValue<Value = Value::GetType>,
-      RootVisitor<Value>: Into<<Self::GetType as KnowsParent>::Parent>,
+      Self::GetType: HasVisitorConstructor<Value = Value::GetType>,
+      Self: Into<<Self::GetType as KnowsParent>::Parent>,
 {
     fn get<K>(&self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
-        self.value.get(key).map(|value| {
-            self.visit(value)
-        })
+        self
+            .value()
+            .get(key)
+            .map(|value| self.visit(value))
     }
 }
