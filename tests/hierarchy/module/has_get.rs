@@ -7,7 +7,7 @@ impl<'a> KnowsGetType for &'a Module {
 }
 
 impl<'a> HasGet for &'a Module {
-    fn get<K>(self, key: K) -> Option<Self::GetType>
+    fn get<K>(&self, key: K) -> Option<Self::GetType>
         where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
         let key = key.into();

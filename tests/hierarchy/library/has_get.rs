@@ -8,7 +8,7 @@ impl<'a> KnowsGetType for &'a Library {
 }
 
 impl<'a> HasGet for &'a Library {
-    fn get<K>(self, key: K) -> Option<Self::GetType>
+    fn get<K>(&self, key: K) -> Option<Self::GetType>
     where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
         if &key.into() == self.root_module.path_segment() {

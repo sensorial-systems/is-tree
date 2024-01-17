@@ -19,12 +19,12 @@ where
     <<Visitor<Parent, Value> as KnowsRoot>::Root as ToOwned>::Owned: Into<Self::RelativeType>,
     Value::RelativeType: HasRoot<Root = <Self as KnowsRoot>::Root>,
 
-    Self: HasGet,
-    <Self as KnowsGetType>::GetType:
+    Visitor<Parent, Value>: HasGet,
+    <Visitor<Parent, Value> as KnowsGetType>::GetType:
         KnowsVisitor
         + Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
-    Visitor<Parent, Value>: Into<<<<Self as KnowsGetType>::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
+    Visitor<Parent, Value>: Into<<<<Visitor<Parent, Value> as KnowsGetType>::GetType as KnowsVisitor>::Visitor as KnowsParent>::Parent>,
 
     <Self as KnowsParent>::Parent: Into<Self::RelativeType>,
     &'a Value::RelativeType:
