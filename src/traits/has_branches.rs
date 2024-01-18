@@ -1,16 +1,14 @@
 use crate::{HasPathSegment, TreeUpdate};
 
-pub trait KnowsBranches<'a> {
+pub trait KnowsBranches {
     type Branches;
 }
 
 pub type BranchesIterator<Branches> = Box<dyn Iterator<Item = Branches>>;
 
-pub trait HasBranches<'a, T>: TreeUpdate<T> + KnowsBranches<'a>
-where T: Sized + HasPathSegment
+pub trait HasBranches: KnowsBranches
 {
-    fn branches(&'a self) -> Box<dyn Iterator<Item = &'a Self::Branches> + 'a>;
-    fn branches_mut(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Self::Branches> + 'a>;
+    fn branches(&self) -> BranchesIterator<Self::Branches>;
 
     // fn branch<K>(&mut self, key: K) -> &mut T
     // where K: Into<T::PathSegment>,
