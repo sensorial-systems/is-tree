@@ -9,3 +9,5 @@ pub trait IsVisitor: KnowsParent + KnowsValue {
     }
 }
 
+impl<T> IsVisitor for T
+where T: KnowsParent + KnowsValue {}

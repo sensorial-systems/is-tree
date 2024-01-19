@@ -3,7 +3,6 @@ use std::rc::Rc;
 
 pub use root_visitor::*;
 
-mod is_visitor;
 mod has_path;
 mod has_relative_access;
 mod has_root;

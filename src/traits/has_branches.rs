@@ -3,11 +3,9 @@ pub trait KnowsBranches {
     type Branches;
 }
 
-pub type BranchesIterator<Branches> = Box<dyn Iterator<Item = Branches>>;
-
 pub trait HasBranches: KnowsBranches
 {
-    fn branches(&self) -> BranchesIterator<Self::Branches>;
+    fn branches(&self) -> impl Iterator<Item = Self::Branches>;
 
     // fn branch<K>(&mut self, key: K) -> &mut T
     // where K: Into<T::PathSegment>,
