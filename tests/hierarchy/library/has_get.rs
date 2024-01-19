@@ -3,11 +3,11 @@ use is_tree::{KnowsGetType, HasGet, KnowsPathSegment, HasPathSegment};
 use super::{Module, Library};
 
 
-impl<'a> KnowsGetType for &'a Library {
+impl<'a> KnowsGetType<'a> for &'a Library {
     type GetType = &'a Module;
 }
 
-impl<'a> HasGet for &'a Library {
+impl<'a> HasGet<'a> for &'a Library {
     fn get<PathSegment>(&self, segment: PathSegment) -> Option<Self::GetType>
     where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {

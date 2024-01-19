@@ -16,7 +16,7 @@ where Self: KnowsValue,
     type RelativeType = <<Self as KnowsValue>::Value as KnowsRelativeAccessType>::RelativeType;
 }
 
-impl<T> HasRelativeAccess for T
+impl<'a, T> HasRelativeAccess for T
 where
     Self: Into<Self::RelativeType> + Clone + HasValue + HasParent + KnowsRelativeAccessType + KnowsPathSegment,
     <Self as KnowsParent>::Parent: Into<Self::RelativeType>,
@@ -25,8 +25,8 @@ where
     <Self as KnowsRoot>::Root:
         Into<Self::RelativeType>,
 
-    Self: HasGet,
-    <Self as KnowsGetType>::GetType:
+    Self: HasGet<'a>,
+    <Self as KnowsGetType<'a>>::GetType:
         Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
 

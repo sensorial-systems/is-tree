@@ -1,7 +1,7 @@
-use crate::{traits::*, RootVisitor};
+use crate::*;
 
-pub trait KnowsVisitor {
-    type Visitor: IsVisitor;
+pub trait KnowsVisitor<'a> {
+    type Visitor: IsVisitor<'a>;
 }
 
 pub trait HasVisitor {

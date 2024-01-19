@@ -22,15 +22,15 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
         let variant = variant.fields.iter().next().expect("Variant must have at least one field");
 
         let gat = quote! {
-            <#variant as KnowsGetType>::GetType
+            <#variant as KnowsGetType<'a>>::GetType
         };
         
         quote! {
-            impl<'a> ::is_tree::KnowsGetType for #_self {
+            impl<'a> ::is_tree::KnowsGetType<'a> for #_self {
                 type GetType = #gat;
             }
     
-            impl<'a> ::is_tree::HasGet for #_self {
+            impl<'a> ::is_tree::HasGet<'a> for #_self {
                 fn get<PathSegment>(&self, segment: PathSegment) -> Option<Self::GetType>
                 where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
                 {
