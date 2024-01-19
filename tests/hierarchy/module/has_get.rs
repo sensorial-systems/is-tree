@@ -7,10 +7,10 @@ impl<'a> KnowsGetType for &'a Module {
 }
 
 impl<'a> HasGet for &'a Module {
-    fn get<K>(&self, key: K) -> Option<Self::GetType>
-        where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
+    fn get<PathSegment>(&self, segment: PathSegment) -> Option<Self::GetType>
+        where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
     {
-        let key = key.into();
+        let key = segment.into();
         self.children.iter().find(|child| &key == child.path_segment())
     }
 }

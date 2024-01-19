@@ -5,7 +5,6 @@ pub use root_visitor::*;
 
 mod has_path;
 mod has_root;
-mod has_get;
 mod has_parent;
 mod has_value;
 mod knows_visitor;
@@ -23,7 +22,7 @@ pub struct Visitor<Parent, Value> {
 }
 
 impl<Parent, Value> Visitor<Parent, Value> {
-    pub fn new_with_parent(parent: Parent, value: Value) -> Self {
+    pub fn new(parent: Parent, value: Value) -> Self {
         let internal = Rc::new(Internal { parent, value });
         Self { internal }
     }

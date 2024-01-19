@@ -35,12 +35,11 @@ pub mod hierarchy;
 //         Box::new(self.children.values_mut())
 //     }
 
-//     // fn get<K>(&self, key: K) -> Option<&Self>
-//     // where K: Into<Self::PathSegment>, Self::PathSegment: Borrow<Self::PathSegment>{
-//     //     let key = key.into();
+//     // fn get<PathSegment>(&self, segment: PathSegment) -> Option<&Self>
+//     // where PathSegment: Into<Self::PathSegment>, Self::PathSegment: Borrow<Self::PathSegment>{
 //     //     self
 //     //         .children
-//     //         .get(&key)
+//     //         .get(&segment.into())
 //     // }
 
 //     // fn get_mut<K>(&mut self, key: K) -> Option<&mut Self>

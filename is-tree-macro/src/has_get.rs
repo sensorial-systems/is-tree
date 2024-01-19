@@ -14,7 +14,7 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
             let variant_name = &variant.ident;
             variants = quote! {
                 #variants
-                #name::#variant_name(value) => value.get(key).map(|value| value.into()),
+                #name::#variant_name(value) => value.get(segment).map(|value| value.into()),
             };
         }
 
@@ -31,8 +31,8 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
             }
     
             impl<'a> ::is_tree::HasGet for #_self {
-                fn get<K>(&self, key: K) -> Option<Self::GetType>
-                where K: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
+                fn get<PathSegment>(&self, segment: PathSegment) -> Option<Self::GetType>
+                where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
                 {
                     match self {
                             #variants

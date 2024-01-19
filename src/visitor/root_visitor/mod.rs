@@ -1,4 +1,3 @@
-mod has_get;
 mod has_root;
 mod has_parent;
 mod has_value;
