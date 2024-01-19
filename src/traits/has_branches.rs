@@ -1,4 +1,3 @@
-use crate::{HasPathSegment, TreeUpdate};
 
 pub trait KnowsBranches {
     type Branches;
