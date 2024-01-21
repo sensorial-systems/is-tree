@@ -4,6 +4,6 @@ use crate::hierarchy::visitors::Visitors;
 
 use super::Module;
 
-impl<'a> KnowsRelativeAccessType for &'a Module {
+impl<'a> KnowsRelativeAccessType<'a> for &'a Module {
     type RelativeType = Visitors<'a>;
 }

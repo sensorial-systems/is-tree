@@ -1,10 +1,10 @@
-use crate::{KnowsParent, RootVisitor, HasParent};
+use crate::{RootVisitor, KnowsParent, HasParent};
 
-impl<Value> KnowsParent for RootVisitor<Value> {
+impl<'a, Value> KnowsParent<'a> for RootVisitor<Value> {
     type Parent = RootVisitor<Value>;
 }
 
-impl<Value> HasParent for RootVisitor<Value>
+impl<'a, Value> HasParent<'a> for RootVisitor<Value>
 where Value: Clone
 {
     fn parent(&self) -> Self::Parent {

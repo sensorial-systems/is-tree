@@ -20,11 +20,11 @@ pub fn impl_has_parent(ast: &DeriveInput) -> TokenStream {
     }
     
     quote! {
-        impl<'a> ::is_tree::KnowsParent for #_self {
+        impl<'a> ::is_tree::KnowsParent<'a> for #_self {
             type Parent = #_self;
         }
 
-        impl<'a> ::is_tree::HasParent for #_self {
+        impl<'a> ::is_tree::HasParent<'a> for #_self {
             fn parent(&self) -> Self::Parent {
                 match self {
                     #variants

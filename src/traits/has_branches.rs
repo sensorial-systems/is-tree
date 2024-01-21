@@ -1,9 +1,9 @@
 
-pub trait KnowsBranches {
+pub trait KnowsBranches<'a> {
     type Branches;
 }
 
-pub trait HasBranches: KnowsBranches
+pub trait HasBranches<'a>: KnowsBranches<'a>
 {
     fn branches(&self) -> impl Iterator<Item = Self::Branches>;
 

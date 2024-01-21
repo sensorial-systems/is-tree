@@ -13,11 +13,11 @@ pub struct Library {
     pub root_module: Module
 }
 
-impl<'a> KnowsBranches for &'a Library {
+impl<'a> KnowsBranches<'a> for &'a Library {
     type Branches = &'a Module;
 }
 
-impl<'a> HasBranches for &'a Library {
+impl<'a> HasBranches<'a> for &'a Library {
     fn branches(&self) -> impl Iterator<Item = Self::Branches> {
         std::iter::once(&self.root_module)
     }

@@ -1,7 +1,7 @@
-pub trait KnowsRoot {
+pub trait KnowsRoot<'a> {
     type Root;
 }
 
-pub trait HasRoot: KnowsRoot {
+pub trait HasRoot<'a>: KnowsRoot<'a> {
     fn root(&self) -> Self::Root;
 }

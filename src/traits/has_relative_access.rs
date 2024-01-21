@@ -1,28 +1,28 @@
 use crate::*;
 
-pub trait KnowsRelativeAccessType {
+pub trait KnowsRelativeAccessType<'a> {
     type RelativeType;
 }
 
-pub trait HasRelativeAccess: KnowsRelativeAccessType + KnowsPathSegment {
+pub trait HasRelativeAccess<'a>: KnowsRelativeAccessType<'a> + KnowsPathSegment {
     fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>;
 }
 
-impl<T> KnowsRelativeAccessType for T
-where Self: KnowsValue,
-      <Self as KnowsValue>::Value: KnowsRelativeAccessType
+impl<'a, T> KnowsRelativeAccessType<'a> for T
+where Self: KnowsValue<'a>,
+      <Self as KnowsValue<'a>>::Value: KnowsRelativeAccessType<'a>
 {
-    type RelativeType = <<Self as KnowsValue>::Value as KnowsRelativeAccessType>::RelativeType;
+    type RelativeType = <<Self as KnowsValue<'a>>::Value as KnowsRelativeAccessType<'a>>::RelativeType;
 }
 
-impl<'a, T> HasRelativeAccess for T
+impl<'a, T> HasRelativeAccess<'a> for T
 where
-    Self: Into<Self::RelativeType> + Clone + HasValue + HasParent + KnowsRelativeAccessType + KnowsPathSegment,
-    <Self as KnowsParent>::Parent: Into<Self::RelativeType>,
+    Self: Into<Self::RelativeType> + Clone + HasValue<'a> + HasParent<'a> + KnowsRelativeAccessType<'a> + KnowsPathSegment,
+    <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
 
-    Self: HasRoot,
-    <Self as KnowsRoot>::Root:
+    Self: HasRoot<'a>,
+    <Self as KnowsRoot<'a>>::Root:
         Into<Self::RelativeType>,
 
     Self: HasGet<'a>,
@@ -31,8 +31,8 @@ where
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
 
     Self::RelativeType:
-        HasRelativeAccess<
-            RelativeType = <Self as KnowsRelativeAccessType>::RelativeType,
+        HasRelativeAccess<'a,
+            RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType,
             PathSegment = <Self as KnowsPathSegment>::PathSegment
         >
 {

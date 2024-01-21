@@ -26,7 +26,7 @@ pub mod hierarchy;
 //     }
 // }
 
-// impl<'a> HasBranches<'a, Module> for Module {
+// impl<'a> HasBranches<'a><'a, Module> for Module {
 //     fn branches(&'a self) -> Box<dyn Iterator<Item = &Self> + 'a> {
 //         Box::new(self.children.values())
 //     }
@@ -51,7 +51,7 @@ pub mod hierarchy;
 //     // }
 // }
 
-// impl<'a> KnowsBranches<'a> for Module {
+// impl<'a> KnowsBranches<'a><'a> for Module {
 //     type Branches = Module;
 // }
 

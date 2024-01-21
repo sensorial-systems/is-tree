@@ -1,13 +1,13 @@
-use crate::{KnowsRoot, Visitor, HasRoot};
+use crate::{Visitor, KnowsRoot, HasRoot};
 
-impl<Parent, Value> KnowsRoot for Visitor<Parent, Value>
-where Parent: KnowsRoot
+impl<'a, Parent, Value> KnowsRoot<'a> for Visitor<Parent, Value>
+where Parent: KnowsRoot<'a>
 {
     type Root = Parent::Root;
 }
 
-impl<Parent, Value> HasRoot for Visitor<Parent, Value>
-where Parent: HasRoot
+impl<'a, Parent, Value> HasRoot<'a> for Visitor<Parent, Value>
+where Parent: HasRoot<'a>
 {
     fn root(&self) -> Self::Root {
         self.internal.parent.root()

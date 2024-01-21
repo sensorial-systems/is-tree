@@ -22,15 +22,15 @@ pub fn impl_has_relative_access(ast: &DeriveInput) -> TokenStream {
         let variant = variant.fields.iter().next().expect("Variant must have at least one field");
 
         let gat = quote! {
-            <#variant as KnowsRelativeAccessType>::RelativeType
+            <#variant as KnowsRelativeAccessType<'a>>::RelativeType
         };
         
         quote! {
-            impl<'a> ::is_tree::KnowsRelativeAccessType for #_self {
+            impl<'a> ::is_tree::KnowsRelativeAccessType<'a> for #_self {
                 type RelativeType = #gat;
             }
     
-            impl<'a> ::is_tree::HasRelativeAccess for #_self {
+            impl<'a> ::is_tree::HasRelativeAccess<'a> for #_self {
                 fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
                 where K: Into<<Self as KnowsPathSegment>::PathSegment>
             {
