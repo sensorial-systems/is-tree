@@ -16,7 +16,7 @@ where Self: KnowsValue<'a>,
     type RelativeType = <<Self as KnowsValue<'a>>::Value as KnowsRelativeAccessType<'a>>::RelativeType;
 }
 
-impl<'a, T> HasRelativeAccess<'a> for T
+impl<'a, T: 'a> HasRelativeAccess<'a> for T
 where
     Self: Into<Self::RelativeType> + Clone + HasValue<'a> + HasParent<'a> + KnowsRelativeAccessType<'a> + KnowsPathSegment,
     <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
@@ -46,8 +46,11 @@ where
                 PathSegment::Self_ => self.clone().into(),
                 PathSegment::Root => self.root().into(),
                 PathSegment::Super => self.parent().into(),
-                // PathSegment::Other(_) => self.get(segment)?.into()
-                _ => todo!()
+                PathSegment::Other(_) => {
+                    // FIXME: This is a hack. We should be able to use self.get(segment)?
+                    let self_ = unsafe { std::mem::transmute::<_, &'a Self>(self) };
+                    self_.get(segment)?.into()
+                }
             };
             visitor.relative(path)
         } else {
