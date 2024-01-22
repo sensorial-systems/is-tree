@@ -5,7 +5,7 @@ pub trait KnowsBranches<'a> {
 
 pub trait HasBranches<'a>: KnowsBranches<'a>
 {
-    fn branches(&self) -> impl Iterator<Item = Self::Branches>;
+    fn branches(&'a self) -> impl Iterator<Item = Self::Branches>;
 
     // fn branch<K>(&mut self, key: K) -> &mut T
     // where K: Into<T::PathSegment>,
@@ -37,4 +37,18 @@ pub trait HasBranches<'a>: KnowsBranches<'a>
     //         .branches_mut()
     //         .find(|branch| branch.path_segment() == &key)
     // }
+}
+
+impl<'a, T> KnowsBranches<'a> for &'a T
+where T: KnowsBranches<'a>
+{
+    type Branches = T::Branches;
+}
+
+impl<'a, T> HasBranches<'a> for &'a T
+where T: HasBranches<'a>
+{
+    fn branches(&'a self) -> impl Iterator<Item = Self::Branches> {
+        (*self).branches()
+    }
 }

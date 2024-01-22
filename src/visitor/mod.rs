@@ -7,8 +7,10 @@ mod has_path;
 mod has_root;
 mod has_parent;
 mod has_value;
+mod has_get;
 mod knows_visitor;
 mod has_visitor_constructor;
+mod has_branches;
 
 #[derive(Clone, Default)]
 struct Internal<Parent, Value> {

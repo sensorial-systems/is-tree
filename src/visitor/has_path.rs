@@ -7,7 +7,7 @@ where Value: KnowsPathSegment
 }
 
 impl<Parent, Value> HasPathSegment for Visitor<Parent, Value>
-where Value: HasPathSegment
+where Value: HasPathSegment + Clone
 {
     fn path_segment(&self) -> &Self::PathSegment {
         self.internal.value.path_segment()

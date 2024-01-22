@@ -5,7 +5,7 @@ impl<'a, Value> KnowsValue<'a> for RootVisitor<Value> {
 }
 
 impl<'a, Value: Clone> HasValue<'a> for RootVisitor<Value> {
-    fn value(&self) -> Self::Value {
+    fn value(&'a self) -> Self::Value {
         self.value.clone()
     }
 }

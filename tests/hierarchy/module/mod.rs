@@ -5,6 +5,7 @@ mod has_get;
 mod has_path_segment;
 mod knows_relative_access_type;
 mod knows_visitor;
+mod has_branches;
 
 pub struct Module {
     pub name: String,

@@ -6,7 +6,6 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
     let _self = quote! { #name #generics };
-    
     if let Data::Enum(data) = &ast.data {
         let mut variants = quote!{};
 
@@ -31,7 +30,17 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
             }
     
             impl<'a> ::is_tree::HasGet<'a> for #_self {
-                fn get<PathSegment>(&self, segment: PathSegment) -> Option<Self::GetType>
+                fn get<PathSegment>(&'a self, segment: PathSegment) -> Option<Self::GetType>
+                where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
+                {
+                    match self {
+                            #variants
+                    }
+                }
+            }
+
+            impl<'a> ::is_tree::HasGet<'a> for &'a #_self {
+                fn get<PathSegment>(&'a self, segment: PathSegment) -> Option<Self::GetType>
                 where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
                 {
                     match self {
