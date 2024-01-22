@@ -55,11 +55,15 @@ fn new_visitor() {
     let d: ModuleVisitor = c.visit(d);
 
     assert_eq!(a.value().path_segment(), "a");
+    assert_eq!(b.value().path_segment(), "b");
     assert_eq!(a.parent().path_segment(), "a");
+
     assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
     assert_eq!(b.parent().get("b").unwrap().path_segment(), "b");
 
     assert_eq!(a.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
+    assert_eq!(b.parent().branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
+
     assert_eq!(d.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::1", "a::b::c::d::2", "a::b::c::d::3"]);
 
     assert_eq!(a.path().to_string(), "a");
