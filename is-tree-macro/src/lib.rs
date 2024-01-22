@@ -17,13 +17,13 @@ pub fn is_tree(input: TokenStream) -> TokenStream {
     let has_root = has_root::impl_has_root(&ast);
     let has_get = has_get::impl_has_get(&ast);
     let has_branches = has_branches::impl_has_branches(&ast);
-    // let has_relative_access = has_relative_access::impl_has_relative_access(&ast);
+    let has_relative_access = has_relative_access::impl_has_relative_access(&ast);
     quote! {
         #has_path_segment
         #has_parent
         #has_root
         #has_branches
         #has_get
-        // #has_relative_access
+        #has_relative_access
     }.into()
 }
