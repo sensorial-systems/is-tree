@@ -7,9 +7,8 @@ pub mod visitors;
 use library::*;
 use module::*;
 
-#[test]
-fn new_visitor() {
-    let library = Library {
+fn hierarchy() -> Library {
+    Library {
         name: String::from("a"),
         root_module: Module {
             name: String::from("b"),
@@ -38,49 +37,86 @@ fn new_visitor() {
                 }
             ]
         }
-    };
+    }
+}
+
+#[test]
+fn direct_get() {
+    let library = hierarchy();
+    assert_eq!(library.get("b").unwrap().get("c").unwrap().path_segment(), "c");
+}
+
+#[test]
+fn direct_branches() {
+    let library = hierarchy();
+    let module = &library.root_module.children[0].children[0];
+
+    assert_eq!(library.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["b"]);
+    assert_eq!(module.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["1", "2", "3"]);
+}
+
+#[test]
+fn visitor_value_and_parent() {
+    let library = hierarchy();
+
+    let library: LibraryVisitor = library.visitor();
+    let root_module: ModuleVisitor = library.visit(&library.value().root_module);
+    let sub_module: ModuleVisitor = root_module.visit(&root_module.value().children[0]);
+
+    assert_eq!(library.value().path_segment(), "a");
+    assert_eq!(root_module.value().path_segment(), "b");
+    assert_eq!(library.parent().path_segment(), "a");
+    assert_eq!(sub_module.parent().parent().path_segment(), "a");
+}
+
+#[test]
+fn visitor_get() {
+    let library = hierarchy();
+    let module = &library.root_module;
+
+    let library: LibraryVisitor = library.visitor();
+    let module: ModuleVisitor = library.visit(module);
+
+    assert_eq!(library.get("b").unwrap().get("c").unwrap().path_segment(), "c");
+    assert_eq!(module.parent().get("b").unwrap().path_segment(), "b");
+}
+
+#[test]
+fn visitor_branches() {
+    let library = hierarchy();
+    let library = library.visitor();
+    let root_module = library.visit(&library.value().root_module);
+    let sub_module = root_module.visit(&root_module.value().children[0]);
+    let sub_module = sub_module.visit(&sub_module.value().children[0]);
+
+    assert_eq!(library.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
+    assert_eq!(root_module.parent().branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
+    assert_eq!(sub_module.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::1", "a::b::c::d::2", "a::b::c::d::3"]);
+}
+
+#[test]
+fn visitor_root() {
+    let library = hierarchy();
+    let library = library.visitor();
+    let root_module = library.visit(&library.value().root_module);
+    let sub_module = root_module.visit(&root_module.value().children[0]);
+    let sub_module = sub_module.visit(&sub_module.value().children[0]);
+
+    assert_eq!(*library.root().path_segment(), "a");
+    assert_eq!(*root_module.root().path_segment(), "a");
+    assert_eq!(*sub_module.root().path_segment(), "a");
+}
+
+#[test]
+fn visitor_relative() {
+    let library = hierarchy();
     let a = library;
     let b = &a.root_module;
     let c = &b.children[0];
-    let d = &c.children[0];
-
-    assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
-    assert_eq!(a.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["b"]);
-    assert_eq!(d.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["1", "2", "3"]);
 
     let a: LibraryVisitor = a.visitor();
     let b: ModuleVisitor = a.visit(b);
     let c: ModuleVisitor = b.visit(c);
-    let d: ModuleVisitor = c.visit(d);
-
-    assert_eq!(a.value().path_segment(), "a");
-    assert_eq!(b.value().path_segment(), "b");
-    assert_eq!(a.parent().path_segment(), "a");
-
-    assert_eq!(a.get("b").unwrap().get("c").unwrap().path_segment(), "c");
-    assert_eq!(b.parent().get("b").unwrap().path_segment(), "b");
-
-    assert_eq!(a.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
-    assert_eq!(b.parent().branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
-
-    assert_eq!(d.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::1", "a::b::c::d::2", "a::b::c::d::3"]);
-
-    assert_eq!(a.path().to_string(), "a");
-    assert_eq!(b.path().to_string(), "a::b");
-    assert_eq!(c.path().to_string(), "a::b::c");
-    assert_eq!(d.path().to_string(), "a::b::c::d");
-
-    assert_eq!(*a.parent().path_segment(), "a"); // Root's parent is itself. Will it create any kind of problem?
-    assert_eq!(*b.parent().path_segment(), "a");
-    assert_eq!(*c.parent().path_segment(), "b");
-    assert_eq!(*d.parent().path_segment(), "c");
-    assert_eq!(*c.parent().parent().path_segment(), "a");
-    assert_eq!(*d.parent().parent().parent().path_segment(), "a");
-
-    assert_eq!(*a.root().path_segment(), "a");
-    assert_eq!(*b.root().path_segment(), "a");
-    assert_eq!(*c.root().path_segment(), "a");
-    assert_eq!(*d.root().path_segment(), "a");
 
     assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
