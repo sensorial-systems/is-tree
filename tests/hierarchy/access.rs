@@ -2,13 +2,13 @@ use super::*;
 
 #[test]
 fn direct_get() {
-    let library = hierarchy();
+    let library = library();
     assert_eq!(library.get("b").unwrap().get("c").unwrap().path_segment(), "c");
 }
 
 #[test]
 fn direct_branches() {
-    let library = hierarchy();
+    let library = library();
     let module = &library.root_module.children[0].children[0];
 
     assert_eq!(library.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["b"]);
@@ -17,7 +17,7 @@ fn direct_branches() {
 
 #[test]
 fn visitor_value_and_parent() {
-    let library = hierarchy();
+    let library = library();
 
     let library: LibraryVisitor = library.visitor();
     let root_module: ModuleVisitor = library.visit(&library.value().root_module);
@@ -31,7 +31,7 @@ fn visitor_value_and_parent() {
 
 #[test]
 fn visitor_get() {
-    let library = hierarchy();
+    let library = library();
     let module = &library.root_module;
 
     let library: LibraryVisitor = library.visitor();
@@ -43,7 +43,7 @@ fn visitor_get() {
 
 #[test]
 fn visitor_branches() {
-    let library = hierarchy();
+    let library = library();
     let library = library.visitor();
     let root_module = library.visit(&library.value().root_module);
     let sub_module = root_module.visit(&root_module.value().children[0]);
@@ -56,7 +56,7 @@ fn visitor_branches() {
 
 #[test]
 fn visitor_root() {
-    let library = hierarchy();
+    let library = library();
     let library = library.visitor();
     let root_module = library.visit(&library.value().root_module);
     let sub_module = root_module.visit(&root_module.value().children[0]);
@@ -69,7 +69,7 @@ fn visitor_root() {
 
 #[test]
 fn visitor_relative() {
-    let library = hierarchy();
+    let library = library();
     let a = library;
     let b = &a.root_module;
     let c = &b.children[0];

@@ -11,7 +11,7 @@ pub use library::*;
 pub use module::*;
 pub use visitors::*;
 
-fn hierarchy() -> Library {
+fn library() -> Library {
     Library {
         name: String::from("a"),
         root_module: Module {
