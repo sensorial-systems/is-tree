@@ -1,4 +1,4 @@
-use crate::{IsVisitor, KnowsParent};
+use crate::{KnowsParent, KnowsVisitorFor};
 
 /// Reference type iterator.
 pub struct TypeIterator<Visitor>
@@ -23,10 +23,6 @@ impl<Visitor> Iterator for TypeIterator<Visitor>
     fn next(&mut self) -> Option<Self::Item> {
         self.stack.pop()
     }
-}
-
-pub trait KnowsVisitorFor<'a, Base> {
-    type Visitor: IsVisitor<'a>;
 }
 
 pub trait IterType<'a> {
@@ -57,7 +53,7 @@ impl<'a, T> IterType<'a> for T {}
 
 
 
-
+// TODO: Remove this?
 
 pub struct TypeIterMut<'a, Value>
 {
