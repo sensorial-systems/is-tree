@@ -1,65 +1,36 @@
-use crate::IsTree;
+use crate::*;
 
-/// Reference iterator.
-pub struct TreeIterator<'a, Value> {
-    stack: Vec<&'a Value>,
+pub struct TreeIterator<Visitor> {
+    stack: Vec<Visitor>,
 }
 
-impl<'a, Value> TreeIterator<'a, Value>
+impl<'a, Visitor> TreeIterator<Visitor>
 where
-    Value: IsTree<'a, Branches = Value>,
+    Visitor: Clone + HasBranches<'a> + 'a,
+    <Visitor as KnowsBranches<'a>>::Branches: Into<Visitor>,
 {
-    pub fn new(root: &'a Value) -> Self {
+    pub fn new<Value>(root: &'a Value) -> Self
+    where &'a Value: Into<Visitor> 
+    {
         let stack = Vec::new();
         let mut iterator = Self { stack };
-        iterator.build(root);
+        iterator.build(root.into());
         iterator
     }
 
-    fn build(&mut self, value: &'a Value) {
-        self.stack.push(value);
-        for child in value.branches() {
-            self.build(child);
+    fn build(&mut self, visitor: Visitor) {
+        self.stack.push(visitor.clone());
+        // FIXME: This is a hack to get around the borrow checker.
+        let visitor = unsafe { &*(&visitor as *const Visitor) };
+        for child in visitor.branches() {
+            let visitor = child.into();
+            self.build(visitor);
         }
     }
 }
 
-impl<'a, Value> Iterator for TreeIterator<'a, Value> {
-    type Item = &'a Value;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.stack.pop()
-    }
-}
-
-/// Mutable reference iterator.
-pub struct TreeIteratorMut<'a, Value> {
-    stack: Vec<&'a mut Value>,
-}
-
-impl<'a, Value> TreeIteratorMut<'a, Value>
-where
-    Value: IsTree<'a, Branches = Value>,
-{
-    pub fn new(root: &'a mut Value) -> Self {
-        let stack = Vec::new();
-        let mut iterator = Self { stack };
-        iterator.build(root);
-        iterator
-    }
-
-    fn build(&mut self, value: &'a mut Value) {
-        // FIXME: Is it safe?
-        let same_value = unsafe { &mut *(value as *mut Value) };
-        self.stack.push(same_value);
-        for child in value.branches_mut() {
-            self.build(child);
-        }
-    }
-}
-
-impl<'a, Value> Iterator for TreeIteratorMut<'a, Value> {
-    type Item = &'a mut Value;
+impl<Visitor> Iterator for TreeIterator<Visitor> {
+    type Item = Visitor;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.stack.pop()
