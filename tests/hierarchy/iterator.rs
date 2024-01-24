@@ -7,8 +7,16 @@ fn tree_iterator() {
     assert_eq!(iterator.map(|value| value.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::3", "a::b::c::d::2", "a::b::c::d::1", "a::b::c::d", "a::b::c", "a::b", "a"]);
 }
 
+impl<'a> KnowsVisitorFor<'a, Library> for String {
+    type Visitor = Visitor<Visitors<'a>, &'a String>;
+}
+
+impl<'a> KnowsVisitorFor<'a, Module> for String {
+    type Visitor = Visitor<Visitors<'a>, &'a String>;
+}
+
 #[test]
 fn type_iterator() {
     let library = library();
-    assert_eq!(library.iter_type::<String>().collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
+    assert_eq!(library.iter_type::<String>().map(|visitor| visitor.value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
 }

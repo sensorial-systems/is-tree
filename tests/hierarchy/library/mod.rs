@@ -1,4 +1,4 @@
-use is_tree::{TypeIter, TypeIterator, IterType};
+use is_tree::{TypeIter, TypeIterator, IterType, Visitor, HasVisitor};
 
 pub mod visitor;
 pub use visitor::*;
@@ -21,20 +21,23 @@ impl<'a> From<&'a Library> for Visitors<'a> {
     }
 }
 
-impl TypeIter<String> for Module {
-    fn type_iterator(&self) -> TypeIterator<'_, String> {
-        let mut strings = Vec::new();
-        strings.push(&self.name);
-        strings.extend(self.children.iter().flat_map(|m| m.iter_type::<String>()));
-        strings.into()
+impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for Module {
+    fn type_iterator(&'a self, parent: Option<Visitors<'a>>) -> TypeIterator<Visitor<Visitors<'a>, &'a String>> {
+        let mut collection = Vec::new();
+        let parent = parent.unwrap();
+        let visitor = Visitor::new(parent.clone(), &self.name);
+        collection.push(visitor.clone());
+        collection.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone()))));
+        collection.into()
     }
 }
 
-impl TypeIter<String> for Library {
-    fn type_iterator(&self) -> TypeIterator<'_, String> {
-        let mut strings = Vec::new();
-        strings.push(&self.name);
-        strings.extend(self.root_module.iter_type::<String>());
-        strings.into()
+impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for Library {
+    fn type_iterator(&'a self, _parent: Option<Visitors<'a>>) -> TypeIterator<Visitor<Visitors<'a>, &'a String>> {
+        let mut collection = Vec::new();
+        let visitor = Visitor::new(self.visitor().into(), &self.name);
+        collection.push(visitor.clone());
+        collection.extend(self.root_module.iter_type_with_parent::<String>(Some(self.visitor().into())));
+        collection.into()
     }
 }

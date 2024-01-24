@@ -1,30 +1,63 @@
+use crate::{IsVisitor, KnowsParent};
+
 /// Reference type iterator.
-pub struct TypeIterator<'a, Value>
+pub struct TypeIterator<Visitor>
 {
-    stack: Vec<&'a Value>,
+    stack: Vec<Visitor>,
 }
 
-impl<'a, Value> From<Vec<&'a Value>> for TypeIterator<'a, Value> {
-    fn from(stack: Vec<&'a Value>) -> Self {
+impl<Visitor> From<Vec<Visitor>> for TypeIterator<Visitor> {
+    fn from(stack: Vec<Visitor>) -> Self {
         Self { stack }
     }
 }
 
-pub trait TypeIter<Item> {
-    fn type_iterator(&self) -> TypeIterator<'_, Item>;
+pub trait TypeIter<'a, Visitor: KnowsParent<'a>> {
+    fn type_iterator(&'a self, parent: Option<Visitor::Parent>) -> TypeIterator<Visitor>;
 }
 
-impl<'a, Value> Iterator for TypeIterator<'a, Value>
+impl<Visitor> Iterator for TypeIterator<Visitor>
 {
-    type Item = &'a Value;
+    type Item = Visitor;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.stack.pop()
     }
 }
 
+pub trait KnowsVisitorFor<'a, Base> {
+    type Visitor: IsVisitor<'a>;
+}
 
-/// Mutable reference type iterator.
+pub trait IterType<'a> {
+    fn iter_type<Value>(&'a self) -> TypeIterator<Value::Visitor>
+    where
+        Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, Value::Visitor> + Sized,
+    {
+        self.iter_type_with_parent::<Value>(None)
+    }
+
+    fn iter_type_with_parent<Value>(&'a self, parent: Option<<Value::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<Value::Visitor>
+    where
+        Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, Value::Visitor> + Sized,
+    {
+        self.type_iterator(parent)
+    }
+}
+
+impl<'a, T> IterType<'a> for T {}
+
+
+
+
+
+
+
+
+
+
 
 pub struct TypeIterMut<'a, Value>
 {
@@ -51,14 +84,6 @@ impl<'a, Value> Iterator for TypeIterMut<'a, Value>
     }
 }
 
-/// Type iterator trait.
-pub trait IterType {
-    fn iter_type<T>(&self) -> TypeIterator<'_, T>
-    where Self: TypeIter<T>
-    {
-        self.type_iterator()
-    }
-}
 
 pub trait IterTypeMut {
     fn iter_type_mut<T>(&mut self) -> TypeIterMut<'_, T>
@@ -68,5 +93,4 @@ pub trait IterTypeMut {
     }
 }
 
-impl<T> IterType for T {}
 impl<T> IterTypeMut for T {}
