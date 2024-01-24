@@ -1,24 +1,31 @@
+use crate::*;
+
 pub struct TreeVisitor<Visitor> {
     stack: Vec<Visitor>,
 }
 
-impl<Visitor> TreeVisitor<Visitor>
-where Visitor: Clone
+impl<'a, Visitor> TreeVisitor<Visitor>
+where
+    Visitor: Clone + HasBranches<'a> + 'a,
+    <Visitor as KnowsBranches<'a>>::Branches: Into<Visitor>,
 {
-    pub fn new<Value: Into<Visitor>>(root: Value) -> Self {
+    pub fn new<Value>(root: &'a Value) -> Self
+    where &'a Value: Into<Visitor> 
+    {
         let stack = Vec::new();
         let mut iterator = Self { stack };
-        iterator.build(root);
+        iterator.build(root.into());
         iterator
     }
 
-    fn build<Value: Into<Visitor>>(&mut self, visitor: Value) {
-        let visitor = visitor.into();
+    fn build(&mut self, visitor: Visitor) {
         self.stack.push(visitor.clone());
-        // for child in visitor.branches() {
-            // let visitor = visitor.child(child);
-            // self.build(visitor);
-        // }
+        // FIXME: This is a hack to get around the borrow checker.
+        let visitor = unsafe { &*(&visitor as *const Visitor) };
+        for child in visitor.branches() {
+            let visitor = child.into();
+            self.build(visitor);
+        }
     }
 }
 

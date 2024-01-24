@@ -1,12 +1,20 @@
 use enum_as_inner::EnumAsInner;
 
-use super::{LibraryVisitor, ModuleVisitor, ModuleParentVisitor};
-use ::is_tree::*;
+use super::*;
 
-#[derive(EnumAsInner, IsTree)]
+#[derive(Clone, EnumAsInner, IsTree)]
 pub enum Visitors<'a> {
     Library(LibraryVisitor<'a>),
     Module(ModuleVisitor<'a>)
+}
+
+impl<'a> From<Visitors<'a>> for ModuleParentVisitor<'a> {
+    fn from(visitor: Visitors<'a>) -> Self {
+        match visitor {
+            Visitors::Library(library) => Self::Library(library),
+            Visitors::Module(module) => Self::Module(module)
+        }
+    }
 }
 
 impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {

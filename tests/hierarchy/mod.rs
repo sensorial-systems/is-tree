@@ -7,8 +7,9 @@ pub mod visitors;
 mod access;
 mod iterator;
 
-use library::*;
-use module::*;
+pub use library::*;
+pub use module::*;
+pub use visitors::*;
 
 fn hierarchy() -> Library {
     Library {
