@@ -26,67 +26,38 @@ impl<Visitor> Iterator for TypeIterator<Visitor>
 }
 
 pub trait IterType<'a> {
-    fn iter_type<Value>(&'a self) -> TypeIterator<Value::Visitor>
+    fn iter_type<Value>(&'a self) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
-        Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, Value::Visitor> + Sized,
+        &'a Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, <&'a Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
     {
         self.iter_type_with_parent::<Value>(None)
     }
 
-    fn iter_type_with_parent<Value>(&'a self, parent: Option<<Value::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<Value::Visitor>
+    fn iter_type_with_parent<Value>(&'a self, parent: Option<<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
-        Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, Value::Visitor> + Sized,
+        &'a Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, <&'a Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
     {
         self.type_iterator(parent)
+    }
+
+    fn iter_type_mut<Value>(&'a mut self) -> TypeIterator<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    where
+        &'a mut Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, <&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
+    {
+        self.iter_type_mut_with_parent::<Value>(None)
+    }
+
+    fn iter_type_mut_with_parent<Value>(&'a mut self, parent: Option<<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    where
+        &'a mut Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, <&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
+    {
+        todo!()
+        // self.type_iterator_mut(parent)
     }
 }
 
 impl<'a, T> IterType<'a> for T {}
-
-
-
-
-
-
-
-
-
-// TODO: Remove this?
-
-pub struct TypeIterMut<'a, Value>
-{
-    stack: Vec<&'a mut Value>,
-}
-
-impl<'a, Value> From<Vec<&'a mut Value>> for TypeIterMut<'a, Value> {
-    fn from(stack: Vec<&'a mut Value>) -> Self {
-        Self { stack }
-    }
-}
-
-pub trait IntoIterTypeMut<Item> {
-    fn type_iterator(&mut self) -> TypeIterMut<'_, Item>;
-    
-}
-
-impl<'a, Value> Iterator for TypeIterMut<'a, Value>
-{
-    type Item = &'a mut Value;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.stack.pop()
-    }
-}
-
-
-pub trait IterTypeMut {
-    fn iter_type_mut<T>(&mut self) -> TypeIterMut<'_, T>
-    where Self: IntoIterTypeMut<T>
-    {
-        self.type_iterator()
-    }
-}
-
-impl<T> IterTypeMut for T {}

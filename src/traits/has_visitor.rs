@@ -6,10 +6,16 @@ pub trait KnowsVisitor<'a> {
 
 pub trait HasVisitor {
     fn visitor(&self) -> RootVisitor<&Self>;
+
+    fn visitor_mut(&mut self) -> RootVisitor<&mut Self>;
 }
 
 impl<T> HasVisitor for T {
     fn visitor(&self) -> RootVisitor<&Self> {
+        RootVisitor::new(self)
+    }
+
+    fn visitor_mut(&mut self) -> RootVisitor<&mut Self> {
         RootVisitor::new(self)
     }
 }

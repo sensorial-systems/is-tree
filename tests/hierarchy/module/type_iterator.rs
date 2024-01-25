@@ -1,8 +1,12 @@
 use ::is_tree::*;
 use super::super::*;
 
-impl<'a> KnowsVisitorFor<'a, Module> for String {
+impl<'a> KnowsVisitorFor<'a, Module> for &'a String {
     type Visitor = Visitor<Visitors<'a>, &'a String>;
+}
+
+impl<'a> KnowsVisitorFor<'a, Module> for &'a mut String {
+    type Visitor = Visitor<Visitors<'a>, &'a mut String>;
 }
 
 impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for Module {
