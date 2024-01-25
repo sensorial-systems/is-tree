@@ -78,6 +78,8 @@ fn visitor_relative() {
     let b: ModuleVisitor = a.visit(b);
     let c: ModuleVisitor = b.visit(c);
 
+    a.value();
+
     assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec!["root"]).unwrap().as_library().unwrap().path_segment(), "a");

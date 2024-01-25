@@ -18,7 +18,8 @@ where Self: KnowsValue<'a>,
 
 impl<'a, T: 'a> HasRelativeAccess<'a> for T
 where
-    Self: Into<Self::RelativeType> + Clone + HasValue<'a> + HasParent<'a> + KnowsRelativeAccessType<'a> + KnowsPathSegment,
+    Self: Into<Self::RelativeType> + Clone + HasParent<'a> + KnowsRelativeAccessType<'a> + KnowsPathSegment,
+    &'a Self: HasValue<'a>,
     <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
 
     Self: HasRoot<'a>,
