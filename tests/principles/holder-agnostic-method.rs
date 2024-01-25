@@ -1,4 +1,4 @@
-//! # Do not force borrow on self
+//! # Holder-Agnostic Method principle
 //! 
 //! Write traits as:
 //! ```rust
