@@ -24,8 +24,8 @@ pub fn impl_has_parent(ast: &DeriveInput) -> TokenStream {
             type Parent = #_self;
         }
 
-        impl<'a> ::is_tree::HasParent<'a> for #_self {
-            fn parent(&self) -> Self::Parent {
+        impl<'a> ::is_tree::HasParent<'a> for &'a #_self {
+            fn parent(self) -> Self::Parent {
                 match self {
                     #variants
                 }

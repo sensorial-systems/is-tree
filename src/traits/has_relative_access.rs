@@ -18,9 +18,9 @@ where Self: KnowsValue<'a>,
 
 impl<'a, T: 'a> HasRelativeAccess<'a> for T
 where
-    Self: Into<Self::RelativeType> + Clone + HasParent<'a> + KnowsRelativeAccessType<'a> + KnowsPathSegment,
-    &'a Self: HasValue<'a>,
-    <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
+    Self: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + KnowsPathSegment,
+    &'a Self: HasValue<'a> + HasParent<'a>,
+    <&'a Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
 
     Self: HasRoot<'a>,
     <Self as KnowsRoot<'a>>::Root:
@@ -46,7 +46,11 @@ where
             let visitor = match segment.kind() {
                 PathSegment::Self_ => self.clone().into(),
                 PathSegment::Root => self.root().into(),
-                PathSegment::Super => self.parent().into(),
+                PathSegment::Super => {
+                    // FIXME: This is a hack. We should be able to use self.parent()?
+                    let self_ = unsafe { std::mem::transmute::<_, &'a Self>(self) };
+                    self_.parent().into()
+                },
                 PathSegment::Other(_) => {
                     // FIXME: This is a hack. We should be able to use self.get(segment)?
                     let self_ = unsafe { std::mem::transmute::<_, &'a Self>(self) };
