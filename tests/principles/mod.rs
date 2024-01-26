@@ -1,1 +1,1 @@
-pub mod do_not_force_borrow_on_self;
+pub mod holder_agnostic_method;

@@ -9,7 +9,7 @@ fn tree_iterator() {
 
 #[test]
 fn type_iterator() {
-    let mut library = library();
+    let library = library();
     assert_eq!(library.iter_type::<String>().map(|visitor| visitor.value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
     // library.iter_type_mut::<String>();
     // assert_eq!(library.iter_type_mut::<String>().map(|visitor| visitor.value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);

@@ -50,7 +50,7 @@ pub trait IterType<'a> {
         self.iter_type_mut_with_parent::<Value>(None)
     }
 
-    fn iter_type_mut_with_parent<Value>(&'a mut self, parent: Option<<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type_mut_with_parent<Value>(&'a mut self, _parent: Option<<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
         &'a mut Value: KnowsVisitorFor<'a, Self>,
         Self: TypeIter<'a, <&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
