@@ -30,8 +30,8 @@ pub fn impl_has_root(ast: &DeriveInput) -> TokenStream {
                 type Root = #gat;
             }
     
-            impl<'a> ::is_tree::HasRoot<'a> for #_self {
-                fn root(&self) -> Self::Root {
+            impl<'a> ::is_tree::HasRoot<'a> for &'a #_self {
+                fn root(self) -> Self::Root {
                     match self {
                         #variants
                     }
