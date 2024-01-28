@@ -13,7 +13,7 @@ impl<Visitor> From<Vec<Visitor>> for TypeIterator<Visitor> {
 }
 
 pub trait TypeIter<'a, Visitor: KnowsParent<'a>> {
-    fn type_iterator(&'a self, parent: Option<Visitor::Parent>) -> TypeIterator<Visitor>;
+    fn type_iterator(self, parent: Option<Visitor::Parent>) -> TypeIterator<Visitor>;
 }
 
 impl<Visitor> Iterator for TypeIterator<Visitor>
@@ -26,7 +26,7 @@ impl<Visitor> Iterator for TypeIterator<Visitor>
 }
 
 pub trait IterType<'a> {
-    fn iter_type<Value>(&'a self) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type<Value>(self) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
         &'a Value: KnowsVisitorFor<'a, Self>,
         Self: TypeIter<'a, <&'a Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
@@ -34,29 +34,12 @@ pub trait IterType<'a> {
         self.iter_type_with_parent::<Value>(None)
     }
 
-    fn iter_type_with_parent<Value>(&'a self, parent: Option<<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type_with_parent<Value>(self, parent: Option<<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
         &'a Value: KnowsVisitorFor<'a, Self>,
         Self: TypeIter<'a, <&'a Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
     {
         self.type_iterator(parent)
-    }
-
-    fn iter_type_mut<Value>(&'a mut self) -> TypeIterator<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor>
-    where
-        &'a mut Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, <&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
-    {
-        self.iter_type_mut_with_parent::<Value>(None)
-    }
-
-    fn iter_type_mut_with_parent<Value>(&'a mut self, _parent: Option<<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor>
-    where
-        &'a mut Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, <&'a mut Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
-    {
-        todo!()
-        // self.type_iterator_mut(parent)
     }
 }
 
