@@ -4,14 +4,14 @@ impl<'a, Value> KnowsValue<'a> for RootVisitor<Value> {
     type Value = Value;
 }
 
-impl<'a, Value: Clone> HasValue<'a> for &'a RootVisitor<Value> {
+impl<'a, Value> HasValue<'a> for &'a RootVisitor<Value> {
     fn value(self) -> Self::Value {
-        self.value.clone()
+        &self.value
     }
 }
 
-impl<'a, Value: Clone> HasValue<'a> for &'a mut RootVisitor<Value> {
+impl<'a, Value> HasValue<'a> for &'a mut RootVisitor<Value> {
     fn value(self) -> Self::Value {
-        self.value.clone()
+        &mut self.value
     }
 }

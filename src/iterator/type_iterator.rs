@@ -26,18 +26,18 @@ impl<Visitor> Iterator for TypeIterator<Visitor>
 }
 
 pub trait IterType<'a> {
-    fn iter_type<Value>(self) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type<Value>(self) -> TypeIterator<<Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
-        &'a Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, <&'a Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
+        Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, <Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
     {
         self.iter_type_with_parent::<Value>(None)
     }
 
-    fn iter_type_with_parent<Value>(self, parent: Option<<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<&'a Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type_with_parent<Value>(self, parent: Option<<<Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<Value as KnowsVisitorFor<'a, Self>>::Visitor>
     where
-        &'a Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, <&'a Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
+        Value: KnowsVisitorFor<'a, Self>,
+        Self: TypeIter<'a, <Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
     {
         self.type_iterator(parent)
     }

@@ -10,7 +10,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for &'a Library {
         let mut collection = Vec::new();
         let visitor = Visitor::new(self.visitor().into(), &self.name);
         collection.push(visitor.clone());
-        collection.extend((&self.root_module).iter_type_with_parent::<String>(Some(self.visitor().into())));
+        collection.extend((&self.root_module).iter_type_with_parent::<&String>(Some(self.visitor().into())));
         collection.into()
     }
 }

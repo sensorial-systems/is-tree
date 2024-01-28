@@ -11,7 +11,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for &'a Module {
         let parent = parent.unwrap();
         let visitor = Visitor::new(parent.clone(), &self.name);
         collection.push(visitor.clone());
-        collection.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone()))));
+        collection.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<&String>(Some(parent.clone()))));
         collection.into()
     }
 }

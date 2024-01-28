@@ -8,10 +8,10 @@ pub trait HasValue<'a>: KnowsValue<'a> {
 
 impl<'a, T: KnowsValue<'a>> KnowsValue<'a> for &'a T
 {
-    type Value = T::Value;
+    type Value = &'a T::Value;
 }
 
 impl<'a, T: KnowsValue<'a>> KnowsValue<'a> for &'a mut T
 {
-    type Value = T::Value;
+    type Value = &'a mut T::Value;
 }

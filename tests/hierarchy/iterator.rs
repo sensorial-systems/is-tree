@@ -10,5 +10,5 @@ fn tree_iterator() {
 #[test]
 fn type_iterator() {
     let library = library();
-    assert_eq!((&library).iter_type::<String>().map(|visitor| visitor.value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
+    assert_eq!((&library).iter_type::<&String>().map(|visitor| *visitor.value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
 }
