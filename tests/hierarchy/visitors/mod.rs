@@ -8,6 +8,24 @@ pub enum Visitors<'a> {
     Module(ModuleVisitor<'a>)
 }
 
+// TODO: Move it to IsTree derive macro.
+impl<'a> HasBranches<'a> for Visitors<'a> {
+    fn branches(self) -> impl Iterator<Item = Self::Branches> {
+        match self {
+            Self::Library(value) => {
+                // FIXME: This is a workaround.
+                let value = unsafe { &*(&value as *const LibraryVisitor) };
+                value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter()
+            },
+            Self::Module(value) => {
+                // FIXME: This is a workaround.
+                let value = unsafe { &*(&value as *const ModuleVisitor) };
+                value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter()
+            }
+        }
+    }
+}
+
 impl<'a> From<Visitors<'a>> for ModuleParentVisitor<'a> {
     fn from(visitor: Visitors<'a>) -> Self {
         match visitor {
