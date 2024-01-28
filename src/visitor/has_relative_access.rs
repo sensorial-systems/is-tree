@@ -6,16 +6,16 @@ where Value: KnowsRelativeAccessType<'a>
     type RelativeType = Value::RelativeType;
 }
 
-impl<'a, Parent, Value> HasRelativeAccess<'a> for Visitor<Parent, Value>
+impl<'a, Parent, Value> HasRelativeAccess<'a> for &'a Visitor<Parent, Value>
 where
-    Self: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + KnowsPathSegment + 'a,
-    &'a Self: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
-    <&'a Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
+    Visitor<Parent, Value>: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + KnowsPathSegment + 'a,
+    Self: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
+    <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
 
-    <&'a Self as KnowsRoot<'a>>::Root:
+    <Self as KnowsRoot<'a>>::Root:
         Into<Self::RelativeType>,
 
-    <&'a Self as KnowsGetType<'a>>::GetType:
+    <Self as KnowsGetType<'a>>::GetType:
         Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
 
@@ -25,7 +25,7 @@ where
             PathSegment = <Self as KnowsPathSegment>::PathSegment
         >
 {
-    fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>
     {
         let mut path = path.into_iter();
@@ -33,21 +33,9 @@ where
             let segment = segment.into();
             let visitor = match segment.kind() {
                 PathSegment::Self_ => self.clone().into(),
-                PathSegment::Root => {
-                    // FIXME: This is a hack. We should be able to use self.parent()?
-                    let self_ = unsafe { std::mem::transmute::<_, &'a Self>(self) };
-                    self_.root().into()
-                },
-                PathSegment::Super => {
-                    // FIXME: This is a hack. We should be able to use self.parent()?
-                    let self_ = unsafe { std::mem::transmute::<_, &'a Self>(self) };
-                    self_.parent().into()
-                },
-                PathSegment::Other(_) => {
-                    // FIXME: This is a hack. We should be able to use self.get(segment)?
-                    let self_ = unsafe { std::mem::transmute::<_, &'a Self>(self) };
-                    self_.get(segment)?.into()
-                }
+                PathSegment::Root => self.root().into(),
+                PathSegment::Super => self.parent().into(),
+                PathSegment::Other(_) => self.get(segment)?.into()
             };
             visitor.relative(path)
         } else {

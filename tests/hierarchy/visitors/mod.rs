@@ -26,6 +26,26 @@ impl<'a> HasBranches<'a> for Visitors<'a> {
     }
 }
 
+// TODO: Move it to IsTree derive macro.
+impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    where K: Into<<Self as KnowsPathSegment>::PathSegment>
+    {
+        match self {
+            Self::Library(value) => {
+                // FIXME: This is a workaround.
+                let value = unsafe { &*(&value as *const LibraryVisitor) };
+                value.relative(path).map(|value| value.into())
+            },
+            Self::Module(value) => {
+                // FIXME: This is a workaround.
+                let value = unsafe { &*(&value as *const ModuleVisitor) };
+                value.relative(path).map(|value| value.into())
+            }
+        }
+    }
+}
+
 impl<'a> From<Visitors<'a>> for ModuleParentVisitor<'a> {
     fn from(visitor: Visitors<'a>) -> Self {
         match visitor {

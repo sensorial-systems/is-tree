@@ -5,7 +5,7 @@ pub trait KnowsRelativeAccessType<'a> {
 }
 
 pub trait HasRelativeAccess<'a>: KnowsRelativeAccessType<'a> + KnowsPathSegment {
-    fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>;
 }
 

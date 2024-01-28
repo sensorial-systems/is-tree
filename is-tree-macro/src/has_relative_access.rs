@@ -30,8 +30,8 @@ pub fn impl_has_relative_access(ast: &DeriveInput) -> TokenStream {
                 type RelativeType = #gat;
             }
     
-            impl<'a> ::is_tree::HasRelativeAccess<'a> for #_self {
-                fn relative<K>(&self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+            impl<'a> ::is_tree::HasRelativeAccess<'a> for &'a #_self {
+                fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
                 where K: Into<<Self as KnowsPathSegment>::PathSegment>
             {
                 match self {
