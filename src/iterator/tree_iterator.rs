@@ -6,8 +6,9 @@ pub struct TreeIterator<Visitor> {
 
 impl<'a, Visitor> TreeIterator<Visitor>
 where
-    Visitor: Clone + HasBranches<'a> + 'a,
-    <Visitor as KnowsBranches<'a>>::Branches: Into<Visitor>,
+    Visitor: Clone + 'a,
+    &'a Visitor: HasBranches<'a>,
+    <&'a Visitor as KnowsBranches<'a>>::Branches: Into<Visitor>,
 {
     pub fn new<Value>(root: &'a Value) -> Self
     where &'a Value: Into<Visitor> 

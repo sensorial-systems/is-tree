@@ -28,11 +28,11 @@ pub fn impl_has_branches(ast: &DeriveInput) -> TokenStream {
             impl<'a> ::is_tree::KnowsBranches<'a> for #_self {
                 type Branches = #gat;
             }
-    
-            impl<'a> ::is_tree::HasBranches<'a> for #_self {
-                fn branches(&'a self) -> impl Iterator<Item = Self::Branches> {
+
+            impl<'a> ::is_tree::HasBranches<'a> for &'a #_self {
+                fn branches(self) -> impl Iterator<Item = Self::Branches> {
                     match self {
-                            #variants
+                        #variants
                     }
                 }
             }
