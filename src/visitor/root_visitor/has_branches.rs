@@ -1,7 +1,7 @@
 use crate::*;
 
 impl<'a, Value> KnowsBranches<'a> for RootVisitor<Value>
-where Value: KnowsBranches<'a> + 'a,
+where Value: KnowsBranches<'a>,
       <Value as KnowsBranches<'a>>::Branches: KnowsVisitor<'a>
 {
     type Branches = <Value::Branches as KnowsVisitor<'a>>::Visitor;

@@ -19,14 +19,13 @@ where Self: KnowsValue<'a>,
 impl<'a, T: 'a> HasRelativeAccess<'a> for T
 where
     Self: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + KnowsPathSegment,
-    &'a Self: HasValue<'a> + HasParent<'a> + HasRoot<'a>,
+    &'a Self: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
     <&'a Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
 
     <&'a Self as KnowsRoot<'a>>::Root:
         Into<Self::RelativeType>,
 
-    Self: HasGet<'a>,
-    <Self as KnowsGetType<'a>>::GetType:
+    <&'a Self as KnowsGetType<'a>>::GetType:
         Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
 

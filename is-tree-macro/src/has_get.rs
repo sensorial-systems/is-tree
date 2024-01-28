@@ -28,23 +28,13 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
             impl<'a> ::is_tree::KnowsGetType<'a> for #_self {
                 type GetType = #gat;
             }
-    
-            impl<'a> ::is_tree::HasGet<'a> for #_self {
-                fn get<PathSegment>(&'a self, segment: PathSegment) -> Option<Self::GetType>
-                where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
-                {
-                    match self {
-                            #variants
-                    }
-                }
-            }
 
             impl<'a> ::is_tree::HasGet<'a> for &'a #_self {
-                fn get<PathSegment>(&'a self, segment: PathSegment) -> Option<Self::GetType>
+                fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::GetType>
                 where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>
                 {
                     match self {
-                            #variants
+                        #variants
                     }
                 }
             }

@@ -7,7 +7,7 @@ pub trait KnowsGetType<'a> {
 pub trait HasGet<'a>: KnowsGetType<'a>
 where Self::GetType: KnowsPathSegment
 {
-    fn get<PathSegment>(&'a self, segment: PathSegment) -> Option<Self::GetType>
+    fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::GetType>
     where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment>;
     // TODO: Add default implementation with PathSegment search on HasBranches iterator.
 }
