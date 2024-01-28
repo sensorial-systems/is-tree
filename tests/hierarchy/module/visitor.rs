@@ -4,12 +4,12 @@ use crate::hierarchy::Library;
 
 use super::{super::LibraryVisitor, Module};
 
-pub type ModuleVisitor<'a> = Visitor<ModuleParentVisitor<'a>, &'a Module>;
+pub type ModuleVisitor<'a, Module> = Visitor<ModuleParentVisitor<'a>, Module>;
 
 #[derive(Clone, IsTree)]
 pub enum ModuleParentVisitor<'a> {
     Library(LibraryVisitor<&'a Library>),
-    Module(Box<ModuleVisitor<'a>>)
+    Module(Box<ModuleVisitor<'a, &'a Module>>)
 }
 
 impl<'a> From<LibraryVisitor<&'a Library>> for ModuleParentVisitor<'a> {
@@ -18,8 +18,8 @@ impl<'a> From<LibraryVisitor<&'a Library>> for ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> From<ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
-    fn from(visitor: ModuleVisitor<'a>) -> Self {
+impl<'a> From<ModuleVisitor<'a, &'a Module>> for ModuleParentVisitor<'a> {
+    fn from(visitor: ModuleVisitor<'a, &'a Module>) -> Self {
         Self::Module(visitor.into())
     }
 }
