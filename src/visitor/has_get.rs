@@ -18,7 +18,7 @@ where Parent: Clone,
     fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::GetType>
     where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
         self
-            .internal.value.clone() // TODO: How to use .value() here instead?
+            .value.clone() // TODO: How to use .value() here instead?
             .get(segment)
             .map(|value| self.visit(value))
     }

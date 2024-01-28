@@ -1,6 +1,4 @@
 pub mod root_visitor;
-use std::rc::Rc;
-
 pub use root_visitor::*;
 
 mod has_path;
@@ -14,19 +12,13 @@ mod has_branches;
 mod has_relative_access;
 
 #[derive(Clone, Default)]
-struct Internal<Parent, Value> {
+pub struct Visitor<Parent, Value> {
     parent: Parent,
     value: Value
 }
 
-#[derive(Clone, Default)]
-pub struct Visitor<Parent, Value> {
-    internal: Rc<Internal<Parent, Value>>
-}
-
 impl<Parent, Value> Visitor<Parent, Value> {
     pub fn new(parent: Parent, value: Value) -> Self {
-        let internal = Rc::new(Internal { parent, value });
-        Self { internal }
+        Self { parent, value }
     }
 }

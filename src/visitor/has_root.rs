@@ -10,6 +10,6 @@ impl<'a, Parent, Value> HasRoot<'a> for &'a Visitor<Parent, Value>
 where &'a Parent: HasRoot<'a>
 {
     fn root(self) -> Self::Root {
-        self.internal.parent.root()
+        self.parent.root()
     }
 }

@@ -17,7 +17,7 @@ where Parent: Clone,
 {
     fn branches(self) -> impl Iterator<Item = Self::Branches> {
         self
-            .internal.value // TODO: How to use .value() here instead?
+            .value // TODO: How to use .value() here instead?
             .branches()
             .map(|value| self.visit(value))
     }

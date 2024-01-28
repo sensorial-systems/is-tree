@@ -7,7 +7,7 @@ pub type ModuleVisitor<'a> = Visitor<ModuleParentVisitor<'a>, &'a Module>;
 #[derive(Clone, IsTree)]
 pub enum ModuleParentVisitor<'a> {
     Library(LibraryVisitor<'a>),
-    Module(ModuleVisitor<'a>)
+    Module(Box<ModuleVisitor<'a>>)
 }
 
 impl<'a> From<LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
@@ -18,6 +18,6 @@ impl<'a> From<LibraryVisitor<'a>> for ModuleParentVisitor<'a> {
 
 impl<'a> From<ModuleVisitor<'a>> for ModuleParentVisitor<'a> {
     fn from(visitor: ModuleVisitor<'a>) -> Self {
-        Self::Module(visitor)
+        Self::Module(visitor.into())
     }
 }
