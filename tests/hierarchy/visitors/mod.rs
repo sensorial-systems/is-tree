@@ -4,7 +4,7 @@ use super::*;
 
 #[derive(Clone, EnumAsInner, IsTree)]
 pub enum Visitors<'a> {
-    Library(LibraryVisitor<'a>),
+    Library(LibraryVisitor<&'a Library>),
     Module(ModuleVisitor<'a>)
 }
 
@@ -14,7 +14,7 @@ impl<'a> HasBranches<'a> for Visitors<'a> {
         match self {
             Self::Library(value) => {
                 // FIXME: This is a workaround.
-                let value = unsafe { &*(&value as *const LibraryVisitor) };
+                let value = unsafe { &*(&value as *const LibraryVisitor<&Library>) };
                 value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter()
             },
             Self::Module(value) => {
@@ -34,7 +34,7 @@ impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
         match self {
             Self::Library(value) => {
                 // FIXME: This is a workaround.
-                let value = unsafe { &*(&value as *const LibraryVisitor) };
+                let value = unsafe { &*(&value as *const LibraryVisitor<&Library>) };
                 value.relative(path).map(|value| value.into())
             },
             Self::Module(value) => {
@@ -64,8 +64,8 @@ impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
     }
 }
 
-impl<'a> From<LibraryVisitor<'a>> for Visitors<'a> {
-    fn from(visitor: LibraryVisitor<'a>) -> Self {
+impl<'a> From<LibraryVisitor<&'a Library>> for Visitors<'a> {
+    fn from(visitor: LibraryVisitor<&'a Library>) -> Self {
         Self::Library(visitor)
     }
 }

@@ -19,9 +19,9 @@ fn direct_branches() {
 fn visitor_value_and_parent() {
     let library = library();
 
-    let library: LibraryVisitor = library.visitor();
+    let library: LibraryVisitor<&Library> = library.visitor();
     let root_module: ModuleVisitor = library.visit(&library.value().root_module);
-    let sub_module: ModuleVisitor = root_module.visit(&root_module.value().children[0]);
+    let sub_module: ModuleVisitor = root_module.visit(&(&root_module).value().children[0]);
 
     assert_eq!(library.value().path_segment(), "a");
     assert_eq!(root_module.value().path_segment(), "b");
@@ -34,7 +34,7 @@ fn visitor_get() {
     let library = library();
     let module = &library.root_module;
 
-    let library: LibraryVisitor = library.visitor();
+    let library: LibraryVisitor<&Library> = library.visitor();
     let module: ModuleVisitor = library.visit(module);
 
     assert_eq!(library.get("b").unwrap().get("c").unwrap().path_segment(), "c");
@@ -46,8 +46,8 @@ fn visitor_branches() {
     let library = library();
     let library = library.visitor();
     let root_module = library.visit(&library.value().root_module);
-    let sub_module = root_module.visit(&root_module.value().children[0]);
-    let sub_module = sub_module.visit(&sub_module.value().children[0]);
+    let sub_module = root_module.visit(&(&root_module).value().children[0]);
+    let sub_module = sub_module.visit(&(&sub_module).value().children[0]);
 
     assert_eq!(library.branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
     assert_eq!(root_module.parent().branches().map(|branch| branch.path().to_string()).collect::<Vec<_>>(), vec!["a::b"]);
@@ -59,8 +59,8 @@ fn visitor_root() {
     let library = library();
     let library = library.visitor();
     let root_module = library.visit(&library.value().root_module);
-    let sub_module = root_module.visit(&root_module.value().children[0]);
-    let sub_module = sub_module.visit(&sub_module.value().children[0]);
+    let sub_module = root_module.visit(&(&root_module).value().children[0]);
+    let sub_module = sub_module.visit(&(&sub_module).value().children[0]);
 
     assert_eq!(*library.root().path_segment(), "a");
     assert_eq!(*root_module.root().path_segment(), "a");
@@ -74,7 +74,7 @@ fn visitor_relative() {
     let b = &a.root_module;
     let c = &b.children[0];
 
-    let a: LibraryVisitor = a.visitor();
+    let a: LibraryVisitor<&Library> = a.visitor();
     let b: ModuleVisitor = a.visit(b);
     let c: ModuleVisitor = b.visit(c);
 
