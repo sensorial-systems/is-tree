@@ -21,7 +21,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for &'a Library {
 
 impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a mut String>> for &'a mut Library {
     fn type_iterator(self, _parent: Option<Visitors<'a>>) -> TypeIterator<Visitor<Visitors<'a>, &'a mut String>> {
-        let mut collection = Vec::new();
+        let collection = Vec::new();
         // let visitor = Visitor::new(self.visitor().into(), &mut self.name);
         // collection.push(visitor.clone());
         // collection.extend((&self.root_module).iter_type_with_parent::<&String>(Some(self.visitor().into())));
