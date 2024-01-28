@@ -11,6 +11,7 @@ mod has_get;
 mod knows_visitor;
 mod has_visitor_constructor;
 mod has_branches;
+mod has_relative_access;
 
 #[derive(Clone, Default)]
 struct Internal<Parent, Value> {

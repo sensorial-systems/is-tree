@@ -4,6 +4,7 @@ mod has_value;
 mod has_path;
 mod has_get;
 mod has_branches;
+mod has_relative_access;
 
 #[derive(Clone, Copy, Default)]
 pub struct RootVisitor<Value> {
