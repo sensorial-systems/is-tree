@@ -2,14 +2,35 @@ use enum_as_inner::EnumAsInner;
 
 use super::*;
 
-#[derive(Clone, EnumAsInner, IsTree)]
-pub enum Visitors<'a> {
-    Library(LibraryVisitor<&'a Library>),
-    Module(ModuleVisitor<'a, &'a Module>)
+#[derive(Clone, EnumAsInner)]
+pub enum Visitors<'a, Library, Module> {
+    Library(LibraryVisitor<Library>),
+    Module(ModuleVisitor<'a, Module>)
+}
+
+impl<'a> KnowsBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
+    type Branches = Visitors<'a, &'a Library, &'a Module>;
+}
+
+impl<'a> KnowsRelativeAccessType<'a> for Visitors<'a, &'a Library, &'a Module> {
+    type RelativeType = Visitors<'a, &'a Library, &'a Module>;
+}
+
+impl<'a> KnowsPathSegment for Visitors<'a, &'a Library, &'a Module> {
+    type PathSegment = String;
+}
+
+impl<'a> HasPath for Visitors<'a, &'a Library, &'a Module> {
+    fn path(&self) -> Path<Self::PathSegment> {
+        match self {
+            Self::Library(value) => value.path(),
+            Self::Module(value) => value.path()
+        }
+    }
 }
 
 // TODO: Move it to IsTree derive macro.
-impl<'a> HasBranches<'a> for Visitors<'a> {
+impl<'a> HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
     fn branches(self) -> impl Iterator<Item = Self::Branches> {
         match self {
             Self::Library(value) => {
@@ -27,7 +48,7 @@ impl<'a> HasBranches<'a> for Visitors<'a> {
 }
 
 // TODO: Move it to IsTree derive macro.
-impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
+impl<'a> HasRelativeAccess<'a> for Visitors<'a, &'a Library, &'a Module> {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<<Self as KnowsPathSegment>::PathSegment>
     {
@@ -46,8 +67,8 @@ impl<'a> HasRelativeAccess<'a> for Visitors<'a> {
     }
 }
 
-impl<'a> From<Visitors<'a>> for ModuleParentVisitor<'a> {
-    fn from(visitor: Visitors<'a>) -> Self {
+impl<'a> From<Visitors<'a, &'a Library, &'a Module>> for ModuleParentVisitor<'a> {
+    fn from(visitor: Visitors<'a, &'a Library, &'a Module>) -> Self {
         match visitor {
             Visitors::Library(library) => Self::Library(library),
             Visitors::Module(module) => Self::Module(module.into())
@@ -55,7 +76,7 @@ impl<'a> From<Visitors<'a>> for ModuleParentVisitor<'a> {
     }
 }
 
-impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
+impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a, &'a Library, &'a Module> {
     fn from(visitor: ModuleParentVisitor<'a>) -> Self {
         match visitor {
             ModuleParentVisitor::Library(library) => Self::Library(library),
@@ -64,14 +85,20 @@ impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a> {
     }
 }
 
-impl<'a> From<LibraryVisitor<&'a Library>> for Visitors<'a> {
+impl<'a> From<LibraryVisitor<&'a Library>> for Visitors<'a, &'a Library, &'a Module> {
     fn from(visitor: LibraryVisitor<&'a Library>) -> Self {
         Self::Library(visitor)
     }
 }
 
-impl<'a> From<ModuleVisitor<'a, &'a Module>> for Visitors<'a> {
+impl<'a> From<ModuleVisitor<'a, &'a Module>> for Visitors<'a, &'a Library, &'a Module> {
     fn from(visitor: ModuleVisitor<'a, &'a Module>) -> Self {
         Self::Module(visitor)
+    }
+}
+
+impl<'a> From<&'a Library> for Visitors<'a, &'a Library, &'a Module> {
+    fn from(value: &'a Library) -> Self {
+        Self::Library(value.into())
     }
 }

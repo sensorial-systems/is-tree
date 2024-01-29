@@ -13,9 +13,3 @@ pub struct Library {
     pub name: String,
     pub root_module: Module
 }
-
-impl<'a> From<&'a Library> for Visitors<'a> {
-    fn from(value: &'a Library) -> Self {
-        Self::Library(value.into())
-    }
-}

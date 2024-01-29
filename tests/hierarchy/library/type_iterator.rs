@@ -2,15 +2,15 @@ use ::is_tree::*;
 use super::*;
 
 impl<'a> KnowsVisitorFor<'a, &'a Library> for &'a String {
-    type Visitor = Visitor<Visitors<'a>, &'a String>;
+    type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>;
 }
 
 impl<'a> KnowsVisitorFor<'a, &'a mut Library> for &'a mut String {
-    type Visitor = Visitor<Visitors<'a>, &'a mut String>;
+    type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>;
 }
 
-impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for &'a Library {
-    fn type_iterator(self, _parent: Option<Visitors<'a>>) -> TypeIterator<Visitor<Visitors<'a>, &'a String>> {
+impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>> for &'a Library {
+    fn type_iterator(self, _parent: Option<Visitors<'a, &'a Library, &'a Module>>) -> TypeIterator<Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>> {
         let mut collection = Vec::new();
         let visitor = Visitor::new(self.visitor().into(), &self.name);
         collection.push(visitor.clone());
@@ -19,8 +19,8 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a String>> for &'a Library {
     }
 }
 
-impl<'a> TypeIter<'a, Visitor<Visitors<'a>, &'a mut String>> for &'a mut Library {
-    fn type_iterator(self, _parent: Option<Visitors<'a>>) -> TypeIterator<Visitor<Visitors<'a>, &'a mut String>> {
+impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>> for &'a mut Library {
+    fn type_iterator(self, _parent: Option<Visitors<'a, &'a Library, &'a Module>>) -> TypeIterator<Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>> {
         let collection = Vec::new();
         // let visitor = Visitor::new(self.visitor().into(), &mut self.name);
         // collection.push(visitor.clone());
