@@ -1,11 +1,11 @@
 use ::is_tree::*;
 use super::*;
 
-impl<'a> KnowsVisitorFor<'a, &'a Library> for &'a String {
+impl<'a> KnowsVisitorFor<'a, &'a Library> for String {
     type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>;
 }
 
-impl<'a> KnowsVisitorFor<'a, &'a mut Library> for &'a mut String {
+impl<'a> KnowsVisitorFor<'a, &'a mut Library> for String {
     type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>;
 }
 
@@ -14,7 +14,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>
         let mut collection = Vec::new();
         let visitor = Visitor::new(self.visitor().into(), &self.name);
         collection.push(visitor.clone());
-        collection.extend((&self.root_module).iter_type_with_parent::<&String>(Some(self.visitor().into())));
+        collection.extend((&self.root_module).iter_type_with_parent::<String>(Some(self.visitor().into())));
         collection.into()
     }
 }
@@ -28,7 +28,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut Str
         let parent: Visitors<'_, &Library, &Module> = self.visitor().into();
         let visitor = Visitor::new(parent.clone(), value);
         collection.push(visitor);
-        collection.extend((&mut self_.root_module).iter_type_with_parent::<&mut String>(Some(parent)));
+        collection.extend((&mut self_.root_module).iter_type_with_parent::<String>(Some(parent)));
         collection.into()
     }
 }

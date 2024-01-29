@@ -1,11 +1,11 @@
 use ::is_tree::*;
 use super::super::*;
 
-impl<'a> KnowsVisitorFor<'a, &'a Module> for &'a String {
+impl<'a> KnowsVisitorFor<'a, &'a Module> for String {
     type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>;
 }
 
-impl<'a> KnowsVisitorFor<'a, &'a mut Module> for &'a mut String {
+impl<'a> KnowsVisitorFor<'a, &'a mut Module> for String {
     type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>;
 }
 
@@ -16,7 +16,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>
         let visitor: Visitor<Visitors<'_, &Library, &Module>, &String> = Visitor::new(parent.clone(), &self.name);
         collection.push(visitor.clone());
         let parent: Visitors<'_, &Library, &Module> = Visitor::new(parent.clone().into(), self).into();
-        collection.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<&String>(Some(parent.clone()))));
+        collection.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone()))));
         collection.into()
     }
 }
@@ -31,7 +31,7 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut Str
         collection.push(visitor);
         let parent: Visitor<ModuleParentVisitor<'_>, &Module> = Visitor::new(parent.clone().into(), self_).into();
         let parent: Visitors<'_, &Library, &Module> = parent.into();
-        collection.extend(self.children.iter_mut().flat_map(|child| child.iter_type_with_parent::<&mut String>(Some(parent.clone()))));
+        collection.extend(self.children.iter_mut().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone()))));
         collection.into()
     }
 }

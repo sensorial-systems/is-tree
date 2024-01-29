@@ -12,10 +12,10 @@ fn type_iterator() {
     let mut library = library();
 
     // Test if parents are properly set.
-    assert_eq!((&library).iter_type::<&String>().map(|visitor| visitor.parent().path().to_string()).collect::<Vec<_>>(), vec!["a", "a::b::c", "a::b::c::d", "a::b::c::d", "a::b::c::d", "a::b", "a"]);
-    assert_eq!((&mut library).iter_type::<&mut String>().map(|visitor| visitor.parent().path().to_string()).collect::<Vec<_>>(), vec!["a", "a::b::c", "a::b::c::d", "a::b::c::d", "a::b::c::d", "a::b", "a"]);
+    assert_eq!((&library).iter_type::<String>().map(|visitor| visitor.parent().path().to_string()).collect::<Vec<_>>(), vec!["a", "a::b::c", "a::b::c::d", "a::b::c::d", "a::b::c::d", "a::b", "a"]);
+    assert_eq!((&mut library).iter_type::<String>().map(|visitor| visitor.parent().path().to_string()).collect::<Vec<_>>(), vec!["a", "a::b::c", "a::b::c::d", "a::b::c::d", "a::b::c::d", "a::b", "a"]);
 
-    assert_eq!((&library).iter_type::<&String>().map(|visitor| *(&visitor).value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
-    (&mut library).iter_type::<&mut String>().for_each(|mut visitor| **(&mut visitor).value() = "x".to_string());
-    assert_eq!((&library).iter_type::<&String>().map(|visitor| *(&visitor).value()).collect::<Vec<_>>(), vec!["x", "x", "x", "x", "x", "x", "x"]);
+    assert_eq!((&library).iter_type::<String>().map(|visitor| *(&visitor).value()).collect::<Vec<_>>(), vec!["b", "d", "1", "2", "3", "c", "a"]);
+    (&mut library).iter_type::<String>().for_each(|mut visitor| **(&mut visitor).value() = "x".to_string());
+    assert_eq!((&library).iter_type::<String>().map(|visitor| *(&visitor).value()).collect::<Vec<_>>(), vec!["x", "x", "x", "x", "x", "x", "x"]);
 }
