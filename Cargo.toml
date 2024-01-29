@@ -1,7 +1,7 @@
 workspace = { members = ["is-tree-macro"] }
 [package]
 name = "is-tree"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Everything is a tree"
 license = "Apache-2.0"
@@ -9,8 +9,6 @@ documentation = "https://docs.rs/is-tree"
 homepage = "https://github.com/sensorial-systems/is-tree"
 repository = "https://github.com/sensorial-systems/is-tree"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 enum-as-inner = "0.6.0"
-is-tree-macro = { path = "is-tree-macro" }
+is-tree-macro = "0.1.0"
