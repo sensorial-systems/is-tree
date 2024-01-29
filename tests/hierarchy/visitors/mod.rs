@@ -8,15 +8,15 @@ pub enum Visitors<'a, Library, Module> {
     Module(ModuleVisitor<'a, Module>)
 }
 
-impl<'a> KnowsBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
-    type Branches = Visitors<'a, &'a Library, &'a Module>;
+impl<'a, Library, Module> KnowsBranches<'a> for Visitors<'a, Library, Module> {
+    type Branches = Visitors<'a, Library, Module>;
 }
 
-impl<'a> KnowsRelativeAccessType<'a> for Visitors<'a, &'a Library, &'a Module> {
-    type RelativeType = Visitors<'a, &'a Library, &'a Module>;
+impl<'a, Library, Module> KnowsRelativeAccessType<'a> for Visitors<'a, Library, Module> {
+    type RelativeType = Visitors<'a, Library, Module>;
 }
 
-impl<'a> KnowsPathSegment for Visitors<'a, &'a Library, &'a Module> {
+impl<'a, Library, Module> KnowsPathSegment for Visitors<'a, Library, Module> {
     type PathSegment = String;
 }
 
