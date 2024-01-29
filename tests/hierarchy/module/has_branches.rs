@@ -11,10 +11,3 @@ impl<'a> HasBranches<'a> for &'a Module {
         self.children.iter()
     }
 }
-
-// FIXME: This is a workaround for an unsolved constraint.
-impl<'a> HasBranches<'a> for &'a &'a Module {
-    fn branches(self) -> impl Iterator<Item = Self::Branches> {
-        self.children.iter()
-    }
-}

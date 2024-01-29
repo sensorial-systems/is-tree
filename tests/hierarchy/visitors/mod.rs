@@ -97,12 +97,6 @@ impl<'a> From<ModuleVisitor<'a, &'a Module>> for Visitors<'a, &'a Library, &'a M
     }
 }
 
-impl<'a> From<&'a Library> for Visitors<'a, &'a Library, &'a Module> {
-    fn from(value: &'a Library) -> Self {
-        Self::Library(value.into())
-    }
-}
-
 impl<'a> From<RootVisitor<&'a mut Library>> for Visitors<'a, &'a Library, &'a Module> {
     fn from(visitor: RootVisitor<&'a mut Library>) -> Self {
         Self::Library(visitor.into())
