@@ -19,9 +19,3 @@ impl<T> HasVisitor for &mut T {
         RootVisitor::new(self)
     }
 }
-
-impl<T> From<T> for RootVisitor<T> {
-    fn from(value: T) -> Self {
-        Self::new(value)
-    }
-}
