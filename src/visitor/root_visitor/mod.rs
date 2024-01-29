@@ -16,3 +16,9 @@ impl<Value> RootVisitor<Value> {
         Self { value }
     }
 }
+
+impl<'a, T> From<RootVisitor<&'a mut T>> for RootVisitor<&'a T> {
+    fn from(visitor: RootVisitor<&'a mut T>) -> Self {
+        Self::new(visitor.value)
+    }
+}

@@ -22,3 +22,10 @@ impl<Parent, Value> Visitor<Parent, Value> {
         Self { parent, value }
     }
 }
+
+impl<'a, Parent, Value> From<Visitor<Parent, &'a mut Value>> for Visitor<Parent, &'a Value> {
+    fn from(visitor: Visitor<Parent, &'a mut Value>) -> Self {
+        Self::new(visitor.parent, visitor.value)
+    }
+}
+
