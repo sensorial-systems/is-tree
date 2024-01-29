@@ -1,4 +1,4 @@
-use crate::{KnowsParent, KnowsVisitorFor};
+use crate::{KnowsParent, KnowsVisitorOf};
 
 /// Reference type iterator.
 pub struct TypeIterator<Visitor>
@@ -26,18 +26,18 @@ impl<Visitor> Iterator for TypeIterator<Visitor>
 }
 
 pub trait IterType<'a> {
-    fn iter_type<Value>(self) -> TypeIterator<<Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type<Value>(self) -> TypeIterator<<Self as KnowsVisitorOf<'a, Value>>::Visitor>
     where
-        Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, <Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
+        Self: KnowsVisitorOf<'a, Value>,
+        Self: TypeIter<'a, <Self as KnowsVisitorOf<'a, Value>>::Visitor> + Sized,
     {
         self.iter_type_with_parent::<Value>(None)
     }
 
-    fn iter_type_with_parent<Value>(self, parent: Option<<<Value as KnowsVisitorFor<'a, Self>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<Value as KnowsVisitorFor<'a, Self>>::Visitor>
+    fn iter_type_with_parent<Value>(self, parent: Option<<<Self as KnowsVisitorOf<'a, Value>>::Visitor as KnowsParent<'a>>::Parent>) -> TypeIterator<<Self as KnowsVisitorOf<'a, Value>>::Visitor>
     where
-        Value: KnowsVisitorFor<'a, Self>,
-        Self: TypeIter<'a, <Value as KnowsVisitorFor<'a, Self>>::Visitor> + Sized,
+        Self: KnowsVisitorOf<'a, Value>,
+        Self: TypeIter<'a, <Self as KnowsVisitorOf<'a, Value>>::Visitor> + Sized,
     {
         self.type_iterator(parent)
     }

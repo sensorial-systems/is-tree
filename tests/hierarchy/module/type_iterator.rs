@@ -1,11 +1,11 @@
 use ::is_tree::*;
 use super::super::*;
 
-impl<'a> KnowsVisitorFor<'a, &'a Module> for String {
+impl<'a> KnowsVisitorOf<'a, String> for &'a Module {
     type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>;
 }
 
-impl<'a> KnowsVisitorFor<'a, &'a mut Module> for String {
+impl<'a> KnowsVisitorOf<'a, String> for &'a mut Module {
     type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>;
 }
 

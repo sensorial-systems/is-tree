@@ -1,5 +1,5 @@
 use crate::IsVisitor;
 
-pub trait KnowsVisitorFor<'a, Base> {
+pub trait KnowsVisitorOf<'a, Type> {
     type Visitor: IsVisitor<'a>;
 }
