@@ -1,5 +1,5 @@
 [package]
-name = "is-tree-macro"
+name = "is-tree"
 version.workspace = true
 edition.workspace = true
 description.workspace = true
@@ -8,10 +8,6 @@ documentation.workspace = true
 homepage.workspace = true
 repository.workspace = true
 
-[lib]
-proc-macro = true
-
 [dependencies]
-syn = "2.0"
-quote = "1.0"
-proc-macro2 = "1.0"
+enum-as-inner = "0.6.0"
+is-tree-macro = "0.1.0"

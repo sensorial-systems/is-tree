@@ -1,16 +1,19 @@
-[package]
-name = "is-tree"
-version = "0.2.0"
+[workspace.package]
+version = "0.3.0"
 edition = "2021"
 description = "Everything is a tree"
 license = "Apache-2.0"
 documentation = "https://docs.rs/is-tree"
 homepage = "https://github.com/sensorial-systems/is-tree"
 repository = "https://github.com/sensorial-systems/is-tree"
+readme = "README.md"
 
-[dependencies]
-enum-as-inner = "0.6.0"
-is-tree-macro = "0.1.0"
+[workspace]
+resolver = "2"
+members = [
+    "is-tree",
+    "is-tree-macro",
+]
 
 [patch.crates-io]
 is-tree-macro = { path = "is-tree-macro" }
