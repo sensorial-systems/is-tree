@@ -7,6 +7,20 @@ where Value: KnowsBranches<'a>,
     type Branches = <<Value as KnowsBranches<'a>>::Branches as KnowsVisitor<'a>>::Visitor;
 }
 
+impl<'a, Parent, Value> KnowsBranches<'a> for &'a Visitor<Parent, Value>
+where Value: KnowsBranches<'a>,
+      Value::Branches: KnowsVisitor<'a>
+{
+    type Branches = <<Value as KnowsBranches<'a>>::Branches as KnowsVisitor<'a>>::Visitor;
+}
+
+impl<'a, Parent, Value> KnowsBranches<'a> for &'a mut Visitor<Parent, Value>
+where Value: KnowsBranches<'a>,
+      Value::Branches: KnowsVisitor<'a>
+{
+    type Branches = <<Value as KnowsBranches<'a>>::Branches as KnowsVisitor<'a>>::Visitor;
+}
+
 impl<'a, Parent, Value> HasBranches<'a> for &'a Visitor<Parent, Value>
 where Parent: Clone,
       Value: Clone + HasBranches<'a>,

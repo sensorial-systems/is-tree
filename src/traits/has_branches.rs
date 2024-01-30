@@ -39,14 +39,3 @@ pub trait HasBranches<'a>: KnowsBranches<'a>
     // }
 }
 
-impl<'a, T> KnowsBranches<'a> for &'a T
-where T: KnowsBranches<'a>
-{
-    type Branches = T::Branches;
-}
-
-impl<'a, T> KnowsBranches<'a> for &'a mut T
-where T: KnowsBranches<'a>
-{
-    type Branches = T::Branches;
-}

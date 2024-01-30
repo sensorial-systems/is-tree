@@ -29,6 +29,14 @@ pub fn impl_has_branches(ast: &DeriveInput) -> TokenStream {
                 type Branches = #gat;
             }
 
+            impl<'a> ::is_tree::KnowsBranches<'a> for &'a #_self {
+                type Branches = #gat;
+            }
+
+            impl<'a> ::is_tree::KnowsBranches<'a> for &'a mut #_self {
+                type Branches = #gat;
+            }
+
             impl<'a> ::is_tree::HasBranches<'a> for &'a #_self {
                 fn branches(self) -> impl Iterator<Item = Self::Branches> {
                     match self {
