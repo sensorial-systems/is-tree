@@ -26,8 +26,11 @@ impl<'a> HasBranches<'a> for &'a mut Module {
     }
 }
 
-impl<'a> AddBranch<'a> for Module {
-    fn add_branch(&mut self, branch: impl Into<Self::Branches>) -> &mut Self::Branches {
+impl<'a> AddBranch<'a> for &'a mut Module
+where Self::Branches: KnowsOwned<Owned = Module>
+{
+    fn add_branch(self, branch: impl Into<Module>) -> &'a mut Module
+    where Self::Branches: KnowsOwned {
         self.children.push(branch.into());
         self.children.last_mut().unwrap()
     }

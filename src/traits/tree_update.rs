@@ -1,16 +1,19 @@
-use crate::{HasPathSegment, KnowsBranches, KnowsPathSegment};
+use crate::{HasPathSegment, KnowsBranches, KnowsOwned, KnowsPathSegment};
 
 pub trait AddBranch<'a>: KnowsBranches<'a> {
-    fn add_branch(&mut self, branch: impl Into<Self::Branches>) -> &mut Self::Branches;
+    fn add_branch(self, branch: impl Into<<Self::Branches as KnowsOwned>::Owned>) -> &'a mut <Self::Branches as KnowsOwned>::Owned
+    where Self::Branches: KnowsOwned;
 }
 
-pub trait HasGetOrCreate<'a>: AddBranch<'a> {
-    fn branch<PathSegment>(&mut self, segment: PathSegment) -> &mut Self::Branches
-    where Self::Branches: KnowsPathSegment,
-          PathSegment: Into<<Self::Branches as KnowsPathSegment>::PathSegment>,
-          <Self::Branches as KnowsPathSegment>::PathSegment: Into<Self::Branches>;
+pub trait HasGetOrCreate<'a>: AddBranch<'a>
+{
+    fn branch<PathSegment>(self, segment: PathSegment) -> &'a mut <Self::Branches as KnowsOwned>::Owned
+    where Self::Branches: KnowsPathSegment + KnowsOwned,
+          PathSegment: Into<<Self::Branches as KnowsPathSegment>::PathSegment>;
 }
 
+
+// TODO: Deprecated. Remove this.
 pub trait TreeUpdate<T>: HasPathSegment
 where T: HasPathSegment + Sized
 {
