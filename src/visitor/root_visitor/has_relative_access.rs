@@ -15,7 +15,7 @@ where
     <Self as KnowsRoot<'a>>::Root:
         Into<Self::RelativeType>,
 
-    <Self as KnowsGetType<'a>>::GetType:
+    <Self as KnowsBranches<'a>>::Branches:
         Into<Self::RelativeType>
         + KnowsPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
 

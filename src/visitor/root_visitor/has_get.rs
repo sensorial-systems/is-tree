@@ -1,21 +1,14 @@
 use crate::*;
 
-impl<'a, Value> KnowsGetType<'a> for RootVisitor<Value>
-where Value: KnowsGetType<'a>,
-      Value::GetType: KnowsVisitor<'a>
-{
-    type GetType = <Value::GetType as KnowsVisitor<'a>>::Visitor;
-}
-
 impl<'a, Value> HasGet<'a> for &'a RootVisitor<Value>
 where Value: Clone + HasGet<'a>,
-      Value::GetType: KnowsPathSegment + KnowsVisitor<'a>,
-      <Value::GetType as KnowsVisitor<'a>>::Visitor: KnowsPathSegment<PathSegment = <Value::GetType as KnowsPathSegment>::PathSegment>,
-      Self::GetType: HasVisitorConstructor<'a, Value = Value::GetType>,
-      RootVisitor<Value>: Into<<Self::GetType as KnowsParent<'a>>::Parent> + Clone,
+      Value::Branches: KnowsPathSegment + KnowsVisitor<'a>,
+      <Value::Branches as KnowsVisitor<'a>>::Visitor: KnowsPathSegment<PathSegment = <Value::Branches as KnowsPathSegment>::PathSegment>,
+      Self::Branches: HasVisitorConstructor<'a, Value = Value::Branches>,
+      RootVisitor<Value>: Into<<Self::Branches as KnowsParent<'a>>::Parent> + Clone,
 {
-    fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::GetType>
-    where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment> {
+    fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::Branches>
+    where PathSegment: Into<<Self::Branches as KnowsPathSegment>::PathSegment> {
         self
             .value
             .clone()
