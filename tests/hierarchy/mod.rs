@@ -6,6 +6,7 @@ pub mod visitors;
 
 mod access;
 mod iterator;
+mod update;
 
 pub use library::*;
 pub use module::*;

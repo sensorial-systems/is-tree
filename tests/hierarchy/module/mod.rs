@@ -12,3 +12,10 @@ pub struct Module {
     pub name: String,
     pub children: Vec<Module>
 }
+
+impl From<String> for Module {
+    fn from(name: String) -> Self {
+        let children = Default::default();
+        Self { name, children }
+    }
+}

@@ -26,3 +26,13 @@ impl<T: HasPathSegment> HasPathSegment for &T {
         (*self).path_segment()
     }
 }
+
+impl<T: KnowsPathSegment> KnowsPathSegment for &mut T {
+    type PathSegment = T::PathSegment;
+}
+
+impl<T: HasPathSegment> HasPathSegment for &mut T {
+    fn path_segment(&self) -> &Self::PathSegment {
+        (**self).path_segment()
+    }
+}
