@@ -1,20 +1,11 @@
 use crate::*;
 
-pub trait HasGet<'a>: HasBranches<'a>
-where Self::Branches: KnowsPathSegment
+pub trait HasGet<'a>: HasBranches<'a> + Sized
+where Self::Branches: HasPathSegment
 {
     fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::Branches>
-    where PathSegment: Into<<Self::Branches as KnowsPathSegment>::PathSegment>;
-    // TODO: Add default implementation with PathSegment search on HasBranches iterator.
+    where PathSegment: Into<<Self::Branches as KnowsPathSegment>::PathSegment> {
+        let segment = segment.into();
+        self.branches().find(|value| value.path_segment() == &segment)
+    }
 }
-
-// impl<'a, T: HasGet<'a>> HasGet<'a> for &'a T
-// where Self::GetType: KnowsPathSegment<PathSegment = <T::GetType as KnowsPathSegment>::PathSegment>
-// {
-//     fn get<PathSegment>(&'a self, segment: PathSegment) -> Option<Self::GetType>
-//     where PathSegment: Into<<Self::GetType as KnowsPathSegment>::PathSegment> 
-//     {
-//         // todo!()
-//         // (*self).get(segment)
-//     }
-// }
