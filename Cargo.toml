@@ -15,5 +15,5 @@ members = [
     "is-tree-macro",
 ]
 
-[patch.crates-io]
+[workspace.dependencies]
 is-tree-macro = { path = "is-tree-macro" }

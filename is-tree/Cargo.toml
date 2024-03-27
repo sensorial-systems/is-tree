@@ -10,4 +10,4 @@ repository.workspace = true
 
 [dependencies]
 enum-as-inner = "0.6.0"
-is-tree-macro = "0.1.0"
+is-tree-macro.workspace = true
