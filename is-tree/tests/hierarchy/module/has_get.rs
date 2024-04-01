@@ -10,9 +10,8 @@ impl<'a> HasGet<'a> for &'a mut Module {}
 impl<'a> HasGetOrCreate<'a> for &'a mut Module
 where Self::Branches: KnowsOwned<Owned = Module>
 {
-    fn branch<PathSegment>(self, segment: PathSegment) -> &'a mut <Self::Branches as KnowsOwned>::Owned
-    where Self::Branches: KnowsOwned,
-          PathSegment: Into<String>
+    fn branch(self, segment: impl Into<String>) -> &'a mut <Self::Branches as KnowsOwned>::Owned
+    where Self::Branches: KnowsOwned
     {
         let segment = segment.into();
         // This works and it's safe, but the borrow checker doesn't like it.

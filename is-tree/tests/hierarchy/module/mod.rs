@@ -1,4 +1,4 @@
-pub mod visitor;
+mod visitor;
 pub use visitor::*;
 
 mod has_get;
