@@ -2,10 +2,6 @@ use ::is_tree::*;
 
 use super::super::*;
 
-impl<'a> KnowsOwned for Module {
-    type Owned = Module;
-}
-
 impl<'a> HasBranches<'a> for &'a Module {
     fn branches(self) -> impl Iterator<Item = Self::Branches> {
         self.children.iter()
