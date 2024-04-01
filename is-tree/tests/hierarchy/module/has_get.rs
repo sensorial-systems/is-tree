@@ -7,10 +7,10 @@ impl<'a> HasGet<'a> for &'a Module {}
 impl<'a> HasGet<'a> for &'a mut Module {}
 
 // TODO: How to create a blanket implementation for this?
-impl<'a> HasGetOrCreate<'a> for &'a mut Module
+impl<'a> HasGetOrCreate<'a> for Module
 where Self::Branches: KnowsOwned<Owned = Module>
 {
-    fn branch(self, segment: impl Into<String>) -> &'a mut <Self::Branches as KnowsOwned>::Owned
+    fn branch(&'a mut self, segment: impl Into<String>) -> &'a mut <Self::Branches as KnowsOwned>::Owned
     where Self::Branches: KnowsOwned
     {
         let segment = segment.into();
