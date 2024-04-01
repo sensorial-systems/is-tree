@@ -1,14 +1,15 @@
 mod visitor;
+use is_tree::IsTree;
 pub use visitor::*;
 
-mod has_get;
-mod has_path_segment;
 mod knows_relative_access_type;
 mod knows_visitor;
 mod has_branches;
 mod type_iterator;
 
+#[derive(IsTree)]
 pub struct Module {
+    #[tree(path_segment)]
     pub name: String,
     pub children: Vec<Module>
 }
