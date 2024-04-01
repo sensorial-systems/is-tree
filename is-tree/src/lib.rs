@@ -1,7 +1,7 @@
-pub mod traits;
-pub mod path;
-pub mod iterator;
-pub mod visitor;
+mod traits;
+mod path;
+mod iterator;
+mod visitor;
 
 pub use traits::*;
 pub use path::*;
