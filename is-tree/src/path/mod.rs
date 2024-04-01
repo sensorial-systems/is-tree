@@ -5,14 +5,13 @@ pub use segment::*;
 use std::fmt::Display;
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Path<Segment>
+pub struct Path
 {
-    pub segments: Vec<Segment>
+    pub segments: Vec<String>
 }
 
-impl<Segment> Path<Segment> {
-    pub fn join(&self, segment: impl Into<Segment>) -> Path<Segment>
-    where Path<Segment>: Clone
+impl Path {
+    pub fn join(&self, segment: impl Into<String>) -> Path
     {
         let mut clone = self.clone();
         clone.segments.push(segment.into());
@@ -20,38 +19,53 @@ impl<Segment> Path<Segment> {
     }
 }
 
-impl<Segment> Default for Path<Segment> {
+impl Default for Path {
     fn default() -> Self {
         let segments = Vec::new();
         Self { segments }
     }
 }
 
-impl<'a> From<&'a str> for Path<&'a str> {
+impl<'a> From<&'a str> for Path {
     fn from(value: &'a str) -> Self {
-        let segments = value.split("::").collect();
+        let segments = value.split("::").map(String::from).collect();
         Self { segments }
     }
 }
 
-impl<Segment> From<Vec<Segment>> for Path<Segment>
+impl From<Vec<&str>> for Path
 {
-    fn from(value: Vec<Segment>) -> Path<Segment> {
+    fn from(value: Vec<&str>) -> Path {
+        let segments = value.iter().map(|s| s.to_string()).collect();
+        Path { segments }
+    }
+}
+
+impl From<Vec<String>> for Path
+{
+    fn from(value: Vec<String>) -> Path {
         let segments = value;
         Path { segments }
     }
 }
 
-impl<'a, Segment> From<&'a [Segment]> for Path<Segment>
-where Segment: Copy
+impl From<&[&str]> for Path
 {
-    fn from(value: &'a [Segment]) -> Path<Segment> {
+    fn from(value: &[&str]) -> Path {
+        let segments = value.iter().map(|s| s.to_string()).collect();
+        Path { segments }
+    }
+}
+
+impl From<&[String]> for Path
+{
+    fn from(value: &[String]) -> Path {
         let segments = value.to_vec();
         Path { segments }
     }
 }
 
-impl Display for Path<String> {
+impl Display for Path {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.segments.join("::"))
     }
@@ -73,7 +87,7 @@ mod tests {
     fn from_array() {
         let array = ["A", "B", "C"];
         let slice = array.as_slice();
-        let path: Path<_> = Path::from(slice);
+        let path = Path::from(slice);
         assert_eq!(path.segments, ["A", "B", "C"]);
     }
 

@@ -16,12 +16,8 @@ impl<'a, Library, Module> KnowsRelativeAccessType<'a> for Visitors<'a, Library, 
     type RelativeType = Visitors<'a, Library, Module>;
 }
 
-impl<'a, Library, Module> KnowsPathSegment for Visitors<'a, Library, Module> {
-    type PathSegment = String;
-}
-
 impl<'a> HasPath for Visitors<'a, &'a Library, &'a Module> {
-    fn path(&self) -> Path<Self::PathSegment> {
+    fn path(&self) -> Path {
         match self {
             Self::Library(value) => value.path(),
             Self::Module(value) => value.path()
@@ -50,7 +46,7 @@ impl<'a> HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
 // TODO: Move it to IsTree derive macro.
 impl<'a> HasRelativeAccess<'a> for Visitors<'a, &'a Library, &'a Module> {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
-    where K: Into<<Self as KnowsPathSegment>::PathSegment>
+    where K: Into<String>
     {
         match self {
             Self::Library(value) => {

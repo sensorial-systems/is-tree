@@ -32,7 +32,7 @@ pub fn impl_has_relative_access(ast: &DeriveInput) -> TokenStream {
     
             impl<'a> ::is_tree::HasRelativeAccess<'a> for &'a #_self {
                 fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
-                where K: Into<<Self as KnowsPathSegment>::PathSegment>
+                where K: Into<String>
             {
                 match self {
                     #variants

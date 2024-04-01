@@ -8,7 +8,7 @@ where Value: KnowsRelativeAccessType<'a>
 
 impl<'a, Value> HasRelativeAccess<'a> for &'a RootVisitor<Value>
 where
-    RootVisitor<Value>: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + KnowsPathSegment + 'a,
+    RootVisitor<Value>: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + 'a,
     Self: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
     <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
 
@@ -16,17 +16,13 @@ where
         Into<Self::RelativeType>,
 
     <Self as KnowsBranches<'a>>::Branches:
-        Into<Self::RelativeType>
-        + HasPathSegment<PathSegment = <Self as KnowsPathSegment>::PathSegment>,
+        Into<Self::RelativeType> + HasPathSegment,
 
     Self::RelativeType:
-        HasRelativeAccess<'a,
-            RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType,
-            PathSegment = <Self as KnowsPathSegment>::PathSegment
-        >
+        HasRelativeAccess<'a, RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType>
 {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
-    where K: Into<<Self as KnowsPathSegment>::PathSegment>
+    where K: Into<String>
     {
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {

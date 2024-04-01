@@ -20,7 +20,7 @@ pub fn impl_has_get(ast: &DeriveInput) -> TokenStream {
         quote! {
             impl<'a> ::is_tree::HasGet<'a> for &'a #_self {
                 fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::Branches>
-                where PathSegment: Into<<Self::Branches as KnowsPathSegment>::PathSegment>
+                where PathSegment: Into<String>
                 {
                     match self {
                         #variants

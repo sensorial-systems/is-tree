@@ -1,13 +1,9 @@
-use is_tree::{KnowsPathSegment, HasPathSegment};
+use is_tree::HasPathSegment;
 
 use super::Module;
 
-impl KnowsPathSegment for Module {
-    type PathSegment = String;
-}
-
 impl HasPathSegment for Module {
-    fn path_segment(&self) -> &Self::PathSegment {
+    fn path_segment(&self) -> &String {
         &self.name
     }
 }

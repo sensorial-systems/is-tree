@@ -1,38 +1,26 @@
-use crate::{IsPathSegment, Path};
+use crate::Path;
 
-pub trait HasPath: KnowsPathSegment {
-    fn path(&self) -> Path<Self::PathSegment>;
+pub trait HasPath {
+    fn path(&self) -> Path;
 }
 
-pub trait KnowsPathSegment {
-    type PathSegment: IsPathSegment;
-}
+pub trait HasPathSegment {
+    fn path_segment(&self) -> &String;
 
-pub trait HasPathSegment: KnowsPathSegment {
-    fn path_segment(&self) -> &Self::PathSegment;
-
-    fn is(&self, identifier: impl PartialEq<Self::PathSegment>) -> bool {
+    fn is(&self, identifier: impl PartialEq<String>) -> bool {
         identifier.eq(self.path_segment())
     }
 
 }
 
-impl<T: KnowsPathSegment> KnowsPathSegment for &T {
-    type PathSegment = T::PathSegment;
-}
-
 impl<T: HasPathSegment> HasPathSegment for &T {
-    fn path_segment(&self) -> &Self::PathSegment {
+    fn path_segment(&self) -> &String {
         (*self).path_segment()
     }
 }
 
-impl<T: KnowsPathSegment> KnowsPathSegment for &mut T {
-    type PathSegment = T::PathSegment;
-}
-
 impl<T: HasPathSegment> HasPathSegment for &mut T {
-    fn path_segment(&self) -> &Self::PathSegment {
+    fn path_segment(&self) -> &String {
         (**self).path_segment()
     }
 }

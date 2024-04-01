@@ -1,24 +1,18 @@
-use crate::{KnowsPathSegment, Visitor, HasPathSegment, Path, HasPath};
-
-impl<Parent, Value> KnowsPathSegment for Visitor<Parent, Value>
-where Value: KnowsPathSegment
-{
-    type PathSegment = Value::PathSegment;
-}
+use crate::{Visitor, HasPathSegment, Path, HasPath};
 
 impl<Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment + Clone
 {
-    fn path_segment(&self) -> &Self::PathSegment {
+    fn path_segment(&self) -> &String {
         self.value.path_segment()
     }
 }
 
 impl<Parent, Value> HasPath for Visitor<Parent, Value>
 where Value: HasPathSegment,
-      Parent: HasPath<PathSegment = Value::PathSegment>
+      Parent: HasPath
 {
-    fn path(&self) -> Path<Value::PathSegment>
+    fn path(&self) -> Path
     {
         let mut path = self.parent.path();
         path.segments.push(self.value.path_segment().clone());

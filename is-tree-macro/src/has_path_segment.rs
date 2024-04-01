@@ -22,21 +22,10 @@ pub fn impl_has_path_segment(ast: &DeriveInput) -> TokenStream {
                 #name::#variant_name(value) => value.path(),
             };
         }
-
-        let variant = data.variants.first().expect("Enum must have at least one variant");
-        let variant = variant.fields.iter().next().expect("Variant must have at least one field");
-
-        let gat = quote! {
-            <#variant as KnowsPathSegment>::PathSegment
-        };
-        
+       
         quote! {
-            impl<'a> ::is_tree::KnowsPathSegment for #_self {
-                type PathSegment = #gat;
-            }
-    
             impl<'a> ::is_tree::HasPathSegment for #_self {
-                fn path_segment(&self) -> &Self::PathSegment {
+                fn path_segment(&self) -> &String {
                     match self {
                         #path_segment_variants
                     }
@@ -44,7 +33,7 @@ pub fn impl_has_path_segment(ast: &DeriveInput) -> TokenStream {
             }
 
             impl<'a> ::is_tree::HasPath for #_self {
-                fn path(&self) -> ::is_tree::Path<Self::PathSegment> {
+                fn path(&self) -> ::is_tree::Path {
                     match self {
                         #path_variants
                     }

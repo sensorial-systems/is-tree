@@ -24,8 +24,7 @@ where Value: KnowsBranches<'a>,
 
 impl<'a, Value> HasBranches<'a> for &'a RootVisitor<Value>
 where Value: Clone + HasBranches<'a>,
-      Value::Branches: KnowsPathSegment + KnowsVisitor<'a>,
-      <Value::Branches as KnowsVisitor<'a>>::Visitor: KnowsPathSegment<PathSegment = <Value::Branches as KnowsPathSegment>::PathSegment>,
+      Value::Branches: KnowsVisitor<'a>,
       Self::Branches: HasVisitorConstructor<'a, Value = Value::Branches>,
       RootVisitor<Value>: Into<<Self::Branches as KnowsParent<'a>>::Parent> + Clone,
 {
