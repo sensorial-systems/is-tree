@@ -11,6 +11,7 @@ mod type_iterator;
 pub struct Module {
     #[tree(path_segment)]
     pub name: String,
+    #[tree(branch)]
     pub children: Vec<Module>
 }
 

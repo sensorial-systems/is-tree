@@ -8,9 +8,9 @@ mod knows_owned;
 
 use quote::quote;
 
-pub fn impl_struct(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
-    let has_path_segment = has_path_segment::impl_has_path_segment(&ast);
-    let has_branches = has_branches::impl_has_branches(&ast);
+pub fn impl_struct(ast: &syn::DeriveInput, data: &syn::DataStruct) -> proc_macro2::TokenStream {
+    let has_path_segment = has_path_segment::impl_has_path_segment(&ast, data);
+    let has_branches = has_branches::impl_branches(&ast, data);
     let has_get = has_get::impl_has_get(&ast);
     let knows_owned = knows_owned::impl_knows_owned(&ast);
     quote! {
