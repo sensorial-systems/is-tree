@@ -54,11 +54,11 @@ pub(crate) fn impl_has_branches(ast: &syn::DeriveInput, data: &syn::DataStruct) 
                             let ident = field.ident.as_ref().expect("Unamed field not supported");
                             const_chain = quote! {
                                 #const_chain
-                                self.#ident.iter()
+                                self.#ident.iter().filter_map(|item| item.try_into().ok())
                             };
                             mut_chain = quote! {
                                 #mut_chain
-                                self.#ident.iter_mut()
+                                self.#ident.iter_mut().filter_map(|item| item.try_into().ok())
                             };
                         } else {
                             let ident = field.ident.as_ref().expect("Unamed field not supported");
