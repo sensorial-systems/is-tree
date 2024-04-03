@@ -3,7 +3,6 @@ use is_tree::{AddBranch, HasBranches, IsTree};
 #[derive(IsTree)]
 #[tree(branches = "String")]
 pub struct Name {
-    #[tree(path_segment)]
     #[tree(branch)]
     pub first: String,
     #[tree(branch)]
