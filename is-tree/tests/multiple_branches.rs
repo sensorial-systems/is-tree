@@ -1,4 +1,4 @@
-use is_tree::{AddBranch, HasBranches, IsTree};
+use is_tree::{AddBranch, HasBranches, HasGet, IsTree};
 
 #[derive(IsTree)]
 #[tree(branches = "String")]
@@ -34,4 +34,19 @@ fn multiple_branches() {
 
     let branches: Vec<String> = name.branches().cloned().collect();
     assert_eq!(branches, vec!["John", "Jingleheimer", "Doe"]);
+}
+
+#[test]
+fn get_access() {
+    // TODO: Support this.
+    // let name = Name {
+    //     first: "John".to_string(),
+    //     middle: Some("Jingleheimer".to_string()),
+    //     last: "Doe".to_string(),
+    // };
+
+    // assert_eq!(name.get("first"), Some(&"John".to_string()));
+    // assert_eq!(name.get("middle"), Some(&"Jingleheimer".to_string()));
+    // assert_eq!(name.get("last"), Some(&"Doe".to_string()));
+    // assert_eq!(name.get("nickname"), None);
 }
