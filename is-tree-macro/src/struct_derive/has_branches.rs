@@ -36,45 +36,44 @@ pub(crate) fn impl_knows_branches(ast: &syn::DeriveInput) -> proc_macro2::TokenS
 pub(crate) fn impl_has_branches(ast: &syn::DeriveInput, data: &syn::DataStruct) -> proc_macro2::TokenStream {
     let structure_name = &ast.ident;
 
-    let mut const_chain = quote! {};
-    let mut mut_chain = quote! {};
+    let mut consts = Vec::new();
+    let mut muts = Vec::new();
 
     if let syn::Fields::Named(fields) = &data.fields {
         for field in &fields.named {
             if field.attrs.iter().any(|attr| attr.path().is_ident("tree") && attr.parse_args::<syn::Path>().map(|path| path.is_ident("branch")).unwrap_or_default()) {
                 match &field.ty {
-                    // Check if type is a Vec
                     syn::Type::Path(syn::TypePath { path, .. }) => {
-                        let is_vec = path
+                        let is_collection = path
                             .segments
                             .first()
-                            .map(|path| path.ident == "Vec")
+                            .map(|path| path.ident == "Vec" || path.ident == "Option")
                             .unwrap_or_default();
-                        if is_vec {
-                            let ident = field.ident.as_ref().expect("Unamed field not supported");
-                            const_chain = quote! {
-                                #const_chain
-                                self.#ident.iter().filter_map(|item| item.try_into().ok())
-                            };
-                            mut_chain = quote! {
-                                #mut_chain
-                                self.#ident.iter_mut().filter_map(|item| item.try_into().ok())
-                            };
+                        let ident = field.ident.as_ref().expect("Unamed field not supported");
+                        if is_collection {
+                            consts.push(quote! { self.#ident.iter().filter_map(|item| item.try_into().ok()) });
+                            muts.push(quote! { self.#ident.iter_mut().filter_map(|item| item.try_into().ok()) });
                         } else {
-                            let ident = field.ident.as_ref().expect("Unamed field not supported");
-                            const_chain = quote! {
-                                #const_chain
-                                std::iter::once(&self.#ident)
-                            };
-                            mut_chain = quote! {
-                                #mut_chain
-                                std::iter::once(&mut self.#ident)
-                            };
+                            consts.push(quote! { std::iter::once(&self.#ident) });
+                            muts.push(quote! { std::iter::once(&mut self.#ident) });
                         }
                     },
                     _ => ()
                 };
             }
+        }
+    }
+
+    let mut const_chain = quote! {};
+    let mut mut_chain = quote! {};
+
+    for (index, (const_iter, mut_iter)) in consts.iter().zip(muts.iter()).enumerate() {
+        if index == 0 {
+            const_chain = quote! { #const_iter };
+            mut_chain = quote! { #mut_iter };
+        } else {
+            const_chain = quote! { #const_chain.chain(#const_iter) };
+            mut_chain = quote! { #mut_chain.chain(#mut_iter) };
         }
     }
 
