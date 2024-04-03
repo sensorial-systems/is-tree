@@ -1,4 +1,4 @@
-use is_tree::{AddBranch, HasBranches, HasGet, IsTree};
+use is_tree::{AddBranch, HasBranches, IsTree};
 
 #[derive(IsTree)]
 #[tree(branches = "String")]
