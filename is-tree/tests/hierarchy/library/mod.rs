@@ -14,5 +14,5 @@ pub struct Library {
     #[tree(path_segment)]
     pub name: String,
     #[tree(branch)]
-    pub root_module: Module
+    pub root_module: Module,
 }

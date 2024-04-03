@@ -1,3 +1,5 @@
+use crate::HasPathSegment;
+
 
 pub trait KnowsBranches<'a> {
     type Branches;
@@ -18,4 +20,14 @@ impl<T> KnowsOwned for &T {
 
 impl<T> KnowsOwned for &mut T {
     type Owned = T;
+}
+
+impl KnowsOwned for String {
+    type Owned = String;
+}
+
+impl HasPathSegment for String {
+    fn path_segment(&self) -> &String {
+        self
+    }
 }

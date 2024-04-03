@@ -8,8 +8,7 @@ where Parent: Clone,
       Self::Branches: HasVisitorConstructor<'a, Value = Value::Branches>,
       Visitor<Parent, Value>: Into<<Self::Branches as KnowsParent<'a>>::Parent>,
 {
-    fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::Branches>
-    where PathSegment: Into<String> {
+    fn get(self, segment: impl Into<String>) -> Option<Self::Branches> {
         self
             .value.clone() // TODO: How to use .value() here instead?
             .get(segment)

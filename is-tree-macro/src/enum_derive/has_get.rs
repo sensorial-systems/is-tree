@@ -18,9 +18,7 @@ pub fn impl_has_get(ast: &DeriveInput, data: &syn::DataEnum) -> TokenStream {
     
     quote! {
         impl<'a> ::is_tree::HasGet<'a> for &'a #_self {
-            fn get<PathSegment>(self, segment: PathSegment) -> Option<Self::Branches>
-            where PathSegment: Into<String>
-            {
+            fn get(self, segment: impl Into<String>) -> Option<Self::Branches> {
                 match self {
                     #variants
                 }
