@@ -1,20 +1,18 @@
 use proc_macro2::TokenStream;
-use syn::DeriveInput;
 use quote::quote;
 
-pub fn impl_has_get(ast: &DeriveInput, data: &syn::DataEnum) -> TokenStream {
-    let name = &ast.ident;
-    let generics = &ast.generics;
-    let _self = quote! { #name #generics };
-    let mut variants = quote!{};
+use crate::type_::Enumeration;
 
-    for variant in &data.variants {
-        let variant_name = &variant.ident;
-        variants = quote! {
-            #variants
+pub fn impl_has_get(enumeration: &Enumeration) -> TokenStream {
+    let name = &enumeration.name;
+    let generics = &enumeration.generics;
+    let _self = quote! { #name #generics };
+    let variants = enumeration.variants.iter().map(|variant| {
+        let variant_name = &variant.variant.ident;
+        quote! {
             #name::#variant_name(value) => value.get(segment).map(|value| value.into()),
-        };
-    }
+        }
+    }).collect::<TokenStream>();
     
     quote! {
         impl<'a> ::is_tree::HasGet<'a> for &'a #_self {

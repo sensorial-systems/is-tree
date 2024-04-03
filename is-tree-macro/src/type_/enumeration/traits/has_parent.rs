@@ -1,21 +1,19 @@
 use proc_macro2::TokenStream;
-use syn::DeriveInput;
 use quote::quote;
 
-pub fn impl_has_parent(ast: &DeriveInput, data: &syn::DataEnum) -> TokenStream {
-    let name = &ast.ident;
-    let generics = &ast.generics;
+use crate::type_::Enumeration;
+
+pub fn impl_has_parent(enumeration: &Enumeration) -> TokenStream {
+    let name = &enumeration.name;
+    let generics = &enumeration.generics;
     let _self = quote! { #name #generics };
 
-    let mut variants = quote!{};
-    
-    for variant in &data.variants {
-        let variant_name = &variant.ident;
-        variants = quote! {
-            #variants
+    let variants = enumeration.variants.iter().map(|variant| {
+        let variant_name = &variant.variant.ident;
+        quote! {
             #name::#variant_name(value) => value.parent().into(),
-        };
-    }
+        }
+    }).collect::<TokenStream>();
     
     quote! {
         impl<'a> ::is_tree::KnowsParent<'a> for #_self {

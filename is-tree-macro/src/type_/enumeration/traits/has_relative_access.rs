@@ -1,23 +1,21 @@
 use proc_macro2::TokenStream;
-use syn::DeriveInput;
 use quote::quote;
 
-pub fn impl_has_relative_access(ast: &DeriveInput, data: &syn::DataEnum) -> TokenStream {
-    let name = &ast.ident;
-    let generics = &ast.generics;
+use crate::type_::Enumeration;
+
+pub fn impl_has_relative_access(enumeration: &Enumeration) -> TokenStream {
+    let name = &enumeration.name;
+    let generics = &enumeration.generics;
     let _self = quote! { #name #generics };
     
-    let mut variants = quote!{};
-
-    for variant in &data.variants {
-        let variant_name = &variant.ident;
-        variants = quote! {
-            #variants
+    let variants = enumeration.variants.iter().map(|variant| {
+        let variant_name = &variant.variant.ident;
+        quote! {
             #name::#variant_name(value) => value.relative(path),
-        };
-    }
+        }
+    }).collect::<TokenStream>();
 
-    let variant = data.variants.first().expect("Enum must have at least one variant");
+    let variant = enumeration.variants.first().map(|first| &first.variant).expect("Enum must have at least one variant");
     let variant = variant.fields.iter().next().expect("Variant must have at least one field");
 
     let gat = quote! {
