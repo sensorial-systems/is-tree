@@ -7,7 +7,7 @@ pub(crate) fn impl_knows_branches(structure: &Structure) -> proc_macro2::TokenSt
     let structure_name = &structure.name;
     let branches = structure
         .named_attribute_value(vec!["tree", "branches"])
-        .unwrap_or_else(|| structure_name.clone());
+        .unwrap_or_else(|| structure_name.clone().into());
     quote! {
         impl<'a> ::is_tree::KnowsBranches<'a> for #structure_name {
             type Branches = #branches;

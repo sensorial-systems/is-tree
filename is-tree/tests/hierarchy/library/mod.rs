@@ -2,7 +2,6 @@ mod visitor;
 use is_tree::IsTree;
 pub use visitor::*;
 
-mod knows_relative_access_type;
 mod has_branches;
 mod type_iterator;
 
@@ -10,6 +9,8 @@ use super::{Module, Visitors};
 
 #[derive(IsTree)]
 #[tree(branches = "Module")]
+#[tree(visitor = "Visitors<'a, &'a Library, &'a Module>")]
+#[tree(type_iterator)]
 pub struct Library {
     #[tree(path_segment)]
     pub name: String,

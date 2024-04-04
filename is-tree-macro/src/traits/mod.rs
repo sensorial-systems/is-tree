@@ -1,12 +1,16 @@
+use quote::ToTokens;
+
 pub trait AttributeQuery {
     fn attributes(&self) -> &Vec<syn::Attribute>;
 
-    fn named_attribute_value(&self, path: Vec<&str>) -> Option<syn::Ident> {
+    fn named_attribute_value(&self, path: Vec<&str>) -> Option<syn::Path> {
         self.attributes().iter().find_map(|attr| {
             if let (true, Ok(meta)) = (attr.path().is_ident(&path[0]), attr.parse_args::<syn::MetaNameValue>()) {
                 if meta.path.is_ident(&path[1]) {
-                    if let syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Str(value), .. }) = meta.value {
-                        return Some(syn::Ident::new(&value.value(), value.span()))
+                    if let Some(value) = meta.value.to_token_stream().to_string().split('"').collect::<Vec<&str>>().get(1) {
+                        if let Ok(syn::TypePath { path, .. }) = syn::parse_str(value) {
+                            return Some(path);
+                        }
                     }
                 }
             }
