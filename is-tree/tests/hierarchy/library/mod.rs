@@ -3,7 +3,6 @@ use is_tree::IsTree;
 pub use visitor::*;
 
 mod has_branches;
-mod type_iterator;
 
 use super::{Module, Visitors};
 
