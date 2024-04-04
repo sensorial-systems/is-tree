@@ -1,14 +1,6 @@
 use ::is_tree::*;
 use super::*;
 
-impl<'a> KnowsVisitorOf<'a, String> for &'a Library {
-    type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>;
-}
-
-impl<'a> KnowsVisitorOf<'a, String> for &'a mut Library {
-    type Visitor = Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>;
-}
-
 impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>> for &'a mut Library {
     fn type_iterator(self, _parent: Option<Visitors<'a, &'a Library, &'a Module>>) -> TypeIterator<Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>> {
         let mut collection = Vec::new();

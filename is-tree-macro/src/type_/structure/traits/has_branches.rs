@@ -32,7 +32,7 @@ pub(crate) fn impl_has_branches(structure: &Structure) -> proc_macro2::TokenStre
     for field in &structure.fields {
         if field.has_attribute(vec!["tree", "branch"]) {
             let ident = field.field.ident.as_ref().expect("Unamed field not supported");
-            if field.is_collection() {
+            if field.as_collection().is_some() {
                 consts.push(quote! { self.#ident.iter().filter_map(|item| item.try_into().ok()) });
                 muts.push(quote! { self.#ident.iter_mut().filter_map(|item| item.try_into().ok()) });
             } else {

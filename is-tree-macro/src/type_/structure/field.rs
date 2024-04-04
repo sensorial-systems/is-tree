@@ -5,8 +5,13 @@ pub struct Field {
 }
 
 impl Field {
-    pub fn is_collection(&self) -> bool {
-        self.is_any_type_of(&["Vec", "Option"])
+    pub fn as_collection(&self) -> Option<&syn::Path> {
+        if self.is_any_type_of(&["Vec", "Option"]) {
+            if let syn::Type::Path(syn::TypePath { path, .. }) = &self.field.ty {
+                return Some(path);
+            }
+        }
+        None
     }
 
     pub fn is_any_type_of(&self, types: &[&str]) -> bool {

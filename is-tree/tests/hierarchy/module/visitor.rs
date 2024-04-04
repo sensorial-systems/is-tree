@@ -4,6 +4,7 @@ use crate::hierarchy::Library;
 
 use super::{super::LibraryVisitor, Module};
 
+// TODO: Is it a duplicate logic of Visitors?
 pub type ModuleVisitor<'a, Module> = Visitor<ModuleParentVisitor<'a>, Module>;
 
 #[derive(Clone, IsTree)]
