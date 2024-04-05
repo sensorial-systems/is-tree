@@ -2,7 +2,7 @@ use enum_as_inner::EnumAsInner;
 
 use super::*;
 
-#[derive(Clone, EnumAsInner)]
+#[derive(Clone, EnumAsInner)] // TODO: Use IsTree here
 pub enum Visitors<'a, Library, Module> {
     Library(LibraryVisitor<Library>),
     Module(Box<ModuleVisitor<'a, Module>>)

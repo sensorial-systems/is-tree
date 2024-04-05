@@ -23,11 +23,9 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut Str
     fn type_iterator(self, parent: Option<Visitors<'a, &'a Library, &'a Module>>) -> TypeIterator<Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut String>> {
         let mut visitors = Vec::new();
         let parent = parent.unwrap();
-        // FIXME: This is a workaround. We can wrap this in a safe function.
-        let self_ = unsafe { &mut *(self as *mut Module) };
+        let self_as_parent: Visitor<Visitors<'a, &'a Library, &'a Module>, &'a Module> = Visitor::new(parent.clone().into(), unsafe { &mut *(self as *mut Module) }).into();
         visitors.push(Visitor::new(parent.clone(), &mut self.name));
-        let parent: Visitor<Visitors<'a, &Library, &Module>, &Module> = Visitor::new(parent.clone().into(), self_).into();
-        visitors.extend(self.children.iter_mut().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone().into()))));
+        visitors.extend(self.children.iter_mut().flat_map(|child| child.iter_type_with_parent::<String>(Some(self_as_parent.clone().into()))));
         visitors.into()
     }
 }
