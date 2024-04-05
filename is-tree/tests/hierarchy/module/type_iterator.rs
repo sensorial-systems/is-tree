@@ -12,10 +12,10 @@ impl<'a> KnowsVisitorOf<'a, String> for &'a mut Module {
 impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>> for &'a Module {
     fn type_iterator(self, parent: Option<Visitors<'a, &'a Library, &'a Module>>) -> TypeIterator<Visitor<Visitors<'a, &'a Library, &'a Module>, &'a String>> {
         let parent = parent.unwrap();
-        let mut visitors = vec![Visitor::new(parent.clone(), &self.name)];
-        let parent: Visitors<'_, &Library, &Module> = Visitor::new(parent.clone().into(), self).into();
-        visitors.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone()))));
-        visitors.into()
+        let mut collection = Vec::new();
+        collection.push(Visitor::new(parent.clone(), &self.name));
+        collection.extend(self.children.iter().flat_map(|child| child.iter_type_with_parent::<String>(Some(Visitor::new(parent.clone().into(), self).into()))));
+        collection.into()
     }
 }
 
@@ -25,11 +25,9 @@ impl<'a> TypeIter<'a, Visitor<Visitors<'a, &'a Library, &'a Module>, &'a mut Str
         let parent = parent.unwrap();
         // FIXME: This is a workaround. We can wrap this in a safe function.
         let self_ = unsafe { &mut *(self as *mut Module) };
-        let visitor = Visitor::new(parent.clone(), &mut self.name);
-        visitors.push(visitor);
-        let parent: Visitor<ModuleParentVisitor<'_>, &Module> = Visitor::new(parent.clone().into(), self_).into();
-        let parent: Visitors<'_, &Library, &Module> = parent.into();
-        visitors.extend(self.children.iter_mut().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone()))));
+        visitors.push(Visitor::new(parent.clone(), &mut self.name));
+        let parent: Visitor<Visitors<'a, &Library, &Module>, &Module> = Visitor::new(parent.clone().into(), self_).into();
+        visitors.extend(self.children.iter_mut().flat_map(|child| child.iter_type_with_parent::<String>(Some(parent.clone().into()))));
         visitors.into()
     }
 }

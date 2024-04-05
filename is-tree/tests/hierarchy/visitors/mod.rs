@@ -5,11 +5,64 @@ use super::*;
 #[derive(Clone, EnumAsInner)]
 pub enum Visitors<'a, Library, Module> {
     Library(LibraryVisitor<Library>),
-    Module(ModuleVisitor<'a, Module>)
+    Module(Box<ModuleVisitor<'a, Module>>)
 }
 
 impl<'a, Library, Module> KnowsBranches<'a> for Visitors<'a, Library, Module> {
     type Branches = Visitors<'a, Library, Module>;
+}
+
+impl<'a> KnowsRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
+    type Root = RootVisitor<&'a Library>;
+}
+
+impl<'a> KnowsParent<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
+    type Parent = Visitors<'a, &'a Library, &'a Module>;
+}
+
+impl<'a> HasParent<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
+    fn parent(self) -> Self::Parent {
+        match self {
+            Visitors::Library(value) => (*value).into(),
+            Visitors::Module(value) => value.parent().into()
+        }
+    }
+
+}
+
+impl<'a> HasPathSegment for Visitors<'a, &'a Library, &'a Module> {
+    fn path_segment(&self) -> &String {
+        match self {
+            Visitors::Library(value) => value.path_segment(),
+            Visitors::Module(value) => value.path_segment()
+        }
+    }
+}
+
+impl<'a> KnowsBranches<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
+    type Branches = Visitors<'a, &'a Library, &'a Module>;
+}
+
+impl<'a> HasBranches<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
+    fn branches(self) -> impl Iterator<Item = Self::Branches> {
+        match self {
+            Visitors::Library(value) => value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(),
+            Visitors::Module(value) => value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter()
+        }
+    }
+}
+
+impl<'a> HasGet<'a> for &'a Visitors<'a, &'a Library, &'a Module> {}
+
+impl<'a> HasRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module>
+where Self::Root: Clone
+{
+    fn root(self) -> Self::Root {
+        match self {
+            Visitors::Library(value) => value.clone(),
+            Visitors::Module(value) => value.root()
+        }
+    }
 }
 
 impl<'a, Library, Module> KnowsRelativeAccessType<'a> for Visitors<'a, Library, Module> {
@@ -36,7 +89,7 @@ impl<'a> HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
             },
             Self::Module(value) => {
                 // FIXME: This is a workaround.
-                let value = unsafe { &*(&value as *const ModuleVisitor<&Module>) };
+                let value = unsafe { &*(&*value as *const ModuleVisitor<&Module>) };
                 value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter()
             }
         }
@@ -56,27 +109,9 @@ impl<'a> HasRelativeAccess<'a> for Visitors<'a, &'a Library, &'a Module> {
             },
             Self::Module(value) => {
                 // FIXME: This is a workaround.
-                let value = unsafe { &*(&value as *const ModuleVisitor<&Module>) };
+                let value = unsafe { &*(&*value as *const ModuleVisitor<&Module>) };
                 value.relative(path).map(|value| value.into())
             }
-        }
-    }
-}
-
-impl<'a> From<Visitors<'a, &'a Library, &'a Module>> for ModuleParentVisitor<'a> {
-    fn from(visitor: Visitors<'a, &'a Library, &'a Module>) -> Self {
-        match visitor {
-            Visitors::Library(library) => Self::Library(library),
-            Visitors::Module(module) => Self::Module(module.into())
-        }
-    }
-}
-
-impl<'a> From<ModuleParentVisitor<'a>> for Visitors<'a, &'a Library, &'a Module> {
-    fn from(visitor: ModuleParentVisitor<'a>) -> Self {
-        match visitor {
-            ModuleParentVisitor::Library(library) => Self::Library(library),
-            ModuleParentVisitor::Module(module) => Self::Module(*module)
         }
     }
 }
@@ -89,7 +124,7 @@ impl<'a> From<LibraryVisitor<&'a Library>> for Visitors<'a, &'a Library, &'a Mod
 
 impl<'a> From<ModuleVisitor<'a, &'a Module>> for Visitors<'a, &'a Library, &'a Module> {
     fn from(visitor: ModuleVisitor<'a, &'a Module>) -> Self {
-        Self::Module(visitor)
+        Self::Module(visitor.into())
     }
 }
 

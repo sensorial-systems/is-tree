@@ -4,13 +4,13 @@ pub mod library;
 pub mod module;
 pub mod visitors;
 
-mod access;
-mod iterator;
-mod update;
-
 pub use library::*;
 pub use module::*;
 pub use visitors::*;
+
+mod access;
+mod iterator;
+mod update;
 
 fn library() -> Library {
     Library {
