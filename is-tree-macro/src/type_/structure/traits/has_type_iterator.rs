@@ -23,9 +23,9 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
                 // }
             } else {
                 if field.is_any_type_of(&[type_name.as_str()]) {
-                    quote! { collection.push(::is_tree::Visitor::new(self.visitor().into(), &self.#field_name)); }
+                    quote! { collection.push(::is_tree::Visitor::new(parent.clone(), &self.#field_name)); }
                 } else {
-                    quote! { collection.extend((&self.#field_name).iter_type_with_parent::<#type_>(self.visitor().into())); }
+                    quote! { collection.extend((&self.#field_name).iter_type_with_parent::<#type_>(parent.clone())); }
                 }
             }
         }).collect();
@@ -59,7 +59,7 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
             }
             
             impl<'a> ::is_tree::TypeIter<'a, ::is_tree::Visitor<#visitor, &'a #type_>> for &'a #name {
-                fn type_iterator(self, _parent: #visitor) -> ::is_tree::TypeIterator<::is_tree::Visitor<#visitor, &'a #type_>> {
+                fn type_iterator(self, parent: #visitor) -> ::is_tree::TypeIterator<::is_tree::Visitor<#visitor, &'a #type_>> {
                     use ::is_tree::{IterType, HasVisitor};
                     let mut collection = Vec::new();
                     #consts
