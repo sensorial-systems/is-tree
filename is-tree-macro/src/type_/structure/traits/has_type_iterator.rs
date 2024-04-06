@@ -25,7 +25,7 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
                 if field.is_any_type_of(&[type_name.as_str()]) {
                     quote! { collection.push(::is_tree::Visitor::new(self.visitor().into(), &self.#field_name)); }
                 } else {
-                    quote! { collection.extend((&self.#field_name).iter_type_with_parent::<#type_>(Some(self.visitor().into()))); }
+                    quote! { collection.extend((&self.#field_name).iter_type_with_parent::<#type_>(self.visitor().into())); }
                 }
             }
         }).collect();
@@ -45,7 +45,7 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
                 if field.is_any_type_of(&[type_name.as_str()]) {
                     quote! { collection.push(::is_tree::Visitor::new(parent.clone(), &mut self.#field_name)); }
                 } else {
-                    quote! { collection.extend((&mut self.#field_name).iter_type_with_parent::<#type_>(Some(parent.clone()))); }
+                    quote! { collection.extend((&mut self.#field_name).iter_type_with_parent::<#type_>(parent.clone())); }
                 }
             }
         }).collect();
@@ -59,7 +59,7 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
             }
             
             impl<'a> ::is_tree::TypeIter<'a, ::is_tree::Visitor<#visitor, &'a #type_>> for &'a #name {
-                fn type_iterator(self, _parent: Option<#visitor>) -> ::is_tree::TypeIterator<::is_tree::Visitor<#visitor, &'a #type_>> {
+                fn type_iterator(self, _parent: #visitor) -> ::is_tree::TypeIterator<::is_tree::Visitor<#visitor, &'a #type_>> {
                     use ::is_tree::{IterType, HasVisitor};
                     let mut collection = Vec::new();
                     #consts
@@ -68,11 +68,10 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
             }
 
             impl<'a> ::is_tree::TypeIter<'a, ::is_tree::Visitor<#visitor, &'a mut #type_>> for &'a mut #name {
-                fn type_iterator(self, _parent: Option<#visitor>) -> ::is_tree::TypeIterator<::is_tree::Visitor<#visitor, &'a mut #type_>> {
+                fn type_iterator(self, parent: #visitor) -> ::is_tree::TypeIterator<::is_tree::Visitor<#visitor, &'a mut #type_>> {
                     use ::is_tree::{IterType, HasVisitor};
                     let mut collection = Vec::new();
                     let self_ = unsafe { &mut *(self as *mut #name) };
-                    let parent: Visitors<'_, &Library, &Module> = self_.visitor().into();
                     #muts
                     collection.into()
                 }
