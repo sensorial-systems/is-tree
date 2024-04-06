@@ -14,13 +14,11 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
             let type_name = type_.get_ident().unwrap().to_string();
             let field_name = &field.field.ident;
             if let Some(_type_) = field.as_collection() {
-                todo!("Implement collection");
-                // FIXME: It seems like it isn't working.
-                // if field.is_any_type_of(&[type_.get_ident().unwrap().to_string().as_str()]) {
-                //     quote! { collection.extend(self.#field_name.iter().flat_map(|child| ::is_tree::Visitor::new(self.visitor().into(), child))); }
-                // } else {
-                //     quote! { collection.extend(self.#field_name.iter().flat_map(|child| child.iter_type_with_parent::<#type_>(Some(self.visitor().into())))); }
-                // }
+                if field.is_any_type_of(&[type_.get_ident().unwrap().to_string().as_str()]) {
+                    quote! { collection.extend(self.#field_name.iter().flat_map(|child| ::is_tree::Visitor::new(parent.clone(), child))); }
+                } else {
+                    quote! { collection.extend(self.#field_name.iter().flat_map(|child| child.iter_type_with_parent::<#type_>(::is_tree::Visitor::new(parent.clone().into(), self).into()))); }
+                }
             } else {
                 if field.is_any_type_of(&[type_name.as_str()]) {
                     quote! { collection.push(::is_tree::Visitor::new(parent.clone(), &self.#field_name)); }
@@ -34,13 +32,11 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
             let type_name = type_.get_ident().unwrap().to_string();
             let field_name = &field.field.ident;
             if let Some(_type_) = field.as_collection() {
-                todo!("Implement collections");
-                // FIXME: It seems like it isn't working.
-                // if field.is_any_type_of(&[type_.get_ident().unwrap().to_string().as_str()]) {
-                //     quote! { collection.extend(self.#field_name.iter().flat_map(|child| ::is_tree::Visitor::new(self.visitor().into(), child))); }
-                // } else {
-                //     quote! { collection.extend(self.#field_name.iter().flat_map(|child| child.iter_type_with_parent::<#type_>(Some(self.visitor().into())))); }
-                // }
+                if field.is_any_type_of(&[type_.get_ident().unwrap().to_string().as_str()]) {
+                    quote! { collection.extend(self.#field_name.iter_mut().flat_map(|child| ::is_tree::Visitor::new(parent.clone(), child))); }
+                } else {
+                    quote! { collection.extend(self.#field_name.iter_mut().flat_map(|child| child.iter_type_with_parent::<#type_>(_self_as_parent.clone().into()))); }
+                }
             } else {
                 if field.is_any_type_of(&[type_name.as_str()]) {
                     quote! { collection.push(::is_tree::Visitor::new(parent.clone(), &mut self.#field_name)); }
@@ -72,6 +68,7 @@ pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
                     use ::is_tree::{IterType, HasVisitor};
                     let mut collection = Vec::new();
                     let self_ = unsafe { &mut *(self as *mut #name) };
+                    let _self_as_parent: ::is_tree::Visitor<#visitor, &'a #name> = ::is_tree::Visitor::new(parent.clone().into(), unsafe { &mut *(self as *mut #name) }).into();
                     #muts
                     collection.into()
                 }

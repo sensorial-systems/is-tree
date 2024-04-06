@@ -4,14 +4,12 @@ pub use visitor::*;
 
 mod knows_visitor;
 mod has_branches;
-mod type_iterator;
-
 
 use super::{Visitors, Library};
 
 #[derive(IsTree)]
 #[tree(visitor = "Visitors<'a, &'a Library, &'a Module>")]
-// #[tree(type_iterator = "String")]
+#[tree(type_iterator = "String")]
 pub struct Module {
     #[tree(path_segment)]
     pub name: String,
