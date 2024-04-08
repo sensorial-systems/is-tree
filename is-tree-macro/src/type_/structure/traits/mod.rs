@@ -4,3 +4,4 @@ pub mod has_get;
 pub mod has_type_iterator;
 pub mod knows_owned;
 pub mod knows_relative_type;
+pub mod knows_visitor;

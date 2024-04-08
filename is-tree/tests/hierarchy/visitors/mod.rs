@@ -2,57 +2,18 @@ use enum_as_inner::EnumAsInner;
 
 use super::*;
 
-#[derive(Clone, EnumAsInner)] // TODO: Use IsTree here
+#[derive(Clone, EnumAsInner, IsTree)] // TODO: Use IsTree here
+#[tree(branches = "Visitors<'a, &'a Library, &'a Module>")]
+#[tree(reference = "Visitors<'a, &'a Library, &'a Module>")]
+#[tree(visitor = "Visitors<'a, &'a Library, &'a Module>")]
 pub enum Visitors<'a, Library, Module> {
     Library(LibraryVisitor<Library>),
     Module(Box<ModuleVisitor<'a, Module>>)
 }
 
-impl<'a, Library, Module> KnowsBranches<'a> for Visitors<'a, Library, Module> {
-    type Branches = Visitors<'a, Library, Module>;
+impl<'a, Library, Module> KnowsRoot<'a> for Visitors<'a, Library, Module> {
+    type Root = <LibraryVisitor<Library> as KnowsRoot<'a>>::Root;
 }
-
-impl<'a> KnowsRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
-    type Root = RootVisitor<&'a Library>;
-}
-
-impl<'a> KnowsParent<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
-    type Parent = Visitors<'a, &'a Library, &'a Module>;
-}
-
-impl<'a> HasParent<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
-    fn parent(self) -> Self::Parent {
-        match self {
-            Visitors::Library(value) => (*value).into(),
-            Visitors::Module(value) => value.parent().into()
-        }
-    }
-
-}
-
-impl<'a> HasPathSegment for Visitors<'a, &'a Library, &'a Module> {
-    fn path_segment(&self) -> &String {
-        match self {
-            Visitors::Library(value) => value.path_segment(),
-            Visitors::Module(value) => value.path_segment()
-        }
-    }
-}
-
-impl<'a> KnowsBranches<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
-    type Branches = Visitors<'a, &'a Library, &'a Module>;
-}
-
-impl<'a> HasBranches<'a> for &'a Visitors<'a, &'a Library, &'a Module> {
-    fn branches(self) -> impl Iterator<Item = Self::Branches> {
-        match self {
-            Visitors::Library(value) => value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(),
-            Visitors::Module(value) => value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter()
-        }
-    }
-}
-
-impl<'a> HasGet<'a> for &'a Visitors<'a, &'a Library, &'a Module> {}
 
 impl<'a> HasRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module>
 where Self::Root: Clone
@@ -65,18 +26,7 @@ where Self::Root: Clone
     }
 }
 
-impl<'a, Library, Module> KnowsRelativeAccessType<'a> for Visitors<'a, Library, Module> {
-    type RelativeType = Visitors<'a, Library, Module>;
-}
-
-impl<'a> HasPath for Visitors<'a, &'a Library, &'a Module> {
-    fn path(&self) -> Path {
-        match self {
-            Self::Library(value) => value.path(),
-            Self::Module(value) => value.path()
-        }
-    }
-}
+impl<'a> HasGet<'a> for &'a Visitors<'a, &'a Library, &'a Module> {}
 
 // TODO: Move it to IsTree derive macro.
 impl<'a> HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
@@ -94,6 +44,10 @@ impl<'a> HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
             }
         }
     }
+}
+
+impl<'a> KnowsRelativeAccessType<'a> for Visitors<'a, &'a Library, &'a Module> {
+    type RelativeType = Visitors<'a, &'a Library, &'a Module>;
 }
 
 // TODO: Move it to IsTree derive macro.

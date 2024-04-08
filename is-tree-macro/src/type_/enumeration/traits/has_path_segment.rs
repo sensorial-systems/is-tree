@@ -1,12 +1,15 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::type_::Enumeration;
+use crate::{traits::AttributeQuery, type_::Enumeration};
 
 fn impl_has_path_segment(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
     let _self = quote! { #name #generics };
+    let reference = enumeration
+        .named_attribute_value(vec!["tree", "reference"])
+        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
@@ -14,7 +17,7 @@ fn impl_has_path_segment(enumeration: &Enumeration) -> TokenStream {
         }
     }).collect::<TokenStream>();
     quote! {
-        impl<'a> ::is_tree::HasPathSegment for #_self {
+        impl<'a> ::is_tree::HasPathSegment for #reference {
             fn path_segment(&self) -> &String {
                 match self {
                     #variants
@@ -28,6 +31,9 @@ fn impl_has_path(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
     let _self = quote! { #name #generics };
+    let reference = enumeration
+        .named_attribute_value(vec!["tree", "reference"])
+        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
@@ -35,7 +41,7 @@ fn impl_has_path(enumeration: &Enumeration) -> TokenStream {
         }
     }).collect::<TokenStream>();
     quote! {
-        impl<'a> ::is_tree::HasPath for #_self {
+        impl<'a> ::is_tree::HasPath for #reference {
             fn path(&self) -> ::is_tree::Path {
                 match self {
                     #variants

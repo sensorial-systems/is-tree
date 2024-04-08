@@ -1,12 +1,34 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::type_::Enumeration;
+use crate::{traits::AttributeQuery, type_::Enumeration};
+
+pub fn impl_knows_branches(enumeration: &Enumeration) -> TokenStream {
+    let structure_name = &enumeration.name;
+    let branches = enumeration
+        .named_attribute_value(vec!["tree", "branches"])
+        .unwrap_or_else(|| structure_name.clone().into());
+    let reference = enumeration
+        .named_attribute_value(vec!["tree", "reference"])
+        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
+    quote! {
+        impl<'a> ::is_tree::KnowsBranches<'a> for #reference  {
+            type Branches = #branches;
+        }
+
+        impl<'a> ::is_tree::KnowsBranches<'a> for &'a #reference {
+            type Branches = #branches;
+        }
+    }
+}
 
 pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
     let _self = quote! { #name #generics };
+    let reference = enumeration
+        .named_attribute_value(vec!["tree", "reference"])
+        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
 
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
@@ -15,32 +37,22 @@ pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
         }
     }).collect::<TokenStream>();
 
-    let variant = enumeration.variants.first().map(|first| &first.variant).expect("Enum must have at least one variant");
-    let variant = variant.fields.iter().next().expect("Variant must have at least one field");
-
-    let gat = quote! {
-        <#variant as KnowsBranches<'a>>::Branches
-    };
-    
     quote! {
-        impl<'a> ::is_tree::KnowsBranches<'a> for #_self {
-            type Branches = #gat;
-        }
-
-        impl<'a> ::is_tree::KnowsBranches<'a> for &'a #_self {
-            type Branches = #gat;
-        }
-
-        impl<'a> ::is_tree::KnowsBranches<'a> for &'a mut #_self {
-            type Branches = #gat;
-        }
-
-        impl<'a> ::is_tree::HasBranches<'a> for &'a #_self {
+        impl<'a> ::is_tree::HasBranches<'a> for &'a #reference {
             fn branches(self) -> impl Iterator<Item = Self::Branches> {
                 match self {
                     #variants
                 }
             }
         }
+    }
+}
+
+pub fn impl_branches(enumeration: &Enumeration) -> TokenStream {
+    let knows_branches = impl_knows_branches(enumeration);
+    let has_branches = impl_has_branches(enumeration);
+    quote! {
+        #knows_branches
+        #has_branches
     }
 }
