@@ -11,21 +11,6 @@ pub enum Visitors<'a, Library, Module> {
     Module(Box<ModuleVisitor<'a, Module>>)
 }
 
-impl<'a, Library, Module> KnowsRoot<'a> for Visitors<'a, Library, Module> {
-    type Root = <LibraryVisitor<Library> as KnowsRoot<'a>>::Root;
-}
-
-impl<'a> HasRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module>
-where Self::Root: Clone
-{
-    fn root(self) -> Self::Root {
-        match self {
-            Visitors::Library(value) => value.clone(),
-            Visitors::Module(value) => value.root()
-        }
-    }
-}
-
 impl<'a> HasGet<'a> for &'a Visitors<'a, &'a Library, &'a Module> {}
 
 // TODO: Move it to IsTree derive macro.
