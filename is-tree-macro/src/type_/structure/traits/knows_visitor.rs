@@ -7,11 +7,11 @@ pub fn impl_knows_visitor(structure: &Structure) -> proc_macro2::TokenStream {
         let name = &structure.name;
         quote! {
             impl<'a> ::is_tree::KnowsVisitor<'a> for #name {
-                type RelativeType = #value;
+                type Visitor = #value;
             }
 
             impl<'a> ::is_tree::KnowsVisitor<'a> for &'a #name {
-                type RelativeType = #value;
+                type Visitor = #value;
             }
         }
     } else {

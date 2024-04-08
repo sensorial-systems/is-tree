@@ -7,7 +7,7 @@ use crate::{traits::AttributeQuery, type_::Structure};
 
 pub fn impl_has_type_iterator(structure: &Structure) -> TokenStream {
     let has_type_iterator = structure.named_attribute_value(vec!["tree", "type_iterator"]);
-    let knows_visitor = structure.named_attribute_value(vec!["tree", "visitor"]);
+    let knows_visitor = structure.named_attribute_value(vec!["tree", "relative_visitor"]);
     if let (Some(type_), Some(visitor)) = (has_type_iterator, knows_visitor) {
         let name = &structure.name;
         let consts: TokenStream = structure.fields.iter().map(|field| {

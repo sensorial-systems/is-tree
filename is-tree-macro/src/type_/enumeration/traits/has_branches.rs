@@ -33,14 +33,25 @@ pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
-            #name::#variant_name(value) => value.branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(), // TODO: This needs optimization.
+            #name::#variant_name(value) => longer_ref(value).branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(), // TODO: This needs optimization.
         }
     }).collect::<TokenStream>();
 
     quote! {
         impl<'a> ::is_tree::HasBranches<'a> for &'a #reference {
             fn branches(self) -> impl Iterator<Item = Self::Branches> {
+                fn longer_ref<'longer, T>(t: &T) -> &T { t }
                 match self {
+                    #variants
+                }
+            }
+        }
+
+        impl<'a> ::is_tree::HasBranches<'a> for #reference {
+            fn branches(self) -> impl Iterator<Item = Self::Branches> {
+                #[inline]
+                fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
+                match &self {
                     #variants
                 }
             }

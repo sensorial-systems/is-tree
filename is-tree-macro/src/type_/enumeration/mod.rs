@@ -39,7 +39,7 @@ impl Derive for Enumeration {
         let has_root = has_root::impl_has_root(self);
         let has_get = has_get::impl_has_get(self);
         let has_branches = has_branches::impl_branches(self);
-        let has_relative_access = has_relative_access::impl_has_relative_access(self);
+        let has_relative_access = has_relative_access::impl_relative_access(self);
         quote! {
             #has_path_segment
             #has_parent

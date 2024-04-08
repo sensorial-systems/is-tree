@@ -39,7 +39,7 @@ impl Derive for Structure {
         let knows_owned = knows_owned::impl_knows_owned(self);
         let has_type_iterator = has_type_iterator::impl_has_type_iterator(self);
         let knows_relative_type = knows_relative_type::impl_knows_relative_type(self);
-        // let knows_visitor = knows_visitor::impl_knows_visitor(self);
+        let knows_visitor = knows_visitor::impl_knows_visitor(self);
         quote! {
             #has_path_segment
             #has_branches
@@ -47,7 +47,7 @@ impl Derive for Structure {
             #knows_owned
             #has_type_iterator
             #knows_relative_type
-            // #knows_visitor
+            #knows_visitor
         }
     }
 }
