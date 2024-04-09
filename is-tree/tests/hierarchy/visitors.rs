@@ -2,7 +2,7 @@ use enum_as_inner::EnumAsInner;
 
 use super::*;
 
-#[derive(Clone, EnumAsInner, IsTree)] // TODO: Use IsTree here
+#[derive(Clone, EnumAsInner, IsTree)]
 #[tree(branches = "Visitors<'a, &'a Library, &'a Module>")]
 #[tree(reference = "Visitors<'a, &'a Library, &'a Module>")]
 #[tree(visitor = "Visitors<'a, &'a Library, &'a Module>")]
