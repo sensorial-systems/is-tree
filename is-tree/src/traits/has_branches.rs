@@ -2,7 +2,7 @@ use crate::HasPathSegment;
 
 
 pub trait KnowsBranches<'a> {
-    type Branches;
+    type Branches; // TODO: type Branches: KnowsOwned?
 }
 
 pub trait HasBranches<'a>: KnowsBranches<'a> {

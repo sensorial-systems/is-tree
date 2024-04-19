@@ -9,17 +9,13 @@ pub struct Branch {
 
 impl From<String> for Branch {
     fn from(name: String) -> Self {
-        Self {
-            name,
-            branches: Vec::new(),
-        }
+        let branches = Default::default();
+        Self { name, branches }
     }
 }
 
 impl<'a> AddBranch<'a> for Branch {
-    fn add_branch(&'a mut self, branch: impl Into<<Self::Branches as is_tree::KnowsOwned>::Owned>) -> &'a mut <Self::Branches as is_tree::KnowsOwned>::Owned
-        where Self::Branches: is_tree::KnowsOwned
-    {
+    fn add_branch(&'a mut self, branch: impl Into<Branch>) -> &'a mut Branch {
         self.branches.push(branch.into());
         self.branches.last_mut().unwrap()
     }
