@@ -23,7 +23,7 @@ pub(crate) fn impl_knows_branches(structure: &Structure) -> proc_macro2::TokenSt
     }
 }
 
-pub(crate) fn impl_has_branches(structure: &Structure) -> proc_macro2::TokenStream {
+pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::TokenStream {
     let structure_name = &structure.name;
 
     let mut consts = Vec::new();
@@ -58,6 +58,7 @@ pub(crate) fn impl_has_branches(structure: &Structure) -> proc_macro2::TokenStre
     if const_chain.is_empty() || mut_chain.is_empty() {
         quote! {}
     } else {
+        structure.implementation.has_branches = true;
         quote! {
             impl<'a> ::is_tree::HasBranches<'a> for &'a #structure_name {
                 fn branches(self) -> impl Iterator<Item = Self::Branches> {
@@ -74,7 +75,7 @@ pub(crate) fn impl_has_branches(structure: &Structure) -> proc_macro2::TokenStre
     }
 }
 
-pub(crate) fn impl_branches(structure: &Structure) -> proc_macro2::TokenStream {
+pub(crate) fn impl_branches(structure: &mut Structure) -> proc_macro2::TokenStream {
     let knows = impl_knows_branches(structure);
     let has = impl_has_branches(structure);
     quote! {

@@ -10,7 +10,8 @@ where Parent: Clone,
 {
     fn get(self, segment: impl Into<String>) -> Option<Self::Branches> {
         self
-            .value.clone() // TODO: How to use .value() here instead?
+            .value()
+            .clone()
             .get(segment)
             .map(|value| self.visit(value))
     }

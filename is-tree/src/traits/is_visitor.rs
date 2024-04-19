@@ -5,7 +5,7 @@ pub trait IsVisitor<'a>: KnowsParent<'a> + KnowsValue<'a> {
     where Child::Visitor: HasVisitorConstructor<'a, Value = Child>,
           Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent> + Clone
     {
-        Child::Visitor::new_with_parent(self.clone().into(), value)
+        Child::Visitor::new(self.clone().into(), value)
     }
 }
 

@@ -31,5 +31,5 @@ pub trait AttributeQuery {
 }
 
 pub trait Derive {
-    fn derive(&self) -> proc_macro2::TokenStream;
+    fn derive(&mut self) -> proc_macro2::TokenStream;
 }

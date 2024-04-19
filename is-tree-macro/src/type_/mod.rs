@@ -12,7 +12,7 @@ pub enum Type {
 }
 
 impl Derive for Type {
-    fn derive(&self) -> proc_macro2::TokenStream {
+    fn derive(&mut self) -> proc_macro2::TokenStream {
         match self {
             Type::Enumeration(enumeration) => enumeration.derive(),
             Type::Structure(structure) => structure.derive(),

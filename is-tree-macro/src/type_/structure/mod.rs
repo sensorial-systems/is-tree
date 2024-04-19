@@ -8,19 +8,27 @@ use field::*;
 
 use crate::traits::{Derive, AttributeQuery};
 
+#[derive(Default)]
+pub struct Implementation {
+    pub has_branches: bool,
+    pub has_path_segment: bool
+}
 
 pub struct Structure {
     pub attrs: Vec<syn::Attribute>,
     pub name: syn::Ident,
     pub fields: Vec<Field>,
+    pub implementation: Implementation
 }
 
 impl From<(syn::DeriveInput, syn::DataStruct)> for Structure {
     fn from((ast, data): (syn::DeriveInput, syn::DataStruct)) -> Self {
+        let implementation = Default::default();
         Self {
             attrs: ast.attrs,
             name: ast.ident,
             fields: data.fields.into_iter().map(|field| field.into()).collect(),
+            implementation
         }
     }
 }
@@ -32,7 +40,7 @@ impl AttributeQuery for Structure {
 }
 
 impl Derive for Structure {
-    fn derive(&self) -> proc_macro2::TokenStream {
+    fn derive(&mut self) -> proc_macro2::TokenStream {
         let has_path_segment = has_path_segment::impl_has_path_segment(self);
         let has_branches = has_branches::impl_branches(self);
         let has_get = has_get::impl_has_get(self);

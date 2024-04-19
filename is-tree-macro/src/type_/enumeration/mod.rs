@@ -33,7 +33,7 @@ impl From<(syn::DeriveInput, syn::DataEnum)> for Enumeration {
 }
 
 impl Derive for Enumeration {
-    fn derive(&self) -> proc_macro2::TokenStream {
+    fn derive(&mut self) -> proc_macro2::TokenStream {
         let has_path_segment = has_path_segment::impl_path_segment(self);
         let has_parent = has_parent::impl_has_parent(self);
         let has_root = has_root::impl_has_root(self);

@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn tree_iterator() {
     let library = library();
-    let iterator: TreeIterator<Visitors<'_, &Library, &Module>> = TreeIterator::new(&library); // TODO: Wrap it in a better function.
+    let iterator: TreeIterator<Visitors<'_, &Library, &Module>> = TreeIterator::new(&library); // TODO: Wrap it in a better function. Something like `let iterator = library.iter_tree()`;
     assert_eq!(iterator.map(|value| value.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::3", "a::b::c::d::2", "a::b::c::d::1", "a::b::c::d", "a::b::c", "a::b", "a"]);
 }
 
@@ -12,6 +12,7 @@ fn type_iterator() {
     let mut library = library();
 
     // Test if parents are properly set.
+    // Root's parent == self.
     assert_eq!((&library).iter_type::<String>().map(|visitor| visitor.parent().path().to_string()).collect::<Vec<_>>(), vec!["a", "a::b::c", "a::b::c::d", "a::b::c::d", "a::b::c::d", "a::b", "a"]);
     assert_eq!((&mut library).iter_type::<String>().map(|visitor| visitor.parent().path().to_string()).collect::<Vec<_>>(), vec!["a", "a::b::c", "a::b::c::d", "a::b::c::d", "a::b::c::d", "a::b", "a"]);
 
