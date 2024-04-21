@@ -22,7 +22,7 @@ pub fn impl_has_parent(enumeration: &Enumeration) -> TokenStream {
     }).collect::<TokenStream>();
     
     quote! {
-        impl<'a> ::is_tree::KnowsParent<'a> for &'a #reference {
+        impl<'a> ::is_tree::KnowsParent<'a> for #reference {
             type Parent = #visitor;
         }
 
@@ -33,5 +33,7 @@ pub fn impl_has_parent(enumeration: &Enumeration) -> TokenStream {
                 }
             }
         }
+
+        // TODO: Implement mutable version
     }
 }

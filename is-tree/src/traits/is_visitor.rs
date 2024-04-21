@@ -1,6 +1,6 @@
-use crate::{KnowsVisitor, KnowsParent, KnowsValue, HasVisitorConstructor};
+use crate::{KnowsVisitor, KnowsParent, HasVisitorConstructor};
 
-pub trait IsVisitor<'a>: KnowsParent<'a> + KnowsValue<'a> {
+pub trait IsVisitor<'a>: KnowsParent<'a> {
     fn visit<Child: KnowsVisitor<'a>>(&self, value: Child) -> Child::Visitor
     where Child::Visitor: HasVisitorConstructor<'a, Value = Child>,
           Self: Into<<Child::Visitor as KnowsParent<'a>>::Parent> + Clone
@@ -10,4 +10,4 @@ pub trait IsVisitor<'a>: KnowsParent<'a> + KnowsValue<'a> {
 }
 
 impl<'a, T> IsVisitor<'a> for T
-where T: KnowsParent<'a> + KnowsValue<'a> {}
+where T: KnowsParent<'a> {}
