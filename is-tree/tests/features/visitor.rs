@@ -1,7 +1,39 @@
-use is_tree::{AddBranch, HasBranches, IsTree};
+use is_tree::{AddBranch, HasBranches, HasVisitor, IsTree, RootVisitor, Visitor, KnowsRoot};
+
+// #[derive(Clone, IsTree)]
+// #[tree(branches = "Visitors<'a>")]
+// #[tree(reference = "Visitors<'a>")]
+// #[tree(visitor = "Visitors<'a>")]
+pub enum Visitors<'a> {
+    Root(RootVisitor<&'a Branch>),
+    Branch(Box<Visitor<Visitors<'a>, &'a Branch>>),
+}
+
+impl<'a> From<&'a Branch> for Visitors<'a> {
+    fn from(branch: &'a Branch) -> Self {
+        Self::Root(branch.visitor())
+    }
+}
+
+impl<'a> From<Visitor<Visitors<'a>, &'a Branch>> for Visitors<'a> {
+    fn from(visitor: Visitor<Visitors<'a>, &'a Branch>) -> Self {
+        Self::Branch(visitor.into())
+    }
+}
+
+impl<'a> From<RootVisitor<&'a Branch>> for Visitors<'a> {
+    fn from(visitor: RootVisitor<&'a Branch>) -> Self {
+        Self::Root(visitor.into())
+    }
+}
+
 
 #[derive(IsTree)]
+#[tree(branches = "Branch")]
+// #[tree(visitor = "Visitors<'a>")]
+// #[tree(relative_visitor = "Visitors<'a>")]
 pub struct Branch {
+    #[tree(path_segment)]
     pub name: String,
     #[tree(branch)]
     pub branches: Vec<Branch>,

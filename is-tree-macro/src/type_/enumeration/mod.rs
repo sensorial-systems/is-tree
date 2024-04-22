@@ -23,12 +23,11 @@ impl AttributeQuery for Enumeration {
 
 impl From<(syn::DeriveInput, syn::DataEnum)> for Enumeration {
     fn from((ast, data): (syn::DeriveInput, syn::DataEnum)) -> Self {
-        Self {
-            attrs: ast.attrs,
-            generics: ast.generics,
-            name: ast.ident,
-            variants: data.variants.into_iter().map(|field| field.into()).collect(),
-        }
+        let attrs = ast.attrs;
+        let generics = ast.generics;
+        let name = ast.ident;
+        let variants = data.variants.into_iter().map(|field| field.into()).collect();
+        Self { attrs, generics, name, variants }
     }
 }
 

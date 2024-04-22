@@ -10,10 +10,8 @@ pub struct Branch {
 
 impl From<String> for Branch {
     fn from(name: String) -> Self {
-        Self {
-            name,
-            branches: Vec::new(),
-        }
+        let branches = Default::default();
+        Self { name, branches }
     }
 }
 
