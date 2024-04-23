@@ -2,6 +2,8 @@
 
 `is-tree` makes everything a tree.
 
+### TODO: Build something (maybe a matrix) for representing which feature an attribute enables. E.g. #[tree(path_segment)] + #[tree(visitor)] enables `RelativeAccess`
+
 ### Features
 
 The example structure:

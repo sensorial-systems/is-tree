@@ -24,7 +24,7 @@ pub fn impl_has_root(enumeration: &Enumeration) -> TokenStream {
     
     quote! {
         impl #generics ::is_tree::KnowsRoot<'a> for #_self {
-            type Root = <#variant as KnowsRoot<'a>>::Root;
+            type Root = <#variant as ::is_tree::KnowsRoot<'a>>::Root;
         }
 
         impl<'a> ::is_tree::HasRoot<'a> for &'a #reference {

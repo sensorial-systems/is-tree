@@ -1,9 +1,10 @@
-use is_tree::{AddBranch, HasBranches, HasVisitor, IsTree, RootVisitor, Visitor, KnowsRoot};
+use is_tree::{AddBranch, HasPath, HasVisitor, HasVisitorConstructor, IsTree, KnowsValue, RootVisitor, TreeIterator, Visitor};
 
 // #[derive(Clone, IsTree)]
-// #[tree(branches = "Visitors<'a>")]
-// #[tree(reference = "Visitors<'a>")]
-// #[tree(visitor = "Visitors<'a>")]
+#[derive(Clone, IsTree, Debug)]
+#[tree(branches = "Visitors<'a>")]
+#[tree(reference = "Visitors<'a>")]
+#[tree(visitor = "Visitors<'a>")]
 pub enum Visitors<'a> {
     Root(RootVisitor<&'a Branch>),
     Branch(Box<Visitor<Visitors<'a>, &'a Branch>>),
@@ -27,11 +28,10 @@ impl<'a> From<RootVisitor<&'a Branch>> for Visitors<'a> {
     }
 }
 
-
-#[derive(IsTree)]
+#[derive(IsTree, Debug)]
 #[tree(branches = "Branch")]
-// #[tree(visitor = "Visitors<'a>")]
-// #[tree(relative_visitor = "Visitors<'a>")]
+#[tree(visitor = "Visitors<'a>")]
+#[tree(relative_visitor = "Visitors<'a>")]
 pub struct Branch {
     #[tree(path_segment)]
     pub name: String,
@@ -53,15 +53,22 @@ impl<'a> AddBranch<'a> for Branch {
     }
 }
 
+impl<'a> HasVisitorConstructor<'a> for Visitors<'a> {
+    fn new(parent: Visitors<'a>, value: &'a Branch) -> Visitors<'a> {
+        Visitor::new(parent, value).into()
+    }
+}
+
+impl<'a> KnowsValue<'a> for Visitors<'a> {
+    type Value = &'a Branch;
+}
+
 #[test]
-fn branches() {
-    let mut branch = Branch::from("root".to_string());
-    branch.add_branch(Branch::from("child1".to_string()));
-    branch.add_branch(Branch::from("child2".to_string()));
+fn visitors() {
+    let mut branch = Branch::from("grandfather".to_string());
+    branch.add_branch(Branch::from("father".to_string()))
+          .add_branch(Branch::from("son".to_string()));
 
-    // TODO: How to support TreeIterator here without more #[tree] attributes?
-    // let iterator = is_tree::TreeIterator::new(&branch);
-
-    assert_eq!(branch.branches().count(), 2);
-    assert_eq!(branch.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["child1", "child2"])
+    let iterator: TreeIterator<Visitors<'_>> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path().to_string()).collect::<Vec<_>>(), vec!["grandfather::father::son", "grandfather::father", "grandfather"]);
 }

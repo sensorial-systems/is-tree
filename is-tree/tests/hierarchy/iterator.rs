@@ -3,7 +3,8 @@ use super::*;
 #[test]
 fn tree_iterator() {
     let library = library();
-    assert_eq!(library.iter_tree().map(|value| value.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::3", "a::b::c::d::2", "a::b::c::d::1", "a::b::c::d", "a::b::c", "a::b", "a"]);
+    let iterator: TreeIterator<Visitors<'_, &Library, &Module>> = TreeIterator::new(&library);
+    assert_eq!(iterator.map(|value| value.path().to_string()).collect::<Vec<_>>(), vec!["a::b::c::d::3", "a::b::c::d::2", "a::b::c::d::1", "a::b::c::d", "a::b::c", "a::b", "a"]);
 }
 
 #[test]
