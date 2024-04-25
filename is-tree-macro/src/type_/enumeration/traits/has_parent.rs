@@ -1,18 +1,12 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{traits::AttributeQuery, type_::Enumeration};
+use crate::type_::Enumeration;
 
 pub fn impl_has_parent(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
-    let _self = quote! { #name #generics };
-    let reference = enumeration
-        .named_attribute_value(vec!["tree", "reference"])
-        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
-    let visitor = enumeration
-        .named_attribute_value(vec!["tree", "visitor"])
-        .expect("#[tree(visitor = \"type\")] not found in the enumeration.");
+    let self_ = quote! { #name #generics };
 
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
@@ -22,11 +16,11 @@ pub fn impl_has_parent(enumeration: &Enumeration) -> TokenStream {
     }).collect::<TokenStream>();
     
     quote! {
-        impl<'a> ::is_tree::KnowsParent<'a> for #reference {
-            type Parent = #visitor;
+        impl #generics ::is_tree::KnowsParent<'a> for #self_ {
+            type Parent = #self_;
         }
 
-        impl<'a> ::is_tree::HasParent<'a> for &'a #reference {
+        impl #generics ::is_tree::HasParent<'a> for &'a #self_ {
             fn parent(self) -> Self::Parent {
                 match self {
                     #variants

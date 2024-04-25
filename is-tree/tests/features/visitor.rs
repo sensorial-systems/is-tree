@@ -1,26 +1,9 @@
 use is_tree::{AddBranch, HasPath, HasVisitor, HasVisitorConstructor, IsTree, KnowsValue, RootVisitor, TreeIterator, Visitor};
 
-// #[derive(Clone, IsTree)]
 #[derive(Clone, IsTree, Debug)]
-#[tree(branches = "Visitors<'a>")]
-#[tree(reference = "Visitors<'a>")]
-#[tree(visitor = "Visitors<'a>")]
 pub enum Visitors<'a> {
     Root(RootVisitor<&'a Branch>),
     Branch(Box<Visitor<Visitors<'a>, &'a Branch>>),
-}
-
-impl<'a> ::is_tree::KnowsRoot<'a> for Visitors<'a> {
-    type Root = RootVisitor<&'a Branch>;
-}
-
-impl<'a> ::is_tree::HasRoot<'a> for &'a Visitors<'a> {
-    fn root(self) -> Self::Root {
-        match self {
-            Visitors::Root(visitor) => visitor.root(),
-            Visitors::Branch(visitor) => visitor.root(),
-        }
-    }
 }
 
 impl<'a> From<&'a Branch> for Visitors<'a> {

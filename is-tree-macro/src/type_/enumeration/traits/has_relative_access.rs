@@ -1,31 +1,12 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{traits::AttributeQuery, type_::Enumeration};
+use crate::type_::Enumeration;
 
-pub fn impl_knows_relative_access(enumeration: &Enumeration) -> TokenStream {
-    let structure_name = &enumeration.name;
-    let visitor = enumeration
-        .named_attribute_value(vec!["tree", "visitor"])
-        .unwrap_or_else(|| structure_name.clone().into());
-    let reference = enumeration
-        .named_attribute_value(vec!["tree", "reference"])
-        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
-    quote! {
-        impl<'a> ::is_tree::KnowsRelativeAccessType<'a> for #reference  {
-            type RelativeType = #visitor;
-        }
-    }
-}
-
-pub fn impl_has_relative_access(enumeration: &Enumeration) -> TokenStream {
+pub fn impl_relative_access(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
-    let _self = quote! { #name #generics };
-    let reference = enumeration
-        .named_attribute_value(vec!["tree", "reference"])
-        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
-
+    let self_ = quote! { #name #generics };
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
@@ -34,7 +15,11 @@ pub fn impl_has_relative_access(enumeration: &Enumeration) -> TokenStream {
     }).collect::<TokenStream>();
 
     quote! {
-        impl<'a> ::is_tree::HasRelativeAccess<'a> for #reference {
+        impl #generics ::is_tree::KnowsRelativeAccessType<'a> for #self_ {
+            type RelativeType = #self_;
+        }
+
+        impl #generics ::is_tree::HasRelativeAccess<'a> for #self_ {
             fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
             where K: Into<String>
             {
@@ -45,14 +30,5 @@ pub fn impl_has_relative_access(enumeration: &Enumeration) -> TokenStream {
                 }
             }
         }
-    }
-}
-
-pub fn impl_relative_access(enumeration: &Enumeration) -> TokenStream {
-    let knows_relative_access = impl_knows_relative_access(enumeration);
-    let has_relative_access = impl_has_relative_access(enumeration);
-    quote! {
-        #knows_relative_access
-        #has_relative_access
     }
 }

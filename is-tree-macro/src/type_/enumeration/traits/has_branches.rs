@@ -1,30 +1,12 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{traits::AttributeQuery, type_::Enumeration};
+use crate::type_::Enumeration;
 
-pub fn impl_knows_branches(enumeration: &Enumeration) -> TokenStream {
-    let structure_name = &enumeration.name;
-    let generics = &enumeration.generics;
-    let self_ = quote! { #structure_name #generics };
-    quote! {
-        impl #generics ::is_tree::KnowsBranches<'a> for #self_ {
-            type Branches = #self_;
-        }
-
-        impl #generics ::is_tree::KnowsBranches<'a> for &'a #self_ {
-            type Branches = #self_;
-        }
-    }
-}
-
-pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
+pub fn impl_branches(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = enumeration.generics_with(quote! { ::is_tree::KnowsBranches<'a> });
-    let _self = quote! { #name #generics };
-    let reference = enumeration
-        .named_attribute_value(vec!["tree", "reference"])
-        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
+    let self_ = quote! { #name #generics };
 
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
@@ -34,7 +16,15 @@ pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
     }).collect::<TokenStream>();
 
     quote! {
-        impl<'a> ::is_tree::HasBranches<'a> for &'a #reference {
+        impl #generics ::is_tree::KnowsBranches<'a> for #self_ {
+            type Branches = #self_;
+        }
+
+        impl #generics ::is_tree::KnowsBranches<'a> for &'a #self_ {
+            type Branches = #self_;
+        }
+
+        impl #generics ::is_tree::HasBranches<'a> for &'a #self_ {
             fn branches(self) -> impl Iterator<Item = Self::Branches> {
                 fn longer_ref<'longer, T>(t: &T) -> &T { t }
                 match self {
@@ -43,7 +33,7 @@ pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
             }
         }
 
-        impl<'a> ::is_tree::HasBranches<'a> for #reference {
+        impl #generics ::is_tree::HasBranches<'a> for #self_ {
             fn branches(self) -> impl Iterator<Item = Self::Branches> {
                 #[inline]
                 fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
@@ -52,14 +42,5 @@ pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
                 }
             }
         }
-    }
-}
-
-pub fn impl_branches(enumeration: &Enumeration) -> TokenStream {
-    let knows_branches = impl_knows_branches(enumeration);
-    let has_branches = impl_has_branches(enumeration);
-    quote! {
-        #knows_branches
-        #has_branches
     }
 }
