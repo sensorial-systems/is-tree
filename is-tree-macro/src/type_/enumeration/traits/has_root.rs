@@ -7,7 +7,7 @@ use crate::traits::AttributeQuery;
 pub fn impl_has_root(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
-    let _self = quote! { #name #generics };
+    let self_ = quote! { #name #generics };
     let reference = enumeration
         .named_attribute_value(vec!["tree", "reference"])
         .expect("#[tree(reference = \"type\")] not found in the enumeration.");
@@ -23,16 +23,16 @@ pub fn impl_has_root(enumeration: &Enumeration) -> TokenStream {
     let variant = variant.fields.iter().next().expect("Variant must have at least one field");
     
     quote! {
-        impl #generics ::is_tree::KnowsRoot<'a> for #_self {
-            type Root = <#variant as ::is_tree::KnowsRoot<'a>>::Root;
-        }
+        // impl #generics ::is_tree::KnowsRoot<'a> for #self_ {
+        //     type Root = <#variant as ::is_tree::KnowsRoot<'a>>::Root;
+        // }
 
-        impl<'a> ::is_tree::HasRoot<'a> for &'a #reference {
-            fn root(self) -> Self::Root {
-                match self {
-                    #variants
-                }
-            }
-        }
+        // impl<'a> ::is_tree::HasRoot<'a> for &'a #reference {
+        //     fn root(self) -> Self::Root {
+        //         match self {
+        //             #variants
+        //         }
+        //     }
+        // }
     }
 }

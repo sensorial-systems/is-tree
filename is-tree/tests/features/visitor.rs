@@ -10,6 +10,19 @@ pub enum Visitors<'a> {
     Branch(Box<Visitor<Visitors<'a>, &'a Branch>>),
 }
 
+impl<'a> ::is_tree::KnowsRoot<'a> for Visitors<'a> {
+    type Root = RootVisitor<&'a Branch>;
+}
+
+impl<'a> ::is_tree::HasRoot<'a> for &'a Visitors<'a> {
+    fn root(self) -> Self::Root {
+        match self {
+            Visitors::Root(visitor) => visitor.root(),
+            Visitors::Branch(visitor) => visitor.root(),
+        }
+    }
+}
+
 impl<'a> From<&'a Branch> for Visitors<'a> {
     fn from(branch: &'a Branch) -> Self {
         Self::Root(branch.visitor())

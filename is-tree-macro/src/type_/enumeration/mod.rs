@@ -1,4 +1,5 @@
 mod traits;
+use proc_macro2::TokenStream;
 use traits::*;
 
 mod variant;
@@ -13,6 +14,19 @@ pub struct Enumeration {
     attrs: Vec<syn::Attribute>,
     name: syn::Ident,
     variants: Vec<Variant>,
+}
+
+impl Enumeration {
+    // TODO: Move it to a better place.
+    pub fn generics_with(&self, tokens: TokenStream) -> syn::Generics {
+        let mut generics = self.generics.clone();
+        for param in &mut generics.params {
+            if let syn::GenericParam::Type(ref mut type_param) = *param {
+                type_param.bounds.push(syn::parse_quote!(#tokens));
+            }
+        }
+        generics
+    }
 }
 
 impl AttributeQuery for Enumeration {

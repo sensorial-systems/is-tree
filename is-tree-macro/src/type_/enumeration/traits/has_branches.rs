@@ -5,26 +5,22 @@ use crate::{traits::AttributeQuery, type_::Enumeration};
 
 pub fn impl_knows_branches(enumeration: &Enumeration) -> TokenStream {
     let structure_name = &enumeration.name;
-    let branches = enumeration
-        .named_attribute_value(vec!["tree", "branches"])
-        .unwrap_or_else(|| structure_name.clone().into());
-    let reference = enumeration
-        .named_attribute_value(vec!["tree", "reference"])
-        .expect("#[tree(reference = \"type\")] not found in the enumeration.");
+    let generics = &enumeration.generics;
+    let self_ = quote! { #structure_name #generics };
     quote! {
-        impl<'a> ::is_tree::KnowsBranches<'a> for #reference  {
-            type Branches = #branches;
+        impl #generics ::is_tree::KnowsBranches<'a> for #self_ {
+            type Branches = #self_;
         }
 
-        impl<'a> ::is_tree::KnowsBranches<'a> for &'a #reference {
-            type Branches = #branches;
+        impl #generics ::is_tree::KnowsBranches<'a> for &'a #self_ {
+            type Branches = #self_;
         }
     }
 }
 
 pub fn impl_has_branches(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
-    let generics = &enumeration.generics;
+    let generics = enumeration.generics_with(quote! { ::is_tree::KnowsBranches<'a> });
     let _self = quote! { #name #generics };
     let reference = enumeration
         .named_attribute_value(vec!["tree", "reference"])
