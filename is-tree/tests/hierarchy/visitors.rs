@@ -10,19 +10,34 @@ pub enum Visitors<Library, Module> {
 
 // TODO: HasRelativeAccess
 
-impl<'a, Library, Module> ::is_tree::KnowsRelativeAccessType<'a> for Visitors<Library, Module>  {
-    type RelativeType = Visitors<Library, Module>;
+impl<'a, Library, Module> ::is_tree::KnowsRelativeAccess<'a> for Visitors<Library, Module>  {
+    type RelativeAccess = Visitors<Library, Module>;
 }
 
-impl<'a> ::is_tree::HasRelativeAccess<'a> for Visitors<&'a Library, &'a Module> {
-    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+impl<'a, Library, Module> ::is_tree::HasRelativeAccess<'a> for Visitors<Library, Module>
+where
+    RootVisitor<Library>: Into<Self::RelativeAccess> + Clone + KnowsRelativeAccess<'a, RelativeAccess = Self> + 'a,
+    &'a RootVisitor<Library>: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
+    <&'a RootVisitor<Library> as KnowsParent<'a>>::Parent: Into<Self>,
+    <&'a RootVisitor<Library> as KnowsRoot<'a>>::Root: Into<Self>,
+    <&'a RootVisitor<Library> as KnowsRelativeAccess<'a>>::RelativeAccess: Into<Self>,
+    <&'a RootVisitor<Library> as KnowsBranches<'a>>::Branches: Into<Self> + HasPathSegment,
+
+    Visitor<Visitors<Library, Module>, Module>: Into<Self::RelativeAccess> + Clone + KnowsRelativeAccess<'a, RelativeAccess = Self> + 'a,
+    &'a Visitor<Visitors<Library, Module>, Module>: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
+    <&'a Visitor<Visitors<Library, Module>, Module> as KnowsParent<'a>>::Parent: Into<Self>,
+    <&'a Visitor<Visitors<Library, Module>, Module> as KnowsRoot<'a>>::Root: Into<Self>,
+    <&'a Visitor<Visitors<Library, Module>, Module> as KnowsRelativeAccess<'a>>::RelativeAccess: Into<Self>,
+    <&'a Visitor<Visitors<Library, Module>, Module> as KnowsBranches<'a>>::Branches: Into<Self> + HasPathSegment,
+{
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeAccess>
     where K: Into<String>
     {
         #[inline]
         fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
         match &self {
             Visitors::Library(visitor) => longer_ref(visitor).relative(path).map(|value| value.into()),
-            Visitors::Module(visitor) => longer_ref(visitor).relative(path).map(|value| value.into()),
+            Visitors::Module(visitor) => longer_ref(visitor).relative(path).map(|value| value.into())
         }
     }
 }

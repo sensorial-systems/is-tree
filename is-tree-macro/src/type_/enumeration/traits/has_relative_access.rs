@@ -15,12 +15,12 @@ pub fn impl_relative_access(enumeration: &Enumeration) -> TokenStream {
     }).collect::<TokenStream>();
 
     quote! {
-        impl #generics ::is_tree::KnowsRelativeAccessType<'a> for #self_ {
-            type RelativeType = #self_;
+        impl #generics ::is_tree::KnowsRelativeAccess<'a> for #self_ {
+            type RelativeAccess = #self_;
         }
 
         impl #generics ::is_tree::HasRelativeAccess<'a> for #self_ {
-            fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+            fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeAccess>
             where K: Into<String>
             {
                 #[inline]

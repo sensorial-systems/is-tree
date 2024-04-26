@@ -6,8 +6,8 @@ pub fn impl_knows_relative_type(structure: &Structure) -> proc_macro2::TokenStre
     if let Some(value) = structure.named_attribute_value(vec!["tree", "relative_visitor"]) {
         let name = &structure.name;
         quote! {
-            impl<'a> ::is_tree::KnowsRelativeAccessType<'a> for #name {
-                type RelativeType = #value;
+            impl<'a> ::is_tree::KnowsRelativeAccess<'a> for #name {
+                type RelativeAccess = #value;
             }
         }
     } else {

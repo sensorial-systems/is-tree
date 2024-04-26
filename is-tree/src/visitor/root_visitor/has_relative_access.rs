@@ -1,27 +1,27 @@
 use crate::*;
 
-impl<'a, Value> KnowsRelativeAccessType<'a> for RootVisitor<Value>
-where Value: KnowsRelativeAccessType<'a>
+impl<'a, Value> KnowsRelativeAccess<'a> for RootVisitor<Value>
+where Value: KnowsRelativeAccess<'a>
 {
-    type RelativeType = Value::RelativeType;
+    type RelativeAccess = Value::RelativeAccess;
 }
 
 impl<'a, Value> HasRelativeAccess<'a> for &'a RootVisitor<Value>
 where
-    RootVisitor<Value>: Into<Self::RelativeType> + Clone + KnowsRelativeAccessType<'a> + 'a,
+    RootVisitor<Value>: Into<Self::RelativeAccess> + Clone + KnowsRelativeAccess<'a> + 'a,
     Self: HasValue<'a> + HasParent<'a> + HasRoot<'a> + HasGet<'a>,
-    <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeType>,
+    <Self as KnowsParent<'a>>::Parent: Into<Self::RelativeAccess>,
 
     <Self as KnowsRoot<'a>>::Root:
-        Into<Self::RelativeType>,
+        Into<Self::RelativeAccess>,
 
     <Self as KnowsBranches<'a>>::Branches:
-        Into<Self::RelativeType> + HasPathSegment,
+        Into<Self::RelativeAccess> + HasPathSegment,
 
-    Self::RelativeType:
-        HasRelativeAccess<'a, RelativeType = <Self as KnowsRelativeAccessType<'a>>::RelativeType>
+    Self::RelativeAccess:
+        HasRelativeAccess<'a, RelativeAccess = <Self as KnowsRelativeAccess<'a>>::RelativeAccess>
 {
-    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeAccess>
     where K: Into<String>
     {
         let mut path = path.into_iter();

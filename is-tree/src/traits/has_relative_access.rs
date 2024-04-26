@@ -1,12 +1,12 @@
-pub trait KnowsRelativeAccessType<'a> {
-    type RelativeType;
+pub trait KnowsRelativeAccess<'a> {
+    type RelativeAccess;
 }
 
-pub trait HasRelativeAccess<'a>: KnowsRelativeAccessType<'a> {
-    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
+pub trait HasRelativeAccess<'a>: KnowsRelativeAccess<'a> {
+    fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeAccess>
     where K: Into<String>;
 }
 
-impl<'a, T: KnowsRelativeAccessType<'a>> KnowsRelativeAccessType<'a> for &'a T {
-    type RelativeType = T::RelativeType;
+impl<'a, T: KnowsRelativeAccess<'a>> KnowsRelativeAccess<'a> for &'a T {
+    type RelativeAccess = T::RelativeAccess;
 }
