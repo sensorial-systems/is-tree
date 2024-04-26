@@ -7,8 +7,8 @@ mod add_branch;
 use super::{Visitors, Library};
 
 #[derive(IsTree)]
-#[tree(visitor = "ModuleVisitor<'a, &'a Module>")]
-#[tree(relative_visitor = "Visitors<'a, &'a Library, &'a Module>")]
+#[tree(visitor = "ModuleVisitor<&'a Library, &'a Module>")]
+#[tree(relative_visitor = "Visitors<&'a Library, &'a Module>")]
 #[tree(type_iterator = "String")]
 pub struct Module {
     #[tree(path_segment)]

@@ -1,5 +1,6 @@
 use ::is_tree::*;
 
-use crate::hierarchy::{Library, Visitors};
+use crate::hierarchy::Visitors;
 
-pub type ModuleVisitor<'a, Module> = Visitor<Visitors<'a, &'a Library, Module>, Module>;
+// TODO: Can we get rid of this?
+pub type ModuleVisitor<Library, Module> = Visitor<Visitors<Library, Module>, Module>;

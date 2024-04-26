@@ -8,8 +8,8 @@ use super::{Module, Visitors};
 
 #[derive(IsTree)]
 #[tree(branches = "Module")]
-#[tree(visitor = "Visitors<'a, &'a Library, &'a Module>")]
-#[tree(relative_visitor = "Visitors<'a, &'a Library, &'a Module>")]
+#[tree(visitor = "Visitors<&'a Library, &'a Module>")]
+#[tree(relative_visitor = "Visitors<&'a Library, &'a Module>")]
 #[tree(type_iterator = "String")]
 pub struct Library {
     #[tree(path_segment)]

@@ -3,21 +3,18 @@ use enum_as_inner::EnumAsInner;
 use super::*;
 
 #[derive(Clone, EnumAsInner)]
-// #[tree(branches = "Visitors<'a, &'a Library, &'a Module>")]
-// #[tree(reference = "Visitors<'a, &'a Library, &'a Module>")]
-// #[tree(visitor = "Visitors<'a, &'a Library, &'a Module>")]
-pub enum Visitors<'a, Library, Module> {
+pub enum Visitors<Library, Module> {
     Library(LibraryVisitor<Library>),
-    Module(Box<ModuleVisitor<'a, Module>>)
+    Module(Box<Visitor<Visitors<Library, Module>, Module>>)
 }
 
 // TODO: HasRelativeAccess
 
-impl<'a> ::is_tree::KnowsRelativeAccessType<'a> for Visitors<'a, &'a Library, &'a Module>  {
-    type RelativeType = Visitors<'a, &'a Library, &'a Module>;
+impl<'a, Library, Module> ::is_tree::KnowsRelativeAccessType<'a> for Visitors<Library, Module>  {
+    type RelativeType = Visitors<Library, Module>;
 }
 
-impl<'a> ::is_tree::HasRelativeAccess<'a> for Visitors<'a, &'a Library, &'a Module> {
+impl<'a> ::is_tree::HasRelativeAccess<'a> for Visitors<&'a Library, &'a Module> {
     fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeType>
     where K: Into<String>
     {
@@ -33,11 +30,14 @@ impl<'a> ::is_tree::HasRelativeAccess<'a> for Visitors<'a, &'a Library, &'a Modu
 
 // TODO: HasParent
 
-impl<'a> ::is_tree::KnowsParent<'a> for Visitors<'a, &'a Library, &'a Module>{
-    type Parent = Visitors<'a, &'a Library, &'a Module>;
+impl<'a, Library, Module> ::is_tree::KnowsParent<'a> for Visitors<Library, Module>{
+    type Parent = Visitors<Library, Module>;
 }
 
-impl<'a> ::is_tree::HasParent<'a> for &'a Visitors<'a, &'a Library, &'a Module>{
+impl<'a, Library, Module> ::is_tree::HasParent<'a> for &'a Visitors<Library, Module>
+where Library: Clone,
+      Module: Clone
+{
     fn parent(self) -> Self::Parent {
         match self {
             Visitors::Library(visitor) => visitor.parent().into(),
@@ -48,7 +48,7 @@ impl<'a> ::is_tree::HasParent<'a> for &'a Visitors<'a, &'a Library, &'a Module>{
 
 // TODO: HasGet
 
-impl<'a, Library, Module> ::is_tree::HasGet<'a> for Visitors<'a, Library, Module>
+impl<'a, Library, Module> ::is_tree::HasGet<'a> for Visitors<Library, Module>
 where Self: ::is_tree::HasBranches<'a>,
       <Self as ::is_tree::KnowsBranches<'a>>::Branches: ::is_tree::HasPathSegment
 {}
@@ -56,25 +56,31 @@ where Self: ::is_tree::HasBranches<'a>,
 
 // TODO: HasBranches
 
-impl<'a, Library, Module> ::is_tree::KnowsBranches<'a> for Visitors<'a, Library, Module>{
-    type Branches = Visitors<'a, Library, Module>;
+impl<'a, Library, Module> ::is_tree::KnowsBranches<'a> for Visitors<Library, Module>{
+    type Branches = Visitors<Library, Module>;
 }
 
-impl<'a, Library, Module> ::is_tree::KnowsBranches<'a> for &'a Visitors<'a, Library, Module> {
-    type Branches = Visitors<'a, Library, Module>;
+impl<'a, Library, Module> ::is_tree::KnowsBranches<'a> for &'a Visitors<Library, Module> {
+    type Branches = Visitors<Library, Module>;
 }
 
-impl<'a> ::is_tree::HasBranches<'a> for &'a Visitors<'a, &'a Library, &'a Module>{
-    fn branches(self) -> impl Iterator<Item = Self::Branches> {
-        fn longer_ref<'longer, T>(t: &T) -> &T { t }
-        match self {
-            Visitors::Library(visitor) => longer_ref(visitor).branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(), // TODO: This needs optimization.
-            Visitors::Module(visitor) => longer_ref(visitor).branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(), // TODO: This needs optimization.
-        }
-    }
-}
+impl<'a, Library, Module> ::is_tree::HasBranches<'a> for Visitors<Library, Module>
+where
+    Library: Clone + HasBranches<'a> + 'a,
+    Module: Clone + HasBranches<'a> + 'a,
 
-impl<'a> ::is_tree::HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
+    Library::Branches: KnowsVisitor<'a>,
+    Module::Branches: KnowsVisitor<'a>,
+
+    <RootVisitor<Library> as KnowsBranches<'a>>::Branches: HasVisitorConstructor<'a, Value = Library::Branches>,
+    <Visitor<Visitors<Library, Module>, Module> as KnowsBranches<'a>>::Branches: HasVisitorConstructor<'a, Value = Module::Branches>,
+
+    RootVisitor<Library>: Into<<<RootVisitor<Library> as KnowsBranches<'a>>::Branches as KnowsParent<'a>>::Parent> + Clone,
+    Visitor<Visitors<Library, Module>, Module>: Into<<<Visitor<Visitors<Library, Module>, Module> as KnowsBranches<'a>>::Branches as KnowsParent<'a>>::Parent> + Clone,
+
+    <<Library as KnowsBranches<'a>>::Branches as KnowsVisitor<'a>>::Visitor: Into<Self::Branches>,
+    <<Module as KnowsBranches<'a>>::Branches as KnowsVisitor<'a>>::Visitor: Into<Self::Branches>
+{
     fn branches(self) -> impl Iterator<Item = Self::Branches> {
         #[inline]
         fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
@@ -87,9 +93,9 @@ impl<'a> ::is_tree::HasBranches<'a> for Visitors<'a, &'a Library, &'a Module> {
 
 
 // TODO: HasPath
-impl<'a, Library, Module> ::is_tree::HasPathSegment for Visitors<'a, &'a Library, &'a Module>
-where Library: HasPathSegment,
-      Module: HasPathSegment
+impl<'a, Library, Module> ::is_tree::HasPathSegment for Visitors<Library, Module>
+where Library: HasPathSegment + Clone,
+      Module: HasPathSegment + Clone,
 {
     fn path_segment(&self) -> &String {
         match self {
@@ -99,7 +105,10 @@ where Library: HasPathSegment,
     }
 }
 
-impl<'a> ::is_tree::HasPath for Visitors<'a, &'a Library, &'a Module>{
+impl<'a, Library, Module> ::is_tree::HasPath for Visitors<Library, Module>
+where Library: HasPathSegment + Clone,
+      Module: HasPathSegment + Clone
+{
     fn path(&self) -> ::is_tree::Path {
         match self {
             Visitors::Library(visitor) => visitor.path(),
@@ -111,16 +120,13 @@ impl<'a> ::is_tree::HasPath for Visitors<'a, &'a Library, &'a Module>{
 
 
 // TODO: HasRoot
-impl<'a, Library, Module> KnowsRoot<'a> for Visitors<'a, Library, Module> {
+impl<'a, Library, Module> KnowsRoot<'a> for Visitors<Library, Module> {
     type Root = LibraryVisitor<Library>;
 }
 
-// impl<'a, Library, Module> ::is_tree::HasRoot<'a> for &'a Visitors<'a, Library, Module>
-// where Library: Clone + HasRoot<'a, Root = RootVisitor<Library>>,
-//       Module: Clone + HasRoot<'a, Root = RootVisitor<Library>>
-
-// impl<'a, Library, Module> ::is_tree::HasRoot<'a> for &'a Visitors<'a, Library, Module>
-impl<'a> HasRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module>
+impl<'a, Library, Module> HasRoot<'a> for &'a Visitors<Library, Module>
+where Library: Clone,
+      Module: Clone
 {
     fn root(self) -> Self::Root {
         match self {
@@ -130,25 +136,25 @@ impl<'a> HasRoot<'a> for &'a Visitors<'a, &'a Library, &'a Module>
     }
 }
 
-impl<'a, Library, Module> From<LibraryVisitor<Library>> for Visitors<'a, Library, Module> {
+impl<'a, Library, Module> From<LibraryVisitor<Library>> for Visitors<Library, Module> {
     fn from(visitor: LibraryVisitor<Library>) -> Self {
         Self::Library(visitor)
     }
 }
 
-impl<'a, Library, Module> From<RootVisitor<&'a mut Library>> for Visitors<'a, &'a Library, Module> {
+impl<'a, Library, Module> From<RootVisitor<&'a mut Library>> for Visitors<&'a Library, Module> {
     fn from(visitor: RootVisitor<&'a mut Library>) -> Self {
         Self::Library(visitor.into())
     }
 }
 
-impl<'a, Library, Module> From<ModuleVisitor<'a, Module>> for Visitors<'a, Library, Module> {
-    fn from(visitor: ModuleVisitor<'a, Module>) -> Self {
+impl<'a, Library, Module> From<ModuleVisitor<Library, Module>> for Visitors<Library, Module> {
+    fn from(visitor: ModuleVisitor<Library, Module>) -> Self {
         Self::Module(visitor.into())
     }
 }
 
-impl<'a, Library, Module> From<&'a Library> for Visitors<'a, &'a Library, Module> {
+impl<'a, Library, Module> From<&'a Library> for Visitors<&'a Library, Module> {
     fn from(value: &'a Library) -> Self {
         Self::Library(value.into())
     }

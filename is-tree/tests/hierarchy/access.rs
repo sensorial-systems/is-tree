@@ -20,8 +20,8 @@ fn visitor_value_and_parent() {
     let library = library();
 
     let library: LibraryVisitor<&Library> = library.visitor();
-    let root_module: ModuleVisitor<&Module> = library.visit(&library.value().root_module);
-    let sub_module: ModuleVisitor<&Module> = root_module.visit(&(&root_module).value().children[0]);
+    let root_module: ModuleVisitor<&Library, &Module> = library.visit(&library.value().root_module);
+    let sub_module: ModuleVisitor<&Library, &Module> = root_module.visit(&(&root_module).value().children[0]);
 
     assert_eq!(library.value().path_segment(), "a");
     assert_eq!(root_module.value().path_segment(), "b");
@@ -35,7 +35,7 @@ fn visitor_get() {
     let module = &library.root_module;
 
     let library: LibraryVisitor<&Library> = library.visitor();
-    let module: ModuleVisitor<&Module> = library.visit(module);
+    let module: ModuleVisitor<&Library, &Module> = library.visit(module);
 
     assert_eq!(library.get("b").unwrap().get("c").unwrap().path_segment(), "c");
     assert_eq!(module.parent().get("b").unwrap().path_segment(), "b");
@@ -75,8 +75,8 @@ fn visitor_relative() {
     let c = &b.children[0];
 
     let a: LibraryVisitor<&Library> = a.visitor();
-    let b: ModuleVisitor<&Module> = a.visit(b);
-    let c: ModuleVisitor<&Module> = b.visit(c);
+    let b: ModuleVisitor<&Library, &Module> = a.visit(b);
+    let c: ModuleVisitor<&Library, &Module> = b.visit(c);
 
     assert_eq!(*a.relative(vec!["super"]).unwrap().as_library().unwrap().path_segment(), "a");
     assert_eq!(*a.relative(vec!["self"]).unwrap().as_library().unwrap().path_segment(), "a");
