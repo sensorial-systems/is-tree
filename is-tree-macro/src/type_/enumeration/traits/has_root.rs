@@ -7,6 +7,8 @@ pub fn impl_has_root(enumeration: &Enumeration) -> TokenStream {
     let name = &enumeration.name;
     let generics = &enumeration.generics;
     let self_ = quote! { #name #generics };
+    let generics = enumeration.generics_with_lifetime();
+    let clauses = enumeration.generics_where_clauses(|type_param| quote! { #type_param: Clone });
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
@@ -16,18 +18,21 @@ pub fn impl_has_root(enumeration: &Enumeration) -> TokenStream {
 
     let variant = enumeration.variants.first().map(|first| &first.variant).expect("Enum must have at least one variant");
     let variant = variant.fields.iter().next().expect("Variant must have at least one field");
-    
+
     quote! {
         impl #generics ::is_tree::KnowsRoot<'a> for #self_ {
             type Root = <#variant as ::is_tree::KnowsRoot<'a>>::Root;
         }
 
-        impl #generics ::is_tree::HasRoot<'a> for &'a #self_ {
+        
+        impl #generics ::is_tree::HasRoot<'a> for &'a #self_
+        where #clauses
+        {
             fn root(self) -> Self::Root {
                 match self {
                     #variants
                 }
             }
-        }
+        }            
     }
 }

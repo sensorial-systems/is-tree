@@ -2,9 +2,11 @@ use crate::traits::Derive;
 
 mod enumeration;
 mod structure;
+mod path;
 
 pub use enumeration::*;
 pub use structure::*;
+pub use path::*;
 
 pub enum Type {
     Enumeration(Enumeration),

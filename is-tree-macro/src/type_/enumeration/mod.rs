@@ -1,5 +1,6 @@
 mod traits;
 use proc_macro2::TokenStream;
+use syn::TypeParam;
 use traits::*;
 
 mod variant;
@@ -17,16 +18,37 @@ pub struct Enumeration {
 }
 
 impl Enumeration {
-    // TODO: Move it to a better place.
-    pub fn generics_with(&self, tokens: TokenStream) -> syn::Generics {
+    pub fn generics_where_clauses(&self, f: impl Fn(&TypeParam) -> TokenStream) -> TokenStream {
+        self
+            .generics
+            .type_params()
+            .map(f)
+            .map(|tokens| quote! { #tokens,})
+            .collect::<TokenStream>()
+    }
+
+    pub fn generics_with_lifetime(&self) -> syn::Generics {
         let mut generics = self.generics.clone();
-        for param in &mut generics.params {
-            if let syn::GenericParam::Type(ref mut type_param) = *param {
-                type_param.bounds.push(syn::parse_quote!(#tokens));
-            }
+        // Find lifetime
+        if generics.params.iter().find(|param| matches!(param, syn::GenericParam::Lifetime(_))).is_none() {
+            generics.params.push(syn::parse_quote!('a));
         }
         generics
     }
+
+    // pub fn generics_with(&self, tokens: TokenStream) -> syn::Generics {
+    //     let mut generics = self.generics.clone();
+    //     // Find lifetime
+    //     if generics.params.iter().find(|param| matches!(param, syn::GenericParam::Lifetime(_))).is_none() {
+    //         generics.params.push(syn::parse_quote!('a));
+    //     }
+    //     for param in &mut generics.params {
+    //         if let syn::GenericParam::Type(ref mut type_param) = *param {
+    //             type_param.bounds.push(syn::parse_quote!(#tokens));
+    //         }
+    //     }
+    //     generics
+    // }
 }
 
 impl AttributeQuery for Enumeration {
