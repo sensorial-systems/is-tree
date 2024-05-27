@@ -27,7 +27,6 @@ impl<'a> From<RootVisitor<&'a Branch>> for Visitors<'a> {
 #[derive(IsTree, Debug)]
 #[tree(branches = "Branch")]
 #[tree(visitor = "Visitors<'a>")]
-#[tree(relative_visitor = "Visitors<'a>")]
 pub struct Branch {
     #[tree(path_segment)]
     pub name: String,

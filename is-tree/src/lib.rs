@@ -1,3 +1,5 @@
+#![doc = include_str!("../../README.md")]
+
 mod traits;
 mod path;
 mod iterator;
