@@ -6,6 +6,10 @@ Derive everything into a tree.
 
 ### Examples
 
+<!-- BRANCHES -->
+<!-- BRANCHES -->
+<!-- BRANCHES -->
+
 <details>
 <summary>
 Branches
@@ -47,6 +51,10 @@ fn branches() {
 ```
 
 </details>
+
+<!-- GET ACCESS -->
+<!-- GET ACCESS -->
+<!-- GET ACCESS -->
 
 <details>
 <summary>
@@ -94,6 +102,10 @@ fn branches() {
 }
 ```
 </details>
+
+<!-- TYPE ITERATOR -->
+<!-- TYPE ITERATOR -->
+<!-- TYPE ITERATOR -->
 
 <details>
 <summary>
@@ -179,25 +191,172 @@ assert_eq!((&node).iter_type::<String>().map(|visitor| visitor.value().as_str())
 ```
 </details>
 
-
-##### Relative access
+<details>
+<summary>
+Tree Visitor
+</summary>
 
 ```rust
-fn main() {
-    // let node = Node::mock();
-    // let leaf = node.get_relative(vec!["branch", "leaf"]).unwrap();
-    // assert_eq!(leaf.name, "leaf");
-    // let branch = leaf.get_relative("super").unwrap();
-    // assert_eq!(branch.name, "branch");
-    // assert_eq!(branch.get_relative("root").unwrap().name, leaf.get_relative("root").unwrap().name);
+use is_tree::{AddBranch, HasPath, HasVisitor, HasVisitorConstructor, IsTree, KnowsValue, RootVisitor, TreeIterator, Visitor};
+
+#[derive(Clone, IsTree, Debug)]
+pub enum Visitors<'a> {
+    Root(RootVisitor<&'a Branch>),
+    Branch(Box<Visitor<Visitors<'a>, &'a Branch>>),
+}
+
+impl<'a> From<&'a Branch> for Visitors<'a> {
+    fn from(branch: &'a Branch) -> Self {
+        Self::Root(branch.visitor())
+    }
+}
+
+impl<'a> From<Visitor<Visitors<'a>, &'a Branch>> for Visitors<'a> {
+    fn from(visitor: Visitor<Visitors<'a>, &'a Branch>) -> Self {
+        Self::Branch(visitor.into())
+    }
+}
+
+impl<'a> From<RootVisitor<&'a Branch>> for Visitors<'a> {
+    fn from(visitor: RootVisitor<&'a Branch>) -> Self {
+        Self::Root(visitor.into())
+    }
+}
+
+#[derive(IsTree, Debug)]
+#[tree(branches = "Branch")]
+#[tree(visitor = "Visitors<'a>")]
+pub struct Branch {
+    #[tree(path_segment)]
+    pub name: String,
+    #[tree(branch)]
+    pub branches: Vec<Branch>,
+}
+
+impl From<String> for Branch {
+    fn from(name: String) -> Self {
+        let branches = Default::default();
+        Self { name, branches }
+    }
+}
+
+impl<'a> AddBranch<'a> for Branch {
+    fn add_branch(&'a mut self, branch: impl Into<Branch>) -> &'a mut Branch {
+        self.branches.push(branch.into());
+        self.branches.last_mut().unwrap()
+    }
+}
+
+impl<'a> HasVisitorConstructor<'a> for Visitors<'a> {
+    fn new(parent: Visitors<'a>, value: &'a Branch) -> Visitors<'a> {
+        Visitor::new(parent, value).into()
+    }
+}
+
+impl<'a> KnowsValue<'a> for Visitors<'a> {
+    type Value = &'a Branch;
+}
+
+#[test]
+fn visitors() {
+    let mut branch = Branch::from("grandfather".to_string());
+    branch.add_branch(Branch::from("father".to_string()))
+          .add_branch(Branch::from("son".to_string()));
+
+    let iterator: TreeIterator<Visitors<'_>> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path().to_string()).collect::<Vec<_>>(), vec!["grandfather::father::son", "grandfather::father", "grandfather"]);
 }
 ```
 
-##### Tree iterator
+</details>
+
+<!-- RELATIVE ACCESS -->
+<!-- RELATIVE ACCESS -->
+<!-- RELATIVE ACCESS -->
+
+<details>
+<summary>
+Relative access
+</summary>
 
 ```rust
-// Tree iterator here.
+use enum_as_inner::EnumAsInner;
+use is_tree::{AddBranch, HasRelativeAccess, HasValue, HasVisitor, HasVisitorConstructor, IsTree, KnowsValue, RootVisitor, Visitor};
+
+#[derive(Clone, IsTree, Debug, EnumAsInner)]
+pub enum Visitors<'a> {
+    Root(RootVisitor<&'a Branch>),
+    Branch(Box<Visitor<Visitors<'a>, &'a Branch>>),
+}
+
+impl<'a> From<&'a Branch> for Visitors<'a> {
+    fn from(branch: &'a Branch) -> Self {
+        Self::Root(branch.visitor())
+    }
+}
+
+impl<'a> From<Visitor<Visitors<'a>, &'a Branch>> for Visitors<'a> {
+    fn from(visitor: Visitor<Visitors<'a>, &'a Branch>) -> Self {
+        Self::Branch(visitor.into())
+    }
+}
+
+impl<'a> From<RootVisitor<&'a Branch>> for Visitors<'a> {
+    fn from(visitor: RootVisitor<&'a Branch>) -> Self {
+        Self::Root(visitor.into())
+    }
+}
+
+#[derive(IsTree, Debug)]
+#[tree(branches = "Branch")]
+#[tree(visitor = "Visitors<'a>")]
+#[tree(relative_visitor = "Visitors<'a>")]
+pub struct Branch {
+    #[tree(path_segment)]
+    pub name: String,
+    #[tree(branch)]
+    pub branches: Vec<Branch>,
+}
+
+impl From<String> for Branch {
+    fn from(name: String) -> Self {
+        let branches = Default::default();
+        Self { name, branches }
+    }
+}
+
+impl<'a> AddBranch<'a> for Branch {
+    fn add_branch(&'a mut self, branch: impl Into<Branch>) -> &'a mut Branch {
+        self.branches.push(branch.into());
+        self.branches.last_mut().unwrap()
+    }
+}
+
+impl<'a> HasVisitorConstructor<'a> for Visitors<'a> {
+    fn new(parent: Visitors<'a>, value: &'a Branch) -> Visitors<'a> {
+        Visitor::new(parent, value).into()
+    }
+}
+
+impl<'a> KnowsValue<'a> for Visitors<'a> {
+    type Value = &'a Branch;
+}
+
+#[test]
+fn relative_access() {
+    let mut branch = Branch::from("grandfather".to_string());
+    branch.add_branch(Branch::from("father".to_string()))
+          .add_branch(Branch::from("son".to_string()));
+
+    let root = branch.visitor();
+    let son = root.relative(vec!["father", "son"]).unwrap().into_branch().unwrap();
+    assert_eq!(son.as_ref().value().name, "son");
+    assert_eq!(son.relative(vec!["self"]).unwrap().into_branch().unwrap().as_ref().value().name, "son");
+    assert_eq!(son.relative(vec!["super"]).unwrap().into_branch().unwrap().as_ref().value().name, "father");
+    assert_eq!(son.relative(vec!["root"]).unwrap().into_root().unwrap().value().name, "grandfather");
+}
 ```
+</details>
 
 ##### Multi-type tree
 

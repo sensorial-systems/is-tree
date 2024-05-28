@@ -3,7 +3,6 @@ use enum_as_inner::EnumAsInner;
 use super::*;
 
 #[derive(Clone, EnumAsInner, IsTree)]
-#[tree(dev)]
 pub enum Visitors<Library, Module> {
     Library(LibraryVisitor<Library>),
     Module(Box<Visitor<Visitors<Library, Module>, Module>>)
