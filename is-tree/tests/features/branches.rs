@@ -27,9 +27,6 @@ fn branches() {
     branch.add_branch(Branch::from("child1".to_string()));
     branch.add_branch(Branch::from("child2".to_string()));
 
-    // TODO: How to support TreeIterator here without more #[tree] attributes?
-    // let iterator = is_tree::TreeIterator::new(&branch);
-
     assert_eq!(branch.branches().count(), 2);
     assert_eq!(branch.branches().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["child1", "child2"])
 }

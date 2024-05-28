@@ -3,8 +3,8 @@ use quote::ToTokens;
 pub trait AttributeQuery {
     fn attributes(&self) -> &Vec<syn::Attribute>;
 
-    fn named_attribute_value(&self, path: Vec<&str>) -> Option<syn::Path> {
-        self.attributes().iter().find_map(|attr| {
+    fn named_attribute_value(&self, path: Vec<&str>) -> Vec<syn::Path> {
+        self.attributes().iter().filter_map(|attr| {
             if let (true, Ok(meta)) = (attr.path().is_ident(&path[0]), attr.parse_args::<syn::MetaNameValue>()) {
                 if meta.path.is_ident(&path[1]) {
                     if let Some(value) = meta.value.to_token_stream().to_string().split('"').collect::<Vec<&str>>().get(1) {
@@ -15,7 +15,7 @@ pub trait AttributeQuery {
                 }
             }
             None
-        })
+        }).collect()
     }
 
     fn has_attribute(&self, path: Vec<&str>) -> bool {

@@ -9,10 +9,11 @@ use super::{Module, Visitors};
 #[derive(IsTree)]
 #[tree(branches = "Module")]
 #[tree(relative_visitor = "Visitors<&'a Library, &'a Module>")]
-#[tree(type_iterator = "String")]
 pub struct Library {
     #[tree(path_segment)]
+    #[tree(type_iterator = "String")]
     pub name: String,
     #[tree(branch)]
+    #[tree(type_iterator = "String")]
     pub root_module: Module,
 }
