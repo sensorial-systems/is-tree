@@ -1,5 +1,5 @@
 use enum_as_inner::EnumAsInner;
-use is_tree::{new_traits::*, HasPathSegment, HasValue, Visitor};
+use is_tree::{new_traits::{HasParent, *}, HasPathSegment, HasValue, Visitor};
 
 #[derive(Debug)]
 pub struct Branch {
@@ -103,12 +103,10 @@ impl<'a> HasPathSegment for Visitors<'a> {
 
 impl<'a> HasBranches<Visitors<'a>> for Visitors<'a> {
     fn branches_impl(self) -> impl Iterator<Item = Visitors<'a>> {
-        std::iter::empty()
-        // fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
-        // match self {
-        //     Visitors::Root(visitor) => visitor.value().branches::<&Branch>().map(|branch| Visitor::new(self.clone().into(), branch).into()),
-        //     Visitors::Branch(visitor) => todo!(),
-        // }
+        match &self {
+            Visitors::Root(visitor) => Box::new((*visitor.value()).branches::<&Branch>().map(move |branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
+            Visitors::Branch(visitor) => Box::new((*visitor.value()).branches::<&Branch>().map(move |branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
+        }
     }
 }
 
@@ -132,5 +130,54 @@ fn visitor() {
     assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_branch().unwrap().value().name).collect::<Vec<_>>(), vec!["father"]);
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
-    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["grandfather", "father", "son"]);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["son", "father", "grandfather"]);
+}
+
+impl<'a> HasParent for Visitors<'a> {
+    fn parent(&self) -> Option<Self> {
+        match self {
+            Visitors::Root(_) => None,
+            Visitors::Branch(visitor) => Some((*visitor.parent).clone())
+        }
+    }
+}
+
+impl<'a> HasRoot for Visitors<'a> {
+    fn root(&self) -> Self {
+        match self {
+            Visitors::Root(_) => self.clone(),
+            Visitors::Branch(visitor) => visitor.parent.root()
+        }
+    }
+}
+
+#[test]
+fn relative_access() {
+    let mut branch = Branch::from("grandfather");
+    branch.add_branch(Branch::from("father"))
+          .add_branch(Branch::from("son"));
+
+    let root_visitor = Visitors::from(&branch);
+    let father_visitor = (&root_visitor).branches::<Visitors>().next().unwrap();
+    let son_visitor = (&father_visitor).branches::<Visitors>().next().unwrap();
+    assert_eq!(son_visitor.path_segment(), "son");
+    assert_eq!(son_visitor.parent().unwrap().path_segment(), "father");
+    assert_eq!(son_visitor.parent().unwrap().parent().unwrap().path_segment(), "grandfather");
+    
+    assert_eq!(son_visitor.root().path_segment(), "grandfather");
+    
+    assert_eq!((&father_visitor).get("son").unwrap().path_segment(), "son");
+
+    assert!(root_visitor.relative(vec!["super"]).is_none());
+    assert_eq!(root_visitor.relative(Vec::<String>::new()).unwrap().path_segment(), "grandfather");
+    assert_eq!(root_visitor.relative(vec!["self"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(root_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(root_visitor.relative(vec!["father"]).unwrap().path_segment(), "father");
+    assert_eq!(root_visitor.relative(vec!["father", "son"]).unwrap().path_segment(), "son");
+
+    assert_eq!(father_visitor.relative(vec!["super"]).unwrap().path_segment(), "grandfather");
+
+    assert_eq!(son_visitor.relative(vec!["super", "super"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(son_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
+
 }

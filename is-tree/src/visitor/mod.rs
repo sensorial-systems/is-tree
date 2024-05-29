@@ -13,8 +13,8 @@ mod has_relative_access;
 
 #[derive(Clone, Debug, Default)]
 pub struct Visitor<Parent, Value> {
-    parent: Parent,
-    value: Value
+    pub parent: Parent,
+    pub value: Value
 }
 
 impl<Parent, Value> Visitor<Parent, Value> {
