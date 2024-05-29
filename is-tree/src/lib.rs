@@ -11,3 +11,5 @@ pub use iterator::*;
 pub use visitor::*;
 
 pub use is_tree_macro::*;
+
+pub mod new_traits;

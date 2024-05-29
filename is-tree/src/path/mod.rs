@@ -4,7 +4,7 @@ pub use segment::*;
 
 use std::fmt::Display;
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct Path
 {
     pub segments: Vec<String>
@@ -16,13 +16,6 @@ impl Path {
         let mut clone = self.clone();
         clone.segments.push(segment.into());
         clone
-    }
-}
-
-impl Default for Path {
-    fn default() -> Self {
-        let segments = Vec::new();
-        Self { segments }
     }
 }
 

@@ -4,6 +4,12 @@ pub trait HasPath {
     fn path(&self) -> Path;
 }
 
+impl HasPath for () {
+    fn path(&self) -> Path {
+        Path::default()
+    }
+}
+
 pub trait HasPathSegment {
     fn path_segment(&self) -> &String;
 
