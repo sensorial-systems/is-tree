@@ -33,6 +33,13 @@ impl<'a> HasBranches<&'a String> for &'a Branch {
     }
 }
 
+impl<'a> HasBranches<&'a mut String> for &'a mut Branch {
+    fn branches_impl(self) -> impl Iterator<Item = &'a mut String> {
+        std::iter::once(&mut self.name)
+            .chain(self.branches.iter_mut().map(|branch| &mut branch.name))
+    }
+}
+
 impl AddBranch<String> for Branch {
     fn add_branch(&mut self, name: String) -> &mut String {
         self.name = name;
@@ -55,8 +62,9 @@ fn branches() {
     branch.add_branch(Branch::from("child1"));
     branch.add_branch(Branch::from("child2"));
 
-    assert_eq!((&branch).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["root", "child1", "child2"]);
-    assert_eq!((&branch).branches::<&Branch>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["child1", "child2"])
+    (&mut branch).branches::<&mut String>().for_each(|s| *s = s.to_uppercase());
+    assert_eq!((&branch).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["ROOT", "CHILD1", "CHILD2"]);
+    assert_eq!((&branch).branches::<&Branch>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["CHILD1", "CHILD2"])
 }
 
 impl HasPathSegment for Branch {
@@ -71,7 +79,8 @@ fn get() {
     branch.add_branch(String::from("root"));
     branch.add_branch(Branch::from("child1"));
     branch.add_branch(Branch::from("child2"));
-    assert_eq!((&branch).get::<&Branch>("child1").unwrap().name, "child1");
+    if let Some(s) = (&mut branch).get::<&mut String>("child1") { *s = s.to_uppercase() }
+    assert_eq!((&branch).get::<&Branch>("CHILD1").unwrap().name, "CHILD1");
 }
 
 #[derive(Clone, Debug, EnumAsInner)]
