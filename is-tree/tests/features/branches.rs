@@ -179,15 +179,15 @@ fn relative_access() {
     
     assert_eq!((&father_visitor).get("son").unwrap().path_segment(), "son");
 
-    // assert!((&root_visitor).relative(vec!["super"]).is_none());
-    // assert_eq!(root_visitor.relative(Vec::<String>::new()).unwrap().path_segment(), "grandfather");
-    // assert_eq!(root_visitor.relative(vec!["self"]).unwrap().path_segment(), "grandfather");
-    // assert_eq!(root_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
-    // assert_eq!(root_visitor.relative(vec!["father"]).unwrap().path_segment(), "father");
-    // assert_eq!(root_visitor.relative(vec!["father", "son"]).unwrap().path_segment(), "son");
+    assert!(root_visitor.relative(vec!["super"]).is_none());
+    assert_eq!(root_visitor.relative(Vec::<String>::new()).unwrap().path_segment(), "grandfather");
+    assert_eq!(root_visitor.relative(vec!["self"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(root_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(root_visitor.relative(vec!["father"]).unwrap().path_segment(), "father");
+    assert_eq!(root_visitor.relative(vec!["father", "son"]).unwrap().path_segment(), "son");
 
-    // assert_eq!(father_visitor.relative(vec!["super"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(father_visitor.relative(vec!["super"]).unwrap().path_segment(), "grandfather");
 
-    // assert_eq!(son_visitor.relative(vec!["super", "super"]).unwrap().path_segment(), "grandfather");
-    // assert_eq!(son_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(son_visitor.relative(vec!["super", "super"]).unwrap().path_segment(), "grandfather");
+    assert_eq!(son_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
 }
