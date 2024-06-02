@@ -1,4 +1,16 @@
-use crate::{Visitor, HasPathSegment, Path, HasPath};
+use crate::{HasPathSegment, Path, HasPath};
+
+#[derive(Clone, Debug, Default)]
+pub struct Visitor<Parent, Value> {
+    pub parent: Parent,
+    pub value: Value
+}
+
+impl<Parent, Value> Visitor<Parent, Value> {
+    pub fn new(parent: Parent, value: Value) -> Self {
+        Self { parent, value }
+    }
+}
 
 impl<Parent, Value> HasPathSegment for Visitor<Parent, Value>
 where Value: HasPathSegment

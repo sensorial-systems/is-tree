@@ -1,15 +1,8 @@
-pub trait KnowsRoot<'a> {
-    type Root;
+pub trait HasRoot {
+    fn root(&self) -> Self;
 }
 
-pub trait HasRoot<'a>: KnowsRoot<'a> {
-    fn root(self) -> Self::Root;
-}
-
-impl<'a, T: KnowsRoot<'a>> KnowsRoot<'a> for &'a T {
-    type Root = T::Root;
-}
-
-impl<'a, T: KnowsRoot<'a>> KnowsRoot<'a> for &'a mut T {
-    type Root = T::Root;
+// By design, accessing a Visitor parent is unsafe.
+pub unsafe trait UnsafeHasRoot: Sized {
+    unsafe fn root_mut(&mut self) -> Option<Self>;
 }

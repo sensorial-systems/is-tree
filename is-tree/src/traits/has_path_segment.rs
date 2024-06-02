@@ -29,3 +29,9 @@ impl<T: HasPathSegment> HasPathSegment for &mut T {
         (**self).path_segment()
     }
 }
+
+impl HasPathSegment for String {
+    fn path_segment(&self) -> String {
+        self.clone()
+    }
+}

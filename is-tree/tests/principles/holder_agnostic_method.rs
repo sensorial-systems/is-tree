@@ -1,5 +1,7 @@
 //! # Holder-Agnostic Method principle
 //! 
+//! This design pattern allows different associated types depending on the object mutability.
+//! 
 //! Write traits as:
 //! ```rust
 //! trait Trait {

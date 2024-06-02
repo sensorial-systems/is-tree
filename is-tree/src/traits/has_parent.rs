@@ -1,17 +1,8 @@
-pub trait KnowsParent<'a> {
-    type Parent;
+pub trait HasParent: Sized {
+    fn parent(&self) -> Option<Self>;
 }
 
-pub trait HasParent<'a>: KnowsParent<'a> {
-    fn parent(self) -> Self::Parent;
-}
-
-impl<'a, T: KnowsParent<'a>> KnowsParent<'a> for &'a T
-{
-    type Parent = T::Parent;
-}
-
-impl<'a, T: KnowsParent<'a>> KnowsParent<'a> for &'a mut T
-{
-    type Parent = T::Parent;
+// By design, accessing a Visitor parent is unsafe.
+pub unsafe trait UnsafeHasParent: Sized {
+    unsafe fn parent_mut(&mut self) -> Option<Self>;
 }

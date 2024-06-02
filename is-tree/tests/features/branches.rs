@@ -1,5 +1,5 @@
 use enum_as_inner::EnumAsInner;
-use is_tree::{new_traits::{HasParent, *}, HasPathSegment, HasValue, Visitor};
+use is_tree::*;
 
 #[derive(Debug)]
 pub struct Library {
@@ -259,10 +259,10 @@ impl<'a> HasPathSegment for Visitors<'a> {
 impl<'a> HasBranches<Visitors<'a>> for &'a Visitors<'a> {
     fn branches_impl(self) -> impl Iterator<Item = Visitors<'a>> {
         match self {
-            Visitors::Library(visitor) => Box::new((*visitor.value()).branches::<&Module>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
+            Visitors::Library(visitor) => Box::new(visitor.value.branches::<&Module>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
             Visitors::Module(visitor) => {
-                let iterator = (*visitor.value()).branches::<&Module>().map(|branch| Visitor::new(self.clone().into(), branch).into())
-                    .chain((*visitor.value()).branches::<&Function>().map(|branch| Visitor::new(self.clone().into(), branch).into()));
+                let iterator = visitor.value.branches::<&Module>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                    .chain(visitor.value.branches::<&Function>().map(|branch| Visitor::new(self.clone().into(), branch).into()));
                 Box::new(iterator) as Box<dyn Iterator<Item = _>>
             },
             Visitors::Function(_) => Box::new(std::iter::empty()),
@@ -335,15 +335,15 @@ impl<'a> HasBranches<VisitorsMut<'a>> for &'a mut VisitorsMut<'a> {
         match self {
             VisitorsMut::Library(visitor) => {
                 let parent_clone = parent.clone();
-                Box::new((*visitor.value()).branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())) as Box<dyn Iterator<Item = _>>
+                Box::new(visitor.value.branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())) as Box<dyn Iterator<Item = _>>
             },
             VisitorsMut::Module(visitor) => {
                 let parent_clone = parent.clone();
                 let other_visitor = unsafe { longer_mut(visitor) };
-                let iterator = (*visitor.value()).branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into());
+                let iterator = visitor.value.branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into());
                 let parent_clone = parent.clone();
                 let visitor = other_visitor;
-                let iterator = iterator.chain((*visitor.value()).branches::<&mut Function>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into()));
+                let iterator = iterator.chain(visitor.value.branches::<&mut Function>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into()));
                 Box::new(iterator) as Box<dyn Iterator<Item = _>>
             },
             VisitorsMut::Function(_) => Box::new(std::iter::empty()),
@@ -356,8 +356,8 @@ fn visitor() {
     let mut branch = Library::mock();
 
     let root_visitor = Visitors::from(&branch);
-    assert_eq!(root_visitor.as_library().unwrap().value().name, "library");
-    assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_module().unwrap().value().name).collect::<Vec<_>>(), vec!["math"]);
+    assert_eq!(root_visitor.as_library().unwrap().value.name, "library");
+    assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_module().unwrap().value.name).collect::<Vec<_>>(), vec!["math"]);
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "geometry", "math", "library"]);
@@ -365,15 +365,15 @@ fn visitor() {
     let mut root_visitor = VisitorsMut::from(&mut branch);
     (&mut root_visitor).branches::<VisitorsMut>().for_each(|mut visitor| {
         match &mut visitor {
-            VisitorsMut::Library(visitor) => visitor.value().name = visitor.value().name.to_uppercase(),
-            VisitorsMut::Module(visitor) => visitor.value().name = visitor.value().name.to_uppercase(),
-            VisitorsMut::Function(visitor) => visitor.value().name = visitor.value().name.to_uppercase()
+            VisitorsMut::Library(visitor) => visitor.value.name = visitor.value.name.to_uppercase(),
+            VisitorsMut::Module(visitor) => visitor.value.name = visitor.value.name.to_uppercase(),
+            VisitorsMut::Function(visitor) => visitor.value.name = visitor.value.name.to_uppercase()
         }
     });
 
     let root_visitor = Visitors::from(&branch);
-    assert_eq!(root_visitor.as_library().unwrap().value().name, "library");
-    assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_module().unwrap().value().name).collect::<Vec<_>>(), vec!["MATH"]);
+    assert_eq!(root_visitor.as_library().unwrap().value.name, "library");
+    assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_module().unwrap().value.name).collect::<Vec<_>>(), vec!["MATH"]);
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "geometry", "MATH", "library"]);
@@ -381,9 +381,9 @@ fn visitor() {
     let iterator: TreeIterator<VisitorsMut> = TreeIterator::new(&mut branch);
     iterator.for_each(|mut visitor| {
         match &mut visitor {
-            VisitorsMut::Library(visitor) => visitor.value().name = visitor.value().name.to_uppercase(),
-            VisitorsMut::Module(visitor) => visitor.value().name = visitor.value().name.to_uppercase(),
-            VisitorsMut::Function(visitor) => visitor.value().name = visitor.value().name.to_uppercase()
+            VisitorsMut::Library(visitor) => visitor.value.name = visitor.value.name.to_uppercase(),
+            VisitorsMut::Module(visitor) => visitor.value.name = visitor.value.name.to_uppercase(),
+            VisitorsMut::Function(visitor) => visitor.value.name = visitor.value.name.to_uppercase()
         }
     });
 
@@ -489,11 +489,11 @@ fn unsafe_relative_access() {
 
         let mut geometry = shapes_visitor.parent_mut().unwrap();
         let geometry = geometry.as_module_mut().unwrap();
-        geometry.value().name = geometry.value().name.to_uppercase();
+        geometry.value.name = geometry.value.name.to_uppercase();
 
         let mut math = shapes_visitor.root_mut().unwrap();
         let math = math.as_library_mut().unwrap();
-        math.value().name = math.value().name.to_uppercase();
+        math.value.name = math.value.name.to_uppercase();
     }
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
@@ -506,11 +506,11 @@ fn unsafe_relative_access() {
         let mut root_visitor = VisitorsMut::from(&mut branch);
         if let Some(mut visitor) = root_visitor.relative_mut(vec!["math", "geometry", "shapes"]) {
             let branch_visitor = visitor.as_module_mut().unwrap();
-            branch_visitor.value().name = branch_visitor.value().name.to_uppercase();
+            branch_visitor.value.name = branch_visitor.value.name.to_uppercase();
 
             if let Some(mut visitor) = visitor.relative_mut(vec!["root"]) {
                 let visitor = visitor.as_library_mut().unwrap();
-                visitor.value().name = visitor.value().name.to_uppercase();
+                visitor.value.name = visitor.value.name.to_uppercase();
             }
         }
     }
@@ -524,11 +524,11 @@ fn unsafe_relative_access() {
         let mut root_visitor = VisitorsMut::from(&mut branch);
         if let Some(mut visitor) = root_visitor.relative_mut(vec!["self"]) {
             let branch_visitor = visitor.as_library_mut().unwrap();
-            branch_visitor.value().name = branch_visitor.value().name.to_uppercase();
+            branch_visitor.value.name = branch_visitor.value.name.to_uppercase();
 
             if let Some(mut visitor) = visitor.relative_mut(vec!["math", "geometry", "shapes", "super"]) {
                 let visitor = visitor.as_module_mut().unwrap();
-                visitor.value().name = visitor.value().name.to_uppercase();
+                visitor.value.name = visitor.value.name.to_uppercase();
             }
         }
     }

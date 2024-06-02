@@ -2,16 +2,13 @@
 
 mod traits;
 mod path;
-mod iterator;
 mod visitor;
+mod tree_iterator;
+pub mod unsafe_;
 
 pub use traits::*;
 pub use path::*;
-pub use iterator::*;
 pub use visitor::*;
+pub use tree_iterator::*;
 
 pub use is_tree_macro::*;
-
-pub mod new_traits;
-
-pub mod unsafe_;

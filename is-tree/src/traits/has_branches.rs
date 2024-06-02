@@ -1,33 +1,18 @@
-use crate::HasPathSegment;
+pub trait HasBranches<T> {
+    fn branches_impl(self) -> impl Iterator<Item = T>;
+}    
 
 
-pub trait KnowsBranches<'a> {
-    type Branches; // TODO: type Branches: KnowsOwned?
-}
-
-pub trait HasBranches<'a>: KnowsBranches<'a> {
-    fn branches(self) -> impl Iterator<Item = Self::Branches>;
-}
-
-// TODO: Move it to its own module file.
-pub trait KnowsOwned {
-    type Owned;
-}
-
-impl<T> KnowsOwned for &T {
-    type Owned = T;
-}
-
-impl<T> KnowsOwned for &mut T {
-    type Owned = T;
-}
-
-impl KnowsOwned for String {
-    type Owned = String;
-}
-
-impl HasPathSegment for String {
-    fn path_segment(&self) -> String {
-        self.clone()
+pub trait HasBranchesAPI {
+    fn branches<T>(self) -> impl Iterator<Item = T>
+    where Self: HasBranches<T> + Sized
+    {
+        self.branches_impl()
     }
 }
+
+pub trait AddBranch<T> {
+    fn add_branch(&mut self, value: T) -> &mut T;
+}
+
+impl<T> HasBranchesAPI for T {}

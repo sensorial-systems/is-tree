@@ -1,6 +1,6 @@
-use crate::{HasPathSegment, IsPathSegment, PathSegment};
+use crate::{HasPathSegment, IsPathSegment, PathSegment, UnsafeClone, UnsafeHasParent, UnsafeHasRoot};
 
-use super::{HasBranches, HasGet, HasParent, HasRoot, UnsafeClone, UnsafeHasParent, UnsafeHasRoot};
+use super::{HasBranches, HasGet, HasParent, HasRoot};
 
 pub trait HasRelative<'a>: Sized {
     fn relative<K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<Self>
