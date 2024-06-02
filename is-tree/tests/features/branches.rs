@@ -1,8 +1,9 @@
 use enum_as_inner::EnumAsInner;
 use is_tree::*;
 
-#[derive(Debug)]
+#[derive(Debug, IsTree)]
 pub struct Library {
+    #[tree(path_segment)]
     pub name: String,
     pub root_module: Module
 }
@@ -63,15 +64,17 @@ impl From<&str> for Library {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, IsTree)]
 pub struct Module {
+    #[tree(path_segment)]
     pub name: String,
     pub modules: Vec<Module>,
     pub functions: Vec<Function>
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, IsTree)]
 pub struct Function {
+    #[tree(path_segment)]
     pub name: String
 }
 
@@ -174,24 +177,6 @@ fn branches() {
 
     assert_eq!((&library.root_module).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["MATH", "GEOMETRY", "ALGEBRA"]);
     assert_eq!((&library.root_module).branches::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "ALGEBRA"]);
-}
-
-impl HasPathSegment for Module {
-    fn path_segment(&self) -> String {
-        self.name.clone()
-    }
-}
-
-impl HasPathSegment for Library {
-    fn path_segment(&self) -> String {
-        self.name.clone()
-    }
-}
-
-impl HasPathSegment for Function {
-    fn path_segment(&self) -> String {
-        self.name.clone()
-    }
 }
 
 #[test]

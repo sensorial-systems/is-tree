@@ -13,8 +13,8 @@ pub(crate) fn impl_has_path_segment(structure: &mut Structure) -> proc_macro2::T
             let field_name = &field.field.ident;
             quote! {
                 impl ::is_tree::HasPathSegment for #structure_name {
-                    fn path_segment(&self) -> &String {
-                        &self.#field_name
+                    fn path_segment(&self) -> String {
+                        self.#field_name.to_string()
                     }
                 }
             }

@@ -50,12 +50,12 @@ impl Derive for Structure {
         let knows_visitor = knows_visitor::impl_knows_visitor(self);
         quote! {
             #has_path_segment
-            #has_branches
-            #has_get
-            #knows_owned
-            #has_type_iterator
-            #knows_relative_type
-            #knows_visitor
+            // #has_branches
+            // #has_get
+            // #knows_owned
+            // #has_type_iterator
+            // #knows_relative_type
+            // #knows_visitor
         }
     }
 }
