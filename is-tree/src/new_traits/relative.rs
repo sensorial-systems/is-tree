@@ -8,8 +8,6 @@ pub trait HasRelative<'a>: Sized {
         Self: Clone + HasRoot + HasParent + HasPathSegment,
         &'a Self: HasBranches<Self>
     {
-        #[inline]
-        fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
         let mut path = path.into_iter();
         if let Some(segment) = path.next() {
             let segment = segment.into();
@@ -19,7 +17,7 @@ pub trait HasRelative<'a>: Sized {
                 PathSegment::Super => self.parent()?,
                 PathSegment::Other(_) => self.get::<Self>(segment)?
             };
-            longer_ref(&visitor).relative(path)
+            unsafe { crate::unsafe_::longer_ref(&visitor) }.relative(path)
         } else {
             Some(self.clone())
         }

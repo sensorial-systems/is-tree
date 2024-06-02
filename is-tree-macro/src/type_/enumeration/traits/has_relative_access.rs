@@ -11,7 +11,7 @@ pub fn impl_relative_access(enumeration: &Enumeration) -> TokenStream {
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
-            #name::#variant_name(value) => longer_ref(value).relative(path).map(|value| value.into()),
+            #name::#variant_name(value) => unsafe { ::is_tree::unsafe_::longer_ref(value).relative(path).map(|value| value.into()) },
         }
     }).collect::<TokenStream>();
     let clauses = enumeration.variants.iter().map(|variant| {
@@ -42,8 +42,6 @@ pub fn impl_relative_access(enumeration: &Enumeration) -> TokenStream {
             fn relative<K>(self, path: impl IntoIterator<Item = K>) -> Option<Self::RelativeAccess>
             where K: Into<String>
             {
-                #[inline]
-                fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
                 match &self {
                     #variants
                 }

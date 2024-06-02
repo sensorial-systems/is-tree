@@ -37,7 +37,7 @@ pub fn impl_branches(enumeration: &Enumeration) -> TokenStream {
     let variants = enumeration.variants.iter().map(|variant| {
         let variant_name = &variant.variant.ident;
         quote! {
-            #name::#variant_name(value) => longer_ref(value).branches().map(|value| value.into()).collect::<Vec<_>>().into_iter(), // TODO: This needs optimization.
+            #name::#variant_name(value) => unsafe { ::is_tree::unsafe_::longer_ref(value).branches().map(|value| value.into()).collect::<Vec<_>>().into_iter() }, // TODO: This needs optimization.
         }
     }).collect::<TokenStream>();
 
@@ -54,7 +54,6 @@ pub fn impl_branches(enumeration: &Enumeration) -> TokenStream {
         where #clauses
         {
             fn branches(self) -> impl Iterator<Item = Self::Branches> {
-                fn longer_ref<'longer, T>(t: &T) -> &T { t }
                 match self {
                     #variants
                 }
@@ -65,8 +64,6 @@ pub fn impl_branches(enumeration: &Enumeration) -> TokenStream {
         where #clauses
         {
             fn branches(self) -> impl Iterator<Item = Self::Branches> {
-                #[inline]
-                fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
                 match &self {
                     #variants
                 }

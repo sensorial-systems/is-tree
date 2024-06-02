@@ -1,7 +1,7 @@
 use crate::{Visitor, HasPathSegment, Path, HasPath};
 
 impl<Parent, Value> HasPathSegment for Visitor<Parent, Value>
-where Value: HasPathSegment + Clone
+where Value: HasPathSegment
 {
     fn path_segment(&self) -> &String {
         self.value.path_segment()

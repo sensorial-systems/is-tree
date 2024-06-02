@@ -90,24 +90,38 @@ fn get() {
 }
 
 #[derive(Clone, Debug, EnumAsInner)]
-pub enum Visitors<Branch> {
-    Root(Visitor<(), Branch>),
-    Branch(Visitor<Box<Visitors<Branch>>, Branch>),
+pub enum Visitors<'a> {
+    Root(Visitor<(), &'a Branch>),
+    Branch(Visitor<Box<Visitors<'a>>, &'a Branch>),
 }
 
-impl<Branch> From<Branch> for Visitors<Branch> {
-    fn from(branch: Branch) -> Self {
+unsafe impl<'a> UnsafeClone for Visitors<'a> {
+    unsafe fn unsafe_clone(&self) -> Self {
+        self.clone()
+    }
+
+}
+
+unsafe impl<'a> UnsafeBorrow<'a> for Visitors<'a> {
+    type Borrow = &'a Visitors<'a>;
+    unsafe fn borrow(&'a self) -> Self::Borrow {
+        self
+    }
+}
+
+impl<'a> From<&'a Branch> for Visitors<'a> {
+    fn from(branch: &'a Branch) -> Self {
         Self::Root(Visitor::new((), branch))
     }
 }
 
-impl<Branch> From<Visitor<Box<Visitors<Branch>>, Branch>> for Visitors<Branch> {
-    fn from(visitor: Visitor<Box<Visitors<Branch>>, Branch>) -> Self {
+impl<'a> From<Visitor<Box<Visitors<'a>>, &'a Branch>> for Visitors<'a> {
+    fn from(visitor: Visitor<Box<Visitors<'a>>, &'a Branch>) -> Self {
         Self::Branch(visitor)
     }
 }
 
-impl<Branch: Clone + HasPathSegment> HasPathSegment for Visitors<Branch> {
+impl<'a> HasPathSegment for Visitors<'a> {
     fn path_segment(&self) -> &String {
         match self {
             Visitors::Root(visitor) => visitor.path_segment(),
@@ -116,20 +130,78 @@ impl<Branch: Clone + HasPathSegment> HasPathSegment for Visitors<Branch> {
     }
 }
 
-// impl<Branch: HasBranches<Branch> + Clone> HasBranches<Visitors<Branch>> for Visitors<Branch> {
-//     fn branches_impl(self) -> impl Iterator<Item = Visitors<Branch>> {
-//         match &self {
-//             Visitors::Root(visitor) => Box::new((*visitor.value()).branches::<Branch>().map(move |branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
-//             Visitors::Branch(visitor) => Box::new((*visitor.value()).branches::<Branch>().map(move |branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
-//         }
-//     }
-// }
-
-impl<'a, Branch: HasBranches<Branch> + Clone> HasBranches<Visitors<Branch>> for &'a Visitors<Branch> {
-    fn branches_impl(self) -> impl Iterator<Item = Visitors<Branch>> {
+impl<'a> HasBranches<Visitors<'a>> for &'a Visitors<'a> {
+    fn branches_impl(self) -> impl Iterator<Item = Visitors<'a>> {
         match self {
-            Visitors::Root(visitor) => Box::new((*visitor.value()).clone().branches::<Branch>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
-            Visitors::Branch(visitor) => Box::new((*visitor.value()).clone().branches::<Branch>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
+            Visitors::Root(visitor) => Box::new((*visitor.value()).branches::<&Branch>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
+            Visitors::Branch(visitor) => Box::new((*visitor.value()).branches::<&Branch>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
+        }
+    }
+}
+
+#[derive(Debug, EnumAsInner)]
+pub enum VisitorsMut<'a> {
+    Root(Visitor<(), &'a mut Branch>),
+    Branch(Visitor<Box<Visitors<'a>>, &'a mut Branch>),
+}
+
+unsafe impl<'a> UnsafeClone for VisitorsMut<'a> {
+    unsafe fn unsafe_clone(&self) -> Self {
+        let visitor: &Visitors = std::mem::transmute(self);
+        let visitor = visitor.clone();
+        std::mem::transmute(visitor)
+    }
+}
+
+unsafe impl<'a> UnsafeBorrow<'a> for VisitorsMut<'a> {
+    type Borrow = &'a mut VisitorsMut<'a>;
+    unsafe fn borrow(&'a self) -> Self::Borrow {
+        #[allow(mutable_transmutes)]
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl<'a> From<&'a mut Branch> for VisitorsMut<'a> {
+    fn from(branch: &'a mut Branch) -> Self {
+        Self::Root(Visitor::new((), branch))
+    }
+}
+
+impl<'a> From<Visitor<Box<Visitors<'a>>, &'a mut Branch>> for VisitorsMut<'a> {
+    fn from(visitor: Visitor<Box<Visitors<'a>>, &'a mut Branch>) -> Self {
+        Self::Branch(visitor)
+    }
+}
+
+impl<'a> From<&&'a mut VisitorsMut<'a>> for Visitors<'a> {
+    fn from(visitor: &&'a mut VisitorsMut<'a>) -> Self {
+        unsafe {
+            (*(std::mem::transmute::<_, &&Visitors<'a>>(visitor))).clone()
+        }
+    }
+}
+
+impl<'a> HasPathSegment for VisitorsMut<'a> {
+    fn path_segment(&self) -> &String {
+        match self {
+            VisitorsMut::Root(visitor) => visitor.path_segment(),
+            VisitorsMut::Branch(visitor) => visitor.path_segment(),
+        }
+    }
+}
+
+impl<'a> HasBranches<VisitorsMut<'a>> for &'a mut VisitorsMut<'a> {
+    fn branches_impl(self) -> impl Iterator<Item = VisitorsMut<'a>> {
+        let parent = Box::new(Visitors::from(&self));
+        match self {
+            VisitorsMut::Root(visitor) => {
+                let parent_clone = parent.clone();
+                Box::new((*visitor.value()).branches::<&mut Branch>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())) as Box<dyn Iterator<Item = _>>
+            },
+            VisitorsMut::Branch(visitor) => {
+                let parent_clone = parent.clone();
+                Box::new((*visitor.value()).branches::<&mut Branch>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())) as Box<dyn Iterator<Item = _>>
+            },
         }
     }
 }
@@ -140,15 +212,39 @@ fn visitor() {
 
     let root_visitor = Visitors::from(&branch);
     assert_eq!(root_visitor.as_root().unwrap().value().name, "grandfather");
-    assert_eq!((&root_visitor).branches::<Visitors<&Branch>>().map(|visitor| &visitor.as_branch().unwrap().value().name).collect::<Vec<_>>(), vec!["father", "uncle"]);
+    assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_branch().unwrap().value().name).collect::<Vec<_>>(), vec!["father", "uncle"]);
 
-    // let iterator: TreeIterator<Visitors<&mut Branch>> = TreeIterator::mutable(&mut branch); // This is broken. The rest is working.
-
-    let iterator: TreeIterator<Visitors<&Branch>> = TreeIterator::constant(&branch);
+    let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["uncle", "son", "father", "grandfather"]);
+
+    let mut root_visitor = VisitorsMut::from(&mut branch);
+    (&mut root_visitor).branches::<VisitorsMut>().for_each(|mut visitor| {
+        match &mut visitor {
+            VisitorsMut::Root(visitor) => visitor.value().name = visitor.value().name.to_uppercase(),
+            VisitorsMut::Branch(visitor) => visitor.value().name = visitor.value().name.to_uppercase()
+        }
+    });
+
+    let root_visitor = Visitors::from(&branch);
+    assert_eq!(root_visitor.as_root().unwrap().value().name, "grandfather");
+    assert_eq!((&root_visitor).branches::<Visitors>().map(|visitor| &visitor.as_branch().unwrap().value().name).collect::<Vec<_>>(), vec!["FATHER", "UNCLE"]);
+
+    let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["UNCLE", "son", "FATHER", "grandfather"]);
+
+    let iterator: TreeIterator<VisitorsMut> = TreeIterator::new(&mut branch);
+    iterator.for_each(|mut visitor| {
+        match &mut visitor {
+            VisitorsMut::Root(visitor) => visitor.value().name = visitor.value().name.to_uppercase(),
+            VisitorsMut::Branch(visitor) => visitor.value().name = visitor.value().name.to_uppercase()
+        }
+    });
+
+    let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["UNCLE", "SON", "FATHER", "GRANDFATHER"]);
 }
 
-impl<Branch: Clone> HasParent for Visitors<Branch> {
+impl<'a> HasParent for Visitors<'a> {
     fn parent(&self) -> Option<Self> {
         match self {
             Visitors::Root(_) => None,
@@ -157,7 +253,7 @@ impl<Branch: Clone> HasParent for Visitors<Branch> {
     }
 }
 
-impl<Branch: Clone> HasRoot for Visitors<Branch> {
+impl<'a> HasRoot for Visitors<'a> {
     fn root(&self) -> Self {
         match self {
             Visitors::Root(_) => self.clone(),
@@ -171,8 +267,8 @@ fn relative_access() {
     let mut branch = Branch::mock();
 
     let root_visitor = Visitors::from(&branch);
-    let father_visitor = (&root_visitor).branches::<Visitors<&Branch>>().next().unwrap();
-    let son_visitor = (&father_visitor).branches::<Visitors<&Branch>>().next().unwrap();
+    let father_visitor = (&root_visitor).branches::<Visitors>().next().unwrap();
+    let son_visitor = (&father_visitor).branches::<Visitors>().next().unwrap();
     assert_eq!(son_visitor.path_segment(), "son");
     assert_eq!(son_visitor.parent().unwrap().path_segment(), "father");
     assert_eq!(son_visitor.parent().unwrap().parent().unwrap().path_segment(), "grandfather");

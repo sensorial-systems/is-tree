@@ -1,4 +1,5 @@
 use crate::new_traits::*;
+pub use crate::unsafe_::*;
 
 pub struct TreeIterator<Visitor> {
     stack: Vec<Visitor>,
@@ -6,34 +7,10 @@ pub struct TreeIterator<Visitor> {
 
 impl<'a, Visitor> TreeIterator<Visitor>
 {
-    pub fn mutable<Value>(root: Value) -> Self
+    pub fn new<Value>(root: Value) -> Self
     where Value: Into<Visitor>,
-          Visitor: Clone + 'a,
-          &'a mut Visitor: HasBranches<Visitor>,
-    {
-        let stack = Vec::new();
-        let mut iterator = Self { stack };
-        iterator.mutable_build(root.into());
-        iterator
-    }
-
-    fn mutable_build(&mut self, mut visitor: Visitor)
-    where Visitor: Clone + 'a,
-          &'a mut Visitor: HasBranches<Visitor>,
-    {
-        #[inline]
-        fn longer_ref<'longer, T>(t: &mut T) -> &'longer mut T { unsafe { &mut *(t as *mut T) } }
-        self.stack.push(visitor.clone());
-        for child in longer_ref(&mut visitor).branches::<Visitor>() {
-            let visitor = child.into();
-            self.mutable_build(visitor);
-        }
-    }
-
-    pub fn constant<Value>(root: Value) -> Self
-    where Value: Into<Visitor>,
-          Visitor: Clone + 'a,
-          &'a Visitor: HasBranches<Visitor>,
+          Visitor: UnsafeBorrow<'a> + UnsafeClone + 'a,
+          Visitor::Borrow: HasBranches<Visitor>,
     {
         let stack = Vec::new();
         let mut iterator = Self { stack };
@@ -42,13 +19,11 @@ impl<'a, Visitor> TreeIterator<Visitor>
     }
 
     fn constant_build(&mut self, visitor: Visitor)
-    where Visitor: Clone + 'a,
-          &'a Visitor: HasBranches<Visitor>,
+    where Visitor: UnsafeBorrow<'a> + UnsafeClone + 'a,
+          Visitor::Borrow: HasBranches<Visitor>,
     {
-        #[inline]
-        fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
-        self.stack.push(visitor.clone());
-        for child in longer_ref(&visitor).branches::<Visitor>() {
+        unsafe { self.stack.push(visitor.unsafe_clone()); }
+        for child in unsafe { longer_ref(&visitor).borrow() }.branches::<Visitor>() {
             let visitor = child.into();
             self.constant_build(visitor);
         }
