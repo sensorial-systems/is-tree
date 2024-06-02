@@ -1,6 +1,6 @@
 use crate::{HasPathSegment, IsPathSegment, PathSegment};
 
-use super::{HasBranches, HasGet, HasParent, HasRoot};
+use super::{HasBranches, HasGet, HasParent, HasRoot, UnsafeClone, UnsafeHasParent, UnsafeHasRoot};
 
 pub trait HasRelative<'a>: Sized {
     fn relative<K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<Self>
@@ -24,4 +24,27 @@ pub trait HasRelative<'a>: Sized {
     }
 }
 
+pub trait UnsafeHasRelative<'a>: Sized {
+    unsafe fn relative_mut<K>(&'a mut self, path: impl IntoIterator<Item = K>) -> Option<Self>
+    where K: Into<String>,
+        Self: UnsafeClone + UnsafeHasRoot + UnsafeHasParent + HasPathSegment,
+        &'a mut Self: HasBranches<Self>
+    {
+        let mut path = path.into_iter();
+        if let Some(segment) = path.next() {
+            let segment = segment.into();
+            let mut visitor: Self = match segment.kind() {
+                PathSegment::Self_ => self.unsafe_clone(),
+                PathSegment::Root => self.root_mut()?,
+                PathSegment::Super => self.parent_mut()?,
+                PathSegment::Other(_) => self.get::<Self>(segment)?
+            };
+            crate::unsafe_::longer_mut(&mut visitor).relative_mut(path)
+        } else {
+            Some(self.unsafe_clone())
+        }
+    }
+}
+
 impl<'a, T: Sized> HasRelative<'a> for T {}
+impl<'a, T: Sized> UnsafeHasRelative<'a> for T {}

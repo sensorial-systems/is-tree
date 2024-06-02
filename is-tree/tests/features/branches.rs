@@ -99,7 +99,6 @@ unsafe impl<'a> UnsafeClone for Visitors<'a> {
     unsafe fn unsafe_clone(&self) -> Self {
         self.clone()
     }
-
 }
 
 unsafe impl<'a> UnsafeBorrow<'a> for Visitors<'a> {
@@ -253,6 +252,19 @@ impl<'a> HasParent for Visitors<'a> {
     }
 }
 
+unsafe impl<'a> UnsafeHasParent for VisitorsMut<'a> {
+    unsafe fn parent_mut(&mut self) -> Option<Self> {
+        match self {
+            VisitorsMut::Root(_) => None,
+            VisitorsMut::Branch(visitor) => {
+                let visitor: Visitors = *visitor.parent.clone();
+                let visitor = std::mem::transmute(visitor);
+                Some(visitor)
+            }
+        }
+    }
+}
+
 impl<'a> HasRoot for Visitors<'a> {
     fn root(&self) -> Self {
         match self {
@@ -262,9 +274,22 @@ impl<'a> HasRoot for Visitors<'a> {
     }
 }
 
+unsafe impl<'a> UnsafeHasRoot for VisitorsMut<'a> {
+    unsafe fn root_mut(&mut self) -> Option<Self> {
+        match self {
+            VisitorsMut::Root(_) => None,
+            VisitorsMut::Branch(visitor) => {
+                let visitor: Visitors = visitor.parent.root();
+                let visitor = std::mem::transmute(visitor);
+                Some(visitor)
+            }
+        }
+    }
+}
+
 #[test]
 fn relative_access() {
-    let mut branch = Branch::mock();
+    let branch = Branch::mock();
 
     let root_visitor = Visitors::from(&branch);
     let father_visitor = (&root_visitor).branches::<Visitors>().next().unwrap();
@@ -288,4 +313,63 @@ fn relative_access() {
 
     assert_eq!(son_visitor.relative(vec!["super", "super"]).unwrap().path_segment(), "grandfather");
     assert_eq!(son_visitor.relative(vec!["root"]).unwrap().path_segment(), "grandfather");
+}
+
+#[test]
+fn unsafe_relative_access() {
+    let mut branch = Branch::mock();
+
+    unsafe {
+        let mut root_visitor = VisitorsMut::from(&mut branch);
+        let mut father_visitor = (&mut root_visitor).branches::<VisitorsMut>().next().unwrap();
+        let mut son_visitor = (&mut father_visitor).branches::<VisitorsMut>().next().unwrap();
+
+        let mut father = son_visitor.parent_mut().unwrap();
+        let father = father.as_branch_mut().unwrap();
+        father.value().name = father.value().name.to_uppercase();
+
+        let mut grandfather = son_visitor.root_mut().unwrap();
+        let grandfather = grandfather.as_root_mut().unwrap();
+        grandfather.value().name = grandfather.value().name.to_uppercase();
+    }
+
+    let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["uncle", "son", "FATHER", "GRANDFATHER"]);
+
+
+    let mut branch = Branch::mock();
+
+    unsafe {
+        let mut root_visitor = VisitorsMut::from(&mut branch);
+        if let Some(mut visitor) = root_visitor.relative_mut(vec!["father", "son"]) {
+            let branch_visitor = visitor.as_branch_mut().unwrap();
+            branch_visitor.value().name = branch_visitor.value().name.to_uppercase();
+
+            if let Some(mut visitor) = visitor.relative_mut(vec!["root"]) {
+                let visitor = visitor.as_root_mut().unwrap();
+                visitor.value().name = visitor.value().name.to_uppercase();
+            }
+        }
+    }
+
+    let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["uncle", "SON", "father", "GRANDFATHER"]);
+
+    let mut branch = Branch::mock();
+
+    unsafe {
+        let mut root_visitor = VisitorsMut::from(&mut branch);
+        if let Some(mut visitor) = root_visitor.relative_mut(vec!["self"]) {
+            let branch_visitor = visitor.as_root_mut().unwrap();
+            branch_visitor.value().name = branch_visitor.value().name.to_uppercase();
+
+            if let Some(mut visitor) = visitor.relative_mut(vec!["father", "son", "super"]) {
+                let visitor = visitor.as_branch_mut().unwrap();
+                visitor.value().name = visitor.value().name.to_uppercase();
+            }
+        }
+    }
+
+    let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["uncle", "son", "FATHER", "GRANDFATHER"]);
 }
