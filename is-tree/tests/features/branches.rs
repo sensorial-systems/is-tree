@@ -7,6 +7,17 @@ pub struct Branch {
     pub branches: Vec<Branch>,
 }
 
+impl Branch {
+    pub fn mock() -> Self {
+        let mut branch = Self::from("");
+        branch.add_branch(String::from("grandfather"));
+        branch.add_branch(Branch::from("father"))
+            .add_branch(Branch::from("son"));
+        branch.add_branch(Branch::from("uncle"));
+        branch
+    }
+}
+
 impl<'a> HasBranches<&'a Branch> for &'a Branch {
     fn branches_impl(self) -> impl Iterator<Item = &'a Branch> {
         self.branches.iter()
@@ -57,14 +68,11 @@ impl From<&str> for Branch {
 
 #[test]
 fn branches() {
-    let mut branch = Branch::from("");
-    branch.add_branch(String::from("root"));
-    branch.add_branch(Branch::from("child1"));
-    branch.add_branch(Branch::from("child2"));
+    let mut branch = Branch::mock();
 
     (&mut branch).branches::<&mut String>().for_each(|s| *s = s.to_uppercase());
-    assert_eq!((&branch).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["ROOT", "CHILD1", "CHILD2"]);
-    assert_eq!((&branch).branches::<&Branch>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["CHILD1", "CHILD2"])
+    assert_eq!((&branch).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["GRANDFATHER", "FATHER", "UNCLE"]);
+    assert_eq!((&branch).branches::<&Branch>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["FATHER", "UNCLE"])
 }
 
 impl HasPathSegment for Branch {
@@ -75,12 +83,10 @@ impl HasPathSegment for Branch {
 
 #[test]
 fn get() {
-    let mut branch = Branch::from("");
-    branch.add_branch(String::from("root"));
-    branch.add_branch(Branch::from("child1"));
-    branch.add_branch(Branch::from("child2"));
-    if let Some(s) = (&mut branch).get::<&mut String>("child1") { *s = s.to_uppercase() }
-    assert_eq!((&branch).get::<&Branch>("CHILD1").unwrap().name, "CHILD1");
+    let mut branch = Branch::mock();
+    assert_eq!((&branch).branches::<&Branch>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["father", "uncle"]);
+    if let Some(s) = (&mut branch).get::<&mut String>("father") { *s = s.to_uppercase() }
+    assert_eq!((&branch).branches::<&Branch>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["FATHER", "uncle"]);
 }
 
 #[derive(Clone, Debug, EnumAsInner)]
@@ -130,18 +136,16 @@ impl<'a, Branch: HasBranches<Branch> + Clone> HasBranches<Visitors<Branch>> for 
 
 #[test]
 fn visitor() {
-    let mut branch = Branch::from("grandfather");
-    branch.add_branch(Branch::from("father"))
-          .add_branch(Branch::from("son"));
+    let mut branch = Branch::mock();
 
     let root_visitor = Visitors::from(&branch);
     assert_eq!(root_visitor.as_root().unwrap().value().name, "grandfather");
-    assert_eq!((&root_visitor).branches::<Visitors<&Branch>>().map(|visitor| &visitor.as_branch().unwrap().value().name).collect::<Vec<_>>(), vec!["father"]);
+    assert_eq!((&root_visitor).branches::<Visitors<&Branch>>().map(|visitor| &visitor.as_branch().unwrap().value().name).collect::<Vec<_>>(), vec!["father", "uncle"]);
 
     // let iterator: TreeIterator<Visitors<&mut Branch>> = TreeIterator::mutable(&mut branch); // This is broken. The rest is working.
 
     let iterator: TreeIterator<Visitors<&Branch>> = TreeIterator::constant(&branch);
-    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["son", "father", "grandfather"]);
+    assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["uncle", "son", "father", "grandfather"]);
 }
 
 impl<Branch: Clone> HasParent for Visitors<Branch> {
@@ -164,9 +168,7 @@ impl<Branch: Clone> HasRoot for Visitors<Branch> {
 
 #[test]
 fn relative_access() {
-    let mut branch = Branch::from("grandfather");
-    branch.add_branch(Branch::from("father"))
-          .add_branch(Branch::from("son"));
+    let mut branch = Branch::mock();
 
     let root_visitor = Visitors::from(&branch);
     let father_visitor = (&root_visitor).branches::<Visitors<&Branch>>().next().unwrap();
