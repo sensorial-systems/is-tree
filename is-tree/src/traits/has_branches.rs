@@ -27,7 +27,7 @@ impl KnowsOwned for String {
 }
 
 impl HasPathSegment for String {
-    fn path_segment(&self) -> &String {
-        self
+    fn path_segment(&self) -> String {
+        self.clone()
     }
 }

@@ -177,20 +177,20 @@ fn branches() {
 }
 
 impl HasPathSegment for Module {
-    fn path_segment(&self) -> &String {
-        &self.name
+    fn path_segment(&self) -> String {
+        self.name.clone()
     }
 }
 
 impl HasPathSegment for Library {
-    fn path_segment(&self) -> &String {
-        &self.name
+    fn path_segment(&self) -> String {
+        self.name.clone()
     }
 }
 
 impl HasPathSegment for Function {
-    fn path_segment(&self) -> &String {
-        &self.name
+    fn path_segment(&self) -> String {
+        self.name.clone()
     }
 }
 
@@ -247,7 +247,7 @@ impl<'a> From<Visitor<Box<Visitors<'a>>, &'a Function>> for Visitors<'a> {
 }
 
 impl<'a> HasPathSegment for Visitors<'a> {
-    fn path_segment(&self) -> &String {
+    fn path_segment(&self) -> String {
         match self {
             Visitors::Library(visitor) => visitor.path_segment(),
             Visitors::Module(visitor) => visitor.path_segment(),
@@ -320,7 +320,7 @@ impl<'a> From<&&'a mut VisitorsMut<'a>> for Visitors<'a> {
 }
 
 impl<'a> HasPathSegment for VisitorsMut<'a> {
-    fn path_segment(&self) -> &String {
+    fn path_segment(&self) -> String {
         match self {
             VisitorsMut::Library(visitor) => visitor.path_segment(),
             VisitorsMut::Module(visitor) => visitor.path_segment(),

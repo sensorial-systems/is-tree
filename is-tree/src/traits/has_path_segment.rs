@@ -11,22 +11,21 @@ impl HasPath for () {
 }
 
 pub trait HasPathSegment {
-    fn path_segment(&self) -> &String;
+    fn path_segment(&self) -> String;
 
     fn is(&self, identifier: impl PartialEq<String>) -> bool {
-        identifier.eq(self.path_segment())
+        identifier.eq(&self.path_segment())
     }
-
 }
 
 impl<T: HasPathSegment> HasPathSegment for &T {
-    fn path_segment(&self) -> &String {
+    fn path_segment(&self) -> String {
         (*self).path_segment()
     }
 }
 
 impl<T: HasPathSegment> HasPathSegment for &mut T {
-    fn path_segment(&self) -> &String {
+    fn path_segment(&self) -> String {
         (**self).path_segment()
     }
 }

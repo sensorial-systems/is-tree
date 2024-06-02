@@ -8,7 +8,7 @@ pub trait HasGet {
           T: HasPathSegment
     {
         let segment = segment.into();
-        self.branches::<T>().find(|value| value.path_segment() == &segment)
+        self.branches::<T>().find(|value| value.path_segment() == segment)
     }
 }
 
