@@ -1,3 +1,5 @@
+[![](https://dcbadge.vercel.app/api/server/rzaesS82MT)](https://discord.gg/rzaesS82MT)
+
 ### is-tree
 
 Convert everything into a tree structure that supports multi-type visitors for tree iterators and relative access.
