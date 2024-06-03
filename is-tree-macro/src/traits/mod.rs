@@ -18,6 +18,22 @@ pub trait AttributeQuery {
         }).collect()
     }
 
+    fn attribute_group(&self, path: Vec<&str>) -> Vec<syn::Path> {
+        self.attributes().iter().filter_map(|attr| {
+            if let (true, Ok(meta)) = (attr.path().is_ident(&path[0]), attr.parse_args::<syn::MetaList>()) {
+                if meta.path.is_ident(&path[1]) {
+                    let mut paths = Vec::new();
+                    meta.parse_nested_meta(|nested| {
+                        paths.push(nested.path.clone());
+                        Ok(())
+                    }).ok();
+                    return Some(paths);
+                }
+            }
+            None
+        }).flatten().collect()
+    }
+
     fn has_attribute(&self, path: Vec<&str>) -> bool {
         self
             .attributes()

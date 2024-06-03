@@ -1,3 +1,5 @@
+use syn::PathArguments;
+
 use crate::traits::AttributeQuery;
 
 pub struct Field {
@@ -8,7 +10,12 @@ impl Field {
     pub fn as_collection(&self) -> Option<&syn::Path> {
         if self.is_any_type_of(&["Vec", "Option"]) {
             if let syn::Type::Path(syn::TypePath { path, .. }) = &self.field.ty {
-                return Some(path);
+                let segment = path.segments.last().expect("Failed to get last segment");
+                if let PathArguments::AngleBracketed(arguments) = &segment.arguments {
+                    if let syn::GenericArgument::Type(syn::Type::Path(syn::TypePath { path, .. })) = arguments.args.first().expect("Failed to get first argument") {
+                        return Some(path);
+                    }
+                }
             }
         }
         None

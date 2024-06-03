@@ -43,14 +43,14 @@ impl Derive for Structure {
     fn derive(&mut self) -> proc_macro2::TokenStream {
         let has_path_segment = has_path_segment::impl_has_path_segment(self);
         let has_branches = has_branches::impl_branches(self);
-        let has_get = has_get::impl_has_get(self);
-        let knows_owned = knows_owned::impl_knows_owned(self);
-        let has_type_iterator = has_type_iterator::impl_has_type_iterator(self);
-        let knows_relative_type = knows_relative_type::impl_knows_relative_type(self);
-        let knows_visitor = knows_visitor::impl_knows_visitor(self);
+        // let has_get = has_get::impl_has_get(self);
+        // let knows_owned = knows_owned::impl_knows_owned(self);
+        // let has_type_iterator = has_type_iterator::impl_has_type_iterator(self);
+        // let knows_relative_type = knows_relative_type::impl_knows_relative_type(self);
+        // let knows_visitor = knows_visitor::impl_knows_visitor(self);
         quote! {
             #has_path_segment
-            // #has_branches
+            #has_branches
             // #has_get
             // #knows_owned
             // #has_type_iterator

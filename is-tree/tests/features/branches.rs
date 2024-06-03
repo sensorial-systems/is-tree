@@ -5,6 +5,7 @@ use is_tree::*;
 pub struct Library {
     #[tree(path_segment)]
     pub name: String,
+    #[tree(branch(Module))]
     pub root_module: Module
 }
 
@@ -13,18 +14,6 @@ impl Library {
         let name = String::from("library");
         let root_module = Module::mock();
         Self { name, root_module }
-    }
-}
-
-impl<'a> HasBranches<&'a Module> for &'a Library {
-    fn branches_impl(self) -> impl Iterator<Item = &'a Module> {
-        std::iter::once(&self.root_module)
-    }
-}
-
-impl<'a> HasBranches<&'a mut Module> for &'a mut Library {
-    fn branches_impl(self) -> impl Iterator<Item = &'a mut Module> {
-        std::iter::once(&mut self.root_module)
     }
 }
 
@@ -65,14 +54,6 @@ impl From<&str> for Library {
 }
 
 #[derive(Debug, Default, IsTree)]
-pub struct Module {
-    #[tree(path_segment)]
-    pub name: String,
-    pub modules: Vec<Module>,
-    pub functions: Vec<Function>
-}
-
-#[derive(Debug, Default, IsTree)]
 pub struct Function {
     #[tree(path_segment)]
     pub name: String
@@ -85,10 +66,20 @@ impl From<&str> for Function {
     }
 }
 
+#[derive(Debug, Default, IsTree)]
+pub struct Module {
+    #[tree(path_segment)]
+    pub name: String,
+    #[tree(branch(Module))]
+    pub modules: Vec<Module>,
+    #[tree(branch(Function))]
+    pub functions: Vec<Function>
+}
+
 impl Module {
     pub fn mock() -> Self {
         let mut branch = Self::from("");
-        branch.add_branch(String::from("math"));
+        branch.add_branch(String::from("math")); // Rename "" to "math".
         branch.add_branch(Module::from("geometry"))
             .add_branch(Module::from("shapes"));
         branch.add_branch(Module::from("algebra"))
@@ -97,15 +88,12 @@ impl Module {
     }
 }
 
-impl<'a> HasBranches<&'a Module> for &'a Module {
-    fn branches_impl(self) -> impl Iterator<Item = &'a Module> {
-        self.modules.iter()
-    }
-}
-
-impl<'a> HasBranches<&'a mut Module> for &'a mut Module {
-    fn branches_impl(self) -> impl Iterator<Item = &'a mut Module> {
-        self.modules.iter_mut()
+impl From<&str> for Module {
+    fn from(name: &str) -> Self {
+        let name = name.into();
+        let modules = Default::default();
+        let functions = Default::default();
+        Self { name, modules, functions }
     }
 }
 
@@ -113,18 +101,6 @@ impl AddBranch<Module> for Module {
     fn add_branch(&mut self, branch: Module) -> &mut Module {
         self.modules.push(branch);
         self.modules.last_mut().unwrap()
-    }
-}
-
-impl<'a> HasBranches<&'a Function> for &'a Module {
-    fn branches_impl(self) -> impl Iterator<Item = &'a Function> {
-        self.functions.iter()
-    }
-}
-
-impl<'a> HasBranches<&'a mut Function> for &'a mut Module {
-    fn branches_impl(self) -> impl Iterator<Item = &'a mut Function> {
-        self.functions.iter_mut()
     }
 }
 
@@ -155,15 +131,6 @@ impl AddBranch<String> for Module {
     fn add_branch(&mut self, name: String) -> &mut String {
         self.name = name;
         &mut self.name
-    }
-}
-
-impl From<&str> for Module {
-    fn from(name: &str) -> Self {
-        let name = name.into();
-        let modules = Default::default();
-        let functions = Default::default();
-        Self { name, modules, functions }
     }
 }
 
@@ -254,6 +221,15 @@ impl<'a> HasBranches<Visitors<'a>> for &'a Visitors<'a> {
         }
     }
 }
+
+// visitor!{
+//     #[derive(Debug)]
+//     pub enum Visitors {
+//         Library(Visits = String, Module, Function),
+//         Module(Visits = String, Module, Function), 
+//         Function(Visits = Function)
+//     }
+// }
 
 #[derive(Debug, EnumAsInner)]
 pub enum VisitorsMut<'a> {
@@ -386,48 +362,12 @@ impl<'a> HasParent for Visitors<'a> {
     }
 }
 
-unsafe impl<'a> UnsafeHasParent for VisitorsMut<'a> {
-    unsafe fn parent_mut(&mut self) -> Option<Self> {
-        match self {
-            VisitorsMut::Library(_) => None,
-            VisitorsMut::Module(visitor) => {
-                let visitor: Visitors = *visitor.parent.clone();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-            VisitorsMut::Function(visitor) => {
-                let visitor: Visitors = *visitor.parent.clone();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-        }
-    }
-}
-
 impl<'a> HasRoot for Visitors<'a> {
     fn root(&self) -> Self {
         match self {
             Visitors::Library(_) => self.clone(),
             Visitors::Module(visitor) => visitor.parent.root(),
             Visitors::Function(visitor) => visitor.parent.root()
-        }
-    }
-}
-
-unsafe impl<'a> UnsafeHasRoot for VisitorsMut<'a> {
-    unsafe fn root_mut(&mut self) -> Option<Self> {
-        match self {
-            VisitorsMut::Library(_) => None,
-            VisitorsMut::Module(visitor) => {
-                let visitor: Visitors = visitor.parent.root();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-            VisitorsMut::Function(visitor) => {
-                let visitor: Visitors = visitor.parent.root();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
         }
     }
 }
@@ -462,6 +402,43 @@ fn relative_access() {
 
     assert_eq!(library_visitor.relative(vec!["math", "algebra", "exponential"]).unwrap().path_segment(), "exponential");
 }
+
+unsafe impl<'a> UnsafeHasParent for VisitorsMut<'a> {
+    unsafe fn parent_mut(&mut self) -> Option<Self> {
+        match self {
+            VisitorsMut::Library(_) => None,
+            VisitorsMut::Module(visitor) => {
+                let visitor: Visitors = *visitor.parent.clone();
+                let visitor = std::mem::transmute(visitor);
+                Some(visitor)
+            },
+            VisitorsMut::Function(visitor) => {
+                let visitor: Visitors = *visitor.parent.clone();
+                let visitor = std::mem::transmute(visitor);
+                Some(visitor)
+            },
+        }
+    }
+}
+
+unsafe impl<'a> UnsafeHasRoot for VisitorsMut<'a> {
+    unsafe fn root_mut(&mut self) -> Option<Self> {
+        match self {
+            VisitorsMut::Library(_) => None,
+            VisitorsMut::Module(visitor) => {
+                let visitor: Visitors = visitor.parent.root();
+                let visitor = std::mem::transmute(visitor);
+                Some(visitor)
+            },
+            VisitorsMut::Function(visitor) => {
+                let visitor: Visitors = visitor.parent.root();
+                let visitor = std::mem::transmute(visitor);
+                Some(visitor)
+            },
+        }
+    }
+}
+
 
 #[test]
 fn unsafe_relative_access() {
