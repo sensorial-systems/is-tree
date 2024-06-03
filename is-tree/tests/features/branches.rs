@@ -135,25 +135,11 @@ fn get() {
 
 visitor! {
     pub enum Visitors, VisitorsMut {
-        Root(Library),
+        Root(Library visits [Module]),
         Branches(
-            Module, 
+            Module visits [Module, Function],
             Function
         )
-    }
-}
-
-impl<'a> HasBranches<Visitors<'a>> for &'a Visitors<'a> {
-    fn branches_impl(self) -> impl Iterator<Item = Visitors<'a>> {
-        match self {
-            Visitors::Library(visitor) => Box::new(visitor.value.branches::<&Module>().map(|branch| Visitor::new(self.clone().into(), branch).into())) as Box<dyn Iterator<Item = _>>,
-            Visitors::Module(visitor) => {
-                let iterator = visitor.value.branches::<&Module>().map(|branch| Visitor::new(self.clone().into(), branch).into())
-                    .chain(visitor.value.branches::<&Function>().map(|branch| Visitor::new(self.clone().into(), branch).into()));
-                Box::new(iterator) as Box<dyn Iterator<Item = _>>
-            },
-            Visitors::Function(_) => Box::new(std::iter::empty()),
-        }
     }
 }
 
@@ -168,8 +154,10 @@ impl<'a> HasBranches<VisitorsMut<'a>> for &'a mut VisitorsMut<'a> {
             VisitorsMut::Module(visitor) => {
                 let parent_clone = parent.clone();
                 let other_visitor = unsafe { longer_mut(visitor) };
+
                 let iterator = visitor.value.branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into());
                 let parent_clone = parent.clone();
+
                 let visitor = other_visitor;
                 let iterator = iterator.chain(visitor.value.branches::<&mut Function>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into()));
                 Box::new(iterator) as Box<dyn Iterator<Item = _>>

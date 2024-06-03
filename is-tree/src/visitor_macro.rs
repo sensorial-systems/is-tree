@@ -1,21 +1,36 @@
 #[macro_export]
+macro_rules! chain {
+    () => {
+        std::iter::empty()
+    };
+
+    ($x:expr) => {
+        $x
+    };
+
+    ($x:expr, $($xs:expr),+) => {
+        $x.chain(chain!($($xs),+))
+    };
+}
+
+#[macro_export]
 macro_rules! visitor {
     (
-        pub enum $name:ident, $name_mut:ident {
-            Root($root:ident),
+        $($access:tt)? enum $name:ident, $name_mut:ident {
+            Root($root:ident $(visits [$($root_host:ident),*])?),
             Branches(
-                $($branch:ident),*
+                $($branch:ident $(visits [$($branch_host:ident),*])?),*
             )
         }
     ) => {
-        #[derive(Clone, Debug, EnumAsInner)]
-        pub enum $name<'a> {
+        #[derive(Clone, EnumAsInner)]
+        $($access)? enum $name<'a> {
             $root(Visitor<(), &'a $root>),
             $($branch(Visitor<Box<$name<'a>>, &'a $branch>)),*
         }
 
-        #[derive(Debug, EnumAsInner)]
-        pub enum $name_mut<'a> {
+        #[derive(EnumAsInner)]
+        $($access)? enum $name_mut<'a> {
             $root(Visitor<(), &'a mut $root>),
             $($branch(Visitor<Box<$name<'a>>, &'a mut $branch>)),*
         }
@@ -152,6 +167,33 @@ macro_rules! visitor {
                         let visitor: $name = visitor.parent.root();
                         let visitor = std::mem::transmute(visitor);
                         Some(visitor)
+                    }),*
+                }
+            }
+        }
+
+        impl<'a> HasBranches<$name<'a>> for &'a $name<'a> {
+            fn branches_impl(self) -> impl Iterator<Item = $name<'a>> {
+                match self {
+                    $name::$root(visitor) => Box::new(
+                        chain!(
+                            $(
+                                $(
+                                    visitor.value.branches::<&$root_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                                )*
+                            )?
+                    )
+                    ) as Box<dyn Iterator<Item = _>>,
+                    $($name::$branch(visitor) => {
+                        Box::new(
+                            chain!(
+                                $(
+                                    $(
+                                        visitor.value.branches::<&$branch_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                                    ),*
+                                )?
+                            )
+                        ) as Box<dyn Iterator<Item = _>>
                     }),*
                 }
             }
