@@ -122,26 +122,26 @@ fn branches() {
     let mut library = Library::mock();
 
     library.branches_mut::<&mut String>().for_each(|s| *s = s.to_uppercase());
-    assert_eq!(library.branches_ref::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["LIBRARY", "MATH", "GEOMETRY", "SHAPES", "ALGEBRA", "EXPONENTIAL"]);
-    assert_eq!(library.branches_ref::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["MATH"]);
+    assert_eq!(library.branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["LIBRARY", "MATH", "GEOMETRY", "SHAPES", "ALGEBRA", "EXPONENTIAL"]);
+    assert_eq!(library.branches::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["MATH"]);
 
-    assert_eq!(library.root_module.branches_ref::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["MATH", "GEOMETRY", "SHAPES", "ALGEBRA", "EXPONENTIAL"]);
-    assert_eq!(library.root_module.branches_ref::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "ALGEBRA"]);
+    assert_eq!(library.root_module.branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["MATH", "GEOMETRY", "SHAPES", "ALGEBRA", "EXPONENTIAL"]);
+    assert_eq!(library.root_module.branches::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "ALGEBRA"]);
 }
 
 #[test]
 fn get() {
     let mut library = Library::mock();
-    assert_eq!(library.branches_ref::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["math"]);
+    assert_eq!(library.branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["math"]);
     if let Some(s) = library.get_mut::<&mut String>("math") { *s = s.to_uppercase() }
     assert_eq!(library.get::<&String>("MATH").unwrap(), "MATH");
-    assert_eq!(library.branches_ref::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["MATH"]);
+    assert_eq!(library.branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["MATH"]);
 
-    assert_eq!(library.root_module.branches_ref::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["geometry", "algebra"]);
+    assert_eq!(library.root_module.branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["geometry", "algebra"]);
     if let Some(s) = library.root_module.get_mut::<&mut String>("geometry") { *s = s.to_uppercase() }
-    assert_eq!(library.root_module.branches_ref::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "algebra"]);
+    assert_eq!(library.root_module.branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "algebra"]);
 
-    assert_eq!((library.root_module.get::<&Module>("algebra").unwrap()).branches_ref::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
+    assert_eq!((library.root_module.get::<&Module>("algebra").unwrap()).branches::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
 }
 
 #[test]
@@ -150,7 +150,7 @@ fn visitor() {
 
     let root_visitor = Visitors::from(&branch);
     assert_eq!(root_visitor.as_library().unwrap().value.name, "library");
-    assert_eq!((&root_visitor).branches().map(|visitor| &visitor.as_module().unwrap().value.name).collect::<Vec<_>>(), vec!["math"]);
+    assert_eq!((&root_visitor).branches_impl2().map(|visitor| &visitor.as_module().unwrap().value.name).collect::<Vec<_>>(), vec!["math"]);
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "geometry", "math", "library"]);
@@ -166,7 +166,7 @@ fn visitor() {
 
     let root_visitor = Visitors::from(&branch);
     assert_eq!(root_visitor.as_library().unwrap().value.name, "library");
-    assert_eq!(root_visitor.branches_ref::<Visitors>().map(|visitor| &visitor.as_module().unwrap().value.name).collect::<Vec<_>>(), vec!["MATH"]);
+    assert_eq!(root_visitor.branches::<Visitors>().map(|visitor| &visitor.as_module().unwrap().value.name).collect::<Vec<_>>(), vec!["MATH"]);
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "geometry", "MATH", "library"]);
@@ -189,9 +189,9 @@ fn relative_access() {
     let branch = Library::mock();
 
     let library_visitor = Visitors::from(&branch);
-    let math_visitor = library_visitor.branches_ref::<Visitors>().next().unwrap();
-    let geometry_visitor = math_visitor.branches_ref::<Visitors>().next().unwrap();
-    let shapes_visitor = geometry_visitor.branches_ref::<Visitors>().next().unwrap();
+    let math_visitor = library_visitor.branches::<Visitors>().next().unwrap();
+    let geometry_visitor = math_visitor.branches::<Visitors>().next().unwrap();
+    let shapes_visitor = geometry_visitor.branches::<Visitors>().next().unwrap();
     assert_eq!(shapes_visitor.path_segment(), "shapes");
     assert_eq!(shapes_visitor.parent().unwrap().path_segment(), "geometry");
     assert_eq!(shapes_visitor.parent().unwrap().parent().unwrap().path_segment(), "math");

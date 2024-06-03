@@ -4,7 +4,7 @@ pub trait HasBranches<T> {
 
 
 pub trait HasBranchesAPI {
-    fn branches<T>(self) -> impl Iterator<Item = T>
+    fn branches_impl2<T>(self) -> impl Iterator<Item = T>
     where Self: HasBranches<T> + Sized
     {
         self.branches_impl()
@@ -14,7 +14,7 @@ pub trait HasBranchesAPI {
 impl<T> HasBranchesAPI for T {}
 
 pub trait HasBranchesAPIV2<'a> {
-    fn branches_ref<T>(&'a self) -> impl Iterator<Item = T>
+    fn branches<T>(&'a self) -> impl Iterator<Item = T>
     where &'a Self: HasBranches<T>,
           T: 'a
     {

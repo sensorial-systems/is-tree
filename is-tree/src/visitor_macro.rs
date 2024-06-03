@@ -179,7 +179,7 @@ macro_rules! visitor {
                         chain!(
                             $(
                                 $(
-                                    visitor.value.branches::<&$root_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                                    visitor.value.branches_impl2::<&$root_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
                                 )*
                             )?
                         )
@@ -189,7 +189,7 @@ macro_rules! visitor {
                             chain!(
                                 $(
                                     $(
-                                        visitor.value.branches::<&$branch_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                                        visitor.value.branches_impl2::<&$branch_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
                                     ),*
                                 )?
                             )
@@ -210,7 +210,7 @@ macro_rules! visitor {
                                     {
                                         let parent_clone = parent.clone();
                                         let visitor = unsafe { longer_mut(visitor) };
-                                        visitor.value.branches::<&mut $root_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
+                                        visitor.value.branches_impl2::<&mut $root_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
                                     }
                                 )*
                             )?
@@ -224,7 +224,7 @@ macro_rules! visitor {
                                         {
                                             let parent_clone = parent.clone();
                                             let visitor = unsafe { longer_mut(visitor) };
-                                            visitor.value.branches::<&mut $branch_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
+                                            visitor.value.branches_impl2::<&mut $branch_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
                                         }
                                     ),*
                                 )?

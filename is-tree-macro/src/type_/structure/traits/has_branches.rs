@@ -46,7 +46,7 @@ pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::Token
                         return Some(quote! { self.#ident.iter() })
                     } else { // e.g. Branch != Module and Vec<Module>
                         let branch = &branch.path;
-                        return Some(quote! { self.#ident.iter().flat_map(|branch| branch.branches::<&#branch>()).collect::<Vec<_>>() })
+                        return Some(quote! { self.#ident.iter().flat_map(|branch| branch.branches_impl2::<&#branch>()).collect::<Vec<_>>() })
                     }
                 }
             } else if field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<HashSet<Path>>().contains(branch) { // e.g. Is not Vec<Module> and #[tree(branch(Module))]
@@ -54,7 +54,7 @@ pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::Token
                     return Some(quote! { std::iter::once(&self.#ident) })
                 } else { // e.g. Branch != Module
                     let branch = &branch.path;
-                    return Some(quote! { (&self.#ident).branches::<&#branch>() })
+                    return Some(quote! { (&self.#ident).branches_impl2::<&#branch>() })
                 }
             }
             None
@@ -70,7 +70,7 @@ pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::Token
                         return Some(quote! { self.#ident.iter_mut() })
                     } else {
                         let branch = &branch.path;
-                        return Some(quote! { self.#ident.iter_mut().flat_map(|branch| branch.branches::<&mut #branch>()).collect::<Vec<_>>() })
+                        return Some(quote! { self.#ident.iter_mut().flat_map(|branch| branch.branches_impl2::<&mut #branch>()).collect::<Vec<_>>() })
                     }
                 }
             } else if field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<HashSet<Path>>().contains(branch) {
@@ -78,7 +78,7 @@ pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::Token
                     return Some(quote! { std::iter::once(&mut self.#ident) })
                 } else {
                     let branch = &branch.path;
-                    return Some(quote! { (&mut self.#ident).branches::<&mut #branch>() })
+                    return Some(quote! { (&mut self.#ident).branches_impl2::<&mut #branch>() })
                 }
             }
             None

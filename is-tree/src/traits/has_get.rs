@@ -1,4 +1,4 @@
-use crate::{HasBranches, HasBranchesAPI};
+use crate::traits::has_branches::{HasBranches, HasBranchesAPI};
 
 use crate::HasPathSegment;
 
@@ -8,7 +8,7 @@ pub trait HasGet {
           T: HasPathSegment
     {
         let segment = segment.into();
-        self.branches::<T>().find(|value| value.path_segment() == segment)
+        self.branches_impl2::<T>().find(|value| value.path_segment() == segment)
     }
 }
 

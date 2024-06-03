@@ -1,4 +1,4 @@
-use crate::*;
+use crate::traits::has_branches::{HasBranches, HasBranchesAPI};
 pub use crate::unsafe_::*;
 
 pub struct TreeIterator<Visitor> {
@@ -23,7 +23,7 @@ impl<'a, Visitor> TreeIterator<Visitor>
           Visitor::Borrow: HasBranches<Visitor>,
     {
         unsafe { self.stack.push(visitor.unsafe_clone()); }
-        for child in unsafe { longer_ref(&visitor).borrow() }.branches::<Visitor>() {
+        for child in unsafe { longer_ref(&visitor).borrow() }.branches_impl2::<Visitor>() {
             let visitor = child.into();
             self.constant_build(visitor);
         }

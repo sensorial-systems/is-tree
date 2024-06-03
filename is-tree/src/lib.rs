@@ -1,9 +1,9 @@
 // #![doc = include_str!("../../README.md")]
 
-mod traits;
-mod path;
-mod visitor;
-mod tree_iterator;
+pub mod traits;
+pub mod path;
+pub mod visitor;
+pub mod tree_iterator;
 pub mod unsafe_;
 
 pub use traits::*;
