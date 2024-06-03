@@ -11,8 +11,8 @@ pub trait HasBranchesAPI {
     }
 }
 
+impl<T> HasBranchesAPI for T {}
+
 pub trait AddBranch<T> {
     fn add_branch(&mut self, value: T) -> &mut T;
 }
-
-impl<T> HasBranchesAPI for T {}
