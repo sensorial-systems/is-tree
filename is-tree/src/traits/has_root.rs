@@ -4,5 +4,5 @@ pub trait HasRoot {
 
 // By design, accessing a Visitor parent is unsafe.
 pub unsafe trait UnsafeHasRoot: Sized {
-    unsafe fn root_mut(&mut self) -> Option<Self>;
+    unsafe fn root_mut(&mut self) -> Self;
 }

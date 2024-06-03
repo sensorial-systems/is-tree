@@ -36,7 +36,7 @@ pub trait UnsafeHasRelative<'a>: Sized {
             let segment = segment.into();
             let mut visitor: Self = match segment.kind() {
                 PathSegment::Self_ => self.unsafe_clone(),
-                PathSegment::Root => self.root_mut()?,
+                PathSegment::Root => self.root_mut(),
                 PathSegment::Super => self.parent_mut()?,
                 PathSegment::Other(_) => self.get_impl::<Self>(segment)?
             };

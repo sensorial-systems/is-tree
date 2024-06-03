@@ -23,13 +23,13 @@ macro_rules! visitor {
             )
         }
     ) => {
-        #[derive(Clone, EnumAsInner)]
+        #[derive(Clone, $crate::prelude::EnumAsInner)]
         $($access)? enum $name<'a> {
             $root(Visitor<(), &'a $root>),
             $($branch(Visitor<Box<$name<'a>>, &'a $branch>)),*
         }
 
-        #[derive(EnumAsInner)]
+        #[derive($crate::prelude::EnumAsInner)]
         $($access)? enum $name_mut<'a> {
             $root(Visitor<(), &'a mut $root>),
             $($branch(Visitor<Box<$name<'a>>, &'a mut $branch>)),*
@@ -128,6 +128,24 @@ macro_rules! visitor {
             }
         }
 
+        impl<'a> HasPath for $name<'a> {
+            fn path(&self) -> Path {
+                match self {
+                    $name::$root(visitor) => visitor.path(),
+                    $($name::$branch(visitor) => visitor.parent.path().join(visitor.path_segment())),*
+                }
+            }
+        }        
+
+        impl<'a> HasPath for $name_mut<'a> {
+            fn path(&self) -> Path {
+                match self {
+                    $name_mut::$root(visitor) => visitor.path(),
+                    $($name_mut::$branch(visitor) => visitor.parent.path().join(visitor.path_segment())),*
+                }
+            }
+        }        
+
         impl<'a> HasParent for $name<'a> {
             fn parent(&self) -> Option<Self> {
                 match self {
@@ -160,13 +178,13 @@ macro_rules! visitor {
         }
         
         unsafe impl<'a> UnsafeHasRoot for $name_mut<'a> {
-            unsafe fn root_mut(&mut self) -> Option<Self> {
+            unsafe fn root_mut(&mut self) -> Self {
                 match self {
-                    $name_mut::Library(_) => None,
+                    $name_mut::Library(_) => self.unsafe_clone(),
                     $($name_mut::$branch(visitor) => {
                         let visitor: $name = visitor.parent.root();
                         let visitor = std::mem::transmute(visitor);
-                        Some(visitor)
+                        visitor
                     }),*
                 }
             }

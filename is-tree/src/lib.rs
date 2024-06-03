@@ -1,4 +1,6 @@
-// #![doc = include_str!("../../README.md")]
+#![doc = include_str!("../../README.md")]
+
+pub mod prelude;
 
 pub mod traits;
 pub mod path;
