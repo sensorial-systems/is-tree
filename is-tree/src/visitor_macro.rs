@@ -182,7 +182,7 @@ macro_rules! visitor {
                                     visitor.value.branches::<&$root_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
                                 )*
                             )?
-                    )
+                        )
                     ) as Box<dyn Iterator<Item = _>>,
                     $($name::$branch(visitor) => {
                         Box::new(
@@ -198,5 +198,41 @@ macro_rules! visitor {
                 }
             }
         }
+
+        impl<'a> HasBranches<$name_mut<'a>> for &'a mut $name_mut<'a> {
+            fn branches_impl(self) -> impl Iterator<Item = $name_mut<'a>> {
+                let parent = Box::new($name::from(&self));
+                match self {
+                    $name_mut::$root(visitor) => Box::new(
+                        chain!(
+                            $(
+                                $(
+                                    {
+                                        let parent_clone = parent.clone();
+                                        let visitor = unsafe { longer_mut(visitor) };
+                                        visitor.value.branches::<&mut $root_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
+                                    }
+                                )*
+                            )?
+                        )
+                    ) as Box<dyn Iterator<Item = _>>,
+                    $($name_mut::$branch(visitor) => {
+                        Box::new(
+                            chain!(
+                                $(
+                                    $(
+                                        {
+                                            let parent_clone = parent.clone();
+                                            let visitor = unsafe { longer_mut(visitor) };
+                                            visitor.value.branches::<&mut $branch_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
+                                        }
+                                    ),*
+                                )?
+                            )
+                        ) as Box<dyn Iterator<Item = _>>
+                    }),*
+                }
+            }
+        }        
     };
 }

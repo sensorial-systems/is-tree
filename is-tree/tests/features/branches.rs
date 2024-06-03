@@ -107,6 +107,16 @@ impl AddBranch<String> for Module {
     }
 }
 
+visitor! {
+    pub enum Visitors, VisitorsMut {
+        Root(Library visits [Module]),
+        Branches(
+            Module visits [Module, Function],
+            Function
+        )
+    }
+}
+
 #[test]
 fn branches() {
     let mut library = Library::mock();
@@ -131,40 +141,6 @@ fn get() {
     assert_eq!((&library.root_module).branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "algebra"]);
 
     assert_eq!(((&library.root_module).get::<&Module>("algebra").unwrap()).branches::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
-}
-
-visitor! {
-    pub enum Visitors, VisitorsMut {
-        Root(Library visits [Module]),
-        Branches(
-            Module visits [Module, Function],
-            Function
-        )
-    }
-}
-
-impl<'a> HasBranches<VisitorsMut<'a>> for &'a mut VisitorsMut<'a> {
-    fn branches_impl(self) -> impl Iterator<Item = VisitorsMut<'a>> {
-        let parent = Box::new(Visitors::from(&self));
-        match self {
-            VisitorsMut::Library(visitor) => {
-                let parent_clone = parent.clone();
-                Box::new(visitor.value.branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())) as Box<dyn Iterator<Item = _>>
-            },
-            VisitorsMut::Module(visitor) => {
-                let parent_clone = parent.clone();
-                let other_visitor = unsafe { longer_mut(visitor) };
-
-                let iterator = visitor.value.branches::<&mut Module>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into());
-                let parent_clone = parent.clone();
-
-                let visitor = other_visitor;
-                let iterator = iterator.chain(visitor.value.branches::<&mut Function>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into()));
-                Box::new(iterator) as Box<dyn Iterator<Item = _>>
-            },
-            VisitorsMut::Function(_) => Box::new(std::iter::empty()),
-        }
-    }
 }
 
 #[test]
