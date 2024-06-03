@@ -1,6 +1,6 @@
 ### is-tree
 
-Derive everything into a tree featured with multi-type visitors for tree iterators and relative access.
+Convert everything into a tree structure that supports multi-type visitors for tree iterators and relative access.
 
 ### Fully-featured example
 
