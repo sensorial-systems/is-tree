@@ -12,3 +12,5 @@ pub use visitor::*;
 pub use tree_iterator::*;
 
 pub use is_tree_macro::*;
+
+pub mod visitor_macro;

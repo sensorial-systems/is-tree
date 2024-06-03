@@ -133,60 +133,13 @@ fn get() {
     assert_eq!(((&library.root_module).get::<&Module>("algebra").unwrap()).branches::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
 }
 
-// visitor!{
-//     #[derive(Debug)]
-//     pub enum Visitors {
-//         Library(Visits = String, Module, Function),
-//         Module(Visits = String, Module, Function), 
-//         Function(Visits = Function)
-//     }
-// }
-
-#[derive(Clone, Debug, EnumAsInner)]
-pub enum Visitors<'a> {
-    Library(Visitor<(), &'a Library>),
-    Module(Visitor<Box<Visitors<'a>>, &'a Module>),
-    Function(Visitor<Box<Visitors<'a>>, &'a Function>),
-}
-
-unsafe impl<'a> UnsafeClone for Visitors<'a> {
-    unsafe fn unsafe_clone(&self) -> Self {
-        self.clone()
-    }
-}
-
-unsafe impl<'a> UnsafeBorrow<'a> for Visitors<'a> {
-    type Borrow = &'a Visitors<'a>;
-    unsafe fn borrow(&'a self) -> Self::Borrow {
-        self
-    }
-}
-
-impl<'a> From<&'a Library> for Visitors<'a> {
-    fn from(branch: &'a Library) -> Self {
-        Self::Library(Visitor::new((), branch))
-    }
-}
-
-impl<'a> From<Visitor<Box<Visitors<'a>>, &'a Module>> for Visitors<'a> {
-    fn from(visitor: Visitor<Box<Visitors<'a>>, &'a Module>) -> Self {
-        Self::Module(visitor)
-    }
-}
-
-impl<'a> From<Visitor<Box<Visitors<'a>>, &'a Function>> for Visitors<'a> {
-    fn from(visitor: Visitor<Box<Visitors<'a>>, &'a Function>) -> Self {
-        Self::Function(visitor)
-    }
-}
-
-impl<'a> HasPathSegment for Visitors<'a> {
-    fn path_segment(&self) -> String {
-        match self {
-            Visitors::Library(visitor) => visitor.path_segment(),
-            Visitors::Module(visitor) => visitor.path_segment(),
-            Visitors::Function(visitor) => visitor.path_segment(),
-        }
+visitor! {
+    pub enum Visitors, VisitorsMut {
+        Root(Library),
+        Branches(
+            Module, 
+            Function
+        )
     }
 }
 
@@ -200,65 +153,6 @@ impl<'a> HasBranches<Visitors<'a>> for &'a Visitors<'a> {
                 Box::new(iterator) as Box<dyn Iterator<Item = _>>
             },
             Visitors::Function(_) => Box::new(std::iter::empty()),
-        }
-    }
-}
-
-#[derive(Debug, EnumAsInner)]
-pub enum VisitorsMut<'a> {
-    Library(Visitor<(), &'a mut Library>),
-    Module(Visitor<Box<Visitors<'a>>, &'a mut Module>),
-    Function(Visitor<Box<Visitors<'a>>, &'a mut Function>),
-}
-
-unsafe impl<'a> UnsafeClone for VisitorsMut<'a> {
-    unsafe fn unsafe_clone(&self) -> Self {
-        let visitor: &Visitors = std::mem::transmute(self);
-        let visitor = visitor.clone();
-        std::mem::transmute(visitor)
-    }
-}
-
-unsafe impl<'a> UnsafeBorrow<'a> for VisitorsMut<'a> {
-    type Borrow = &'a mut VisitorsMut<'a>;
-    unsafe fn borrow(&'a self) -> Self::Borrow {
-        #[allow(mutable_transmutes)]
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl<'a> From<&'a mut Library> for VisitorsMut<'a> {
-    fn from(branch: &'a mut Library) -> Self {
-        Self::Library(Visitor::new((), branch))
-    }
-}
-
-impl<'a> From<Visitor<Box<Visitors<'a>>, &'a mut Module>> for VisitorsMut<'a> {
-    fn from(visitor: Visitor<Box<Visitors<'a>>, &'a mut Module>) -> Self {
-        Self::Module(visitor)
-    }
-}
-
-impl<'a> From<Visitor<Box<Visitors<'a>>, &'a mut Function>> for VisitorsMut<'a> {
-    fn from(visitor: Visitor<Box<Visitors<'a>>, &'a mut Function>) -> Self {
-        Self::Function(visitor)
-    }
-}
-
-impl<'a> From<&&'a mut VisitorsMut<'a>> for Visitors<'a> {
-    fn from(visitor: &&'a mut VisitorsMut<'a>) -> Self {
-        unsafe {
-            (*(std::mem::transmute::<_, &&Visitors<'a>>(visitor))).clone()
-        }
-    }
-}
-
-impl<'a> HasPathSegment for VisitorsMut<'a> {
-    fn path_segment(&self) -> String {
-        match self {
-            VisitorsMut::Library(visitor) => visitor.path_segment(),
-            VisitorsMut::Module(visitor) => visitor.path_segment(),
-            VisitorsMut::Function(visitor) => visitor.path_segment(),
         }
     }
 }
@@ -325,26 +219,6 @@ fn visitor() {
     assert_eq!(iterator.map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["EXPONENTIAL", "ALGEBRA", "SHAPES", "GEOMETRY", "MATH", "LIBRARY"]);
 }
 
-impl<'a> HasParent for Visitors<'a> {
-    fn parent(&self) -> Option<Self> {
-        match self {
-            Visitors::Library(_) => None,
-            Visitors::Module(visitor) => Some((*visitor.parent).clone()),
-            Visitors::Function(visitor) => Some((*visitor.parent).clone())
-        }
-    }
-}
-
-impl<'a> HasRoot for Visitors<'a> {
-    fn root(&self) -> Self {
-        match self {
-            Visitors::Library(_) => self.clone(),
-            Visitors::Module(visitor) => visitor.parent.root(),
-            Visitors::Function(visitor) => visitor.parent.root()
-        }
-    }
-}
-
 #[test]
 fn relative_access() {
     let branch = Library::mock();
@@ -375,43 +249,6 @@ fn relative_access() {
 
     assert_eq!(library_visitor.relative(vec!["math", "algebra", "exponential"]).unwrap().path_segment(), "exponential");
 }
-
-unsafe impl<'a> UnsafeHasParent for VisitorsMut<'a> {
-    unsafe fn parent_mut(&mut self) -> Option<Self> {
-        match self {
-            VisitorsMut::Library(_) => None,
-            VisitorsMut::Module(visitor) => {
-                let visitor: Visitors = *visitor.parent.clone();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-            VisitorsMut::Function(visitor) => {
-                let visitor: Visitors = *visitor.parent.clone();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-        }
-    }
-}
-
-unsafe impl<'a> UnsafeHasRoot for VisitorsMut<'a> {
-    unsafe fn root_mut(&mut self) -> Option<Self> {
-        match self {
-            VisitorsMut::Library(_) => None,
-            VisitorsMut::Module(visitor) => {
-                let visitor: Visitors = visitor.parent.root();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-            VisitorsMut::Function(visitor) => {
-                let visitor: Visitors = visitor.parent.root();
-                let visitor = std::mem::transmute(visitor);
-                Some(visitor)
-            },
-        }
-    }
-}
-
 
 #[test]
 fn unsafe_relative_access() {
