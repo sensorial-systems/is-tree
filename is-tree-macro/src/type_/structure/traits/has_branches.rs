@@ -1,3 +1,5 @@
+// TODO: Clean this up.
+
 use std::{collections::HashSet, hash::{Hash, Hasher}};
 
 use quote::{quote, ToTokens};
@@ -30,53 +32,59 @@ impl Eq for Path {}
 
 pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::TokenStream {
     let structure_name = &structure.name;
-
-    // let mut consts = Vec::new();
-    // let mut muts = Vec::new();
-
-    // let mut branches = HashSet::new();
     
     let branches: HashSet<Path> = structure.fields.iter().map(|field| {
         field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<Vec<Path>>()
     }).flatten().collect();
-    // for field in &structure.fields {
-    //     if field.has_attribute(vec!["tree", "branch"]) {
-    //         branches.insert(TokenStream::from(field.field.ty.to_token_stream()));
-    //         let ident = field.field.ident.as_ref().expect("Unamed field not supported");
-    //         if field.as_collection().is_some() {
-    //             consts.push(quote! { self.#ident.iter().filter_map(|item| item.try_into().ok()) });
-    //             muts.push(quote! { self.#ident.iter_mut().filter_map(|item| item.try_into().ok()) });
-    //         } else {
-    //             consts.push(quote! { std::iter::once(&self.#ident) });
-    //             muts.push(quote! { std::iter::once(&mut self.#ident) });
-    //         }
-    //     }
-    // }
 
-    branches.iter().map(|branch| {
-        let const_chain = structure.fields.iter().filter_map(|field| {
+    branches.iter().map(|branch| { // e.g. Module
+        let mut const_chain = structure.fields.iter().filter_map(|field| {
             let ident = &field.field.ident;
-            if let Some(path) = field.as_collection() {
-                if path.to_token_stream().to_string() == branch.path.to_token_stream().to_string() {
-                    return Some(quote! { self.#ident.iter() })
+            if let Some(path) = field.as_collection() { // e.g. Vec<Module>
+                if field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<HashSet<Path>>().contains(branch) { // e.g. #[tree(branch(Module))]
+                    if path.to_token_stream().to_string() == branch.path.to_token_stream().to_string() { // e.g. Branch == Module and Vec<Module>
+                        return Some(quote! { self.#ident.iter() })
+                    } else { // e.g. Branch != Module and Vec<Module>
+                        let branch = &branch.path;
+                        return Some(quote! { self.#ident.iter().flat_map(|branch| branch.branches::<&#branch>()).collect::<Vec<_>>() })
+                    }
                 }
-            } else if field.field.ty.to_token_stream().to_string() == branch.path.to_token_stream().to_string() {
-                return Some(quote! { std::iter::once(&self.#ident) })
+            } else if field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<HashSet<Path>>().contains(branch) { // e.g. Is not Vec<Module> and #[tree(branch(Module))]
+                if field.field.ty.to_token_stream().to_string() == branch.path.to_token_stream().to_string() { // e.g. Branch == Module
+                    return Some(quote! { std::iter::once(&self.#ident) })
+                } else { // e.g. Branch != Module
+                    let branch = &branch.path;
+                    return Some(quote! { (&self.#ident).branches::<&#branch>() })
+                }
             }
             None
-        }).collect::<proc_macro2::TokenStream>();
+        });
+        let const_chain_first = const_chain.next().unwrap_or_default();
+        let const_chain = const_chain.fold(const_chain_first, |acc, iter| quote! { #acc.chain(#iter) });
 
-        let mut_chain = structure.fields.iter().filter_map(|field| {
+        let mut mut_chain = structure.fields.iter().filter_map(|field| {
             let ident = &field.field.ident;
             if let Some(path) = field.as_collection() {
-                if path.to_token_stream().to_string() == branch.path.to_token_stream().to_string() {
-                    return Some(quote! { self.#ident.iter_mut() })
+                if field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<HashSet<Path>>().contains(branch) {
+                    if path.to_token_stream().to_string() == branch.path.to_token_stream().to_string() {
+                        return Some(quote! { self.#ident.iter_mut() })
+                    } else {
+                        let branch = &branch.path;
+                        return Some(quote! { self.#ident.iter_mut().flat_map(|branch| branch.branches::<&mut #branch>()).collect::<Vec<_>>() })
+                    }
                 }
-            } else if field.field.ty.to_token_stream().to_string() == branch.path.to_token_stream().to_string() {
-                return Some(quote! { std::iter::once(&mut self.#ident) })
+            } else if field.attribute_group(vec!["tree", "branch"]).iter().cloned().map(Path::from).collect::<HashSet<Path>>().contains(branch) {
+                if field.field.ty.to_token_stream().to_string() == branch.path.to_token_stream().to_string() {
+                    return Some(quote! { std::iter::once(&mut self.#ident) })
+                } else {
+                    let branch = &branch.path;
+                    return Some(quote! { (&mut self.#ident).branches::<&mut #branch>() })
+                }
             }
             None
-        }).collect::<proc_macro2::TokenStream>();
+        });
+        let mut_chain_first = mut_chain.next().unwrap_or_default();
+        let mut_chain = mut_chain.fold(mut_chain_first, |acc, iter| quote! { #acc.chain(#iter) });
 
         let branch = &branch.path;
         quote! {

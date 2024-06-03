@@ -4,8 +4,9 @@ use is_tree::*;
 #[derive(Debug, IsTree)]
 pub struct Library {
     #[tree(path_segment)]
+    #[tree(branch(String))]
     pub name: String,
-    #[tree(branch(Module))]
+    #[tree(branch(Module, String))]
     pub root_module: Module
 }
 
@@ -21,20 +22,6 @@ impl AddBranch<Module> for Library {
     fn add_branch(&mut self, module: Module) -> &mut Module {
         self.root_module = module;
         &mut self.root_module
-    }
-}
-
-impl<'a> HasBranches<&'a String> for &'a Library {
-    fn branches_impl(self) -> impl Iterator<Item = &'a String> {
-        std::iter::once(&self.name)
-            .chain((&self.root_module).branches::<&String>())
-    }
-}
-
-impl<'a> HasBranches<&'a mut String> for &'a mut Library {
-    fn branches_impl(self) -> impl Iterator<Item = &'a mut String> {
-        std::iter::once(&mut self.name)
-            .chain((&mut self.root_module).branches::<&mut String>())
     }
 }
 
@@ -56,6 +43,7 @@ impl From<&str> for Library {
 #[derive(Debug, Default, IsTree)]
 pub struct Function {
     #[tree(path_segment)]
+    #[tree(branch(String))]
     pub name: String
 }
 
@@ -69,10 +57,11 @@ impl From<&str> for Function {
 #[derive(Debug, Default, IsTree)]
 pub struct Module {
     #[tree(path_segment)]
+    #[tree(branch(String))]
     pub name: String,
-    #[tree(branch(Module))]
+    #[tree(branch(Module, String))]
     pub modules: Vec<Module>,
-    #[tree(branch(Function))]
+    #[tree(branch(Function, String))]
     pub functions: Vec<Function>
 }
 
@@ -111,22 +100,6 @@ impl AddBranch<Function> for Module {
     }
 }
 
-impl<'a> HasBranches<&'a String> for &'a Module {
-    fn branches_impl(self) -> impl Iterator<Item = &'a String> {
-        std::iter::once(&self.name)
-            .chain(self.modules.iter().map(|branch| &branch.name))
-            .chain(self.functions.iter().map(|branch| &branch.name))
-    }
-}
-
-impl<'a> HasBranches<&'a mut String> for &'a mut Module {
-    fn branches_impl(self) -> impl Iterator<Item = &'a mut String> {
-        std::iter::once(&mut self.name)
-            .chain(self.modules.iter_mut().map(|branch| &mut branch.name))
-            .chain(self.functions.iter_mut().map(|branch| &mut branch.name))
-    }
-}
-
 impl AddBranch<String> for Module {
     fn add_branch(&mut self, name: String) -> &mut String {
         self.name = name;
@@ -139,10 +112,10 @@ fn branches() {
     let mut library = Library::mock();
 
     (&mut library).branches::<&mut String>().for_each(|s| *s = s.to_uppercase());
-    assert_eq!((&library).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["LIBRARY", "MATH", "GEOMETRY", "ALGEBRA"]);
+    assert_eq!((&library).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["LIBRARY", "MATH", "GEOMETRY", "SHAPES", "ALGEBRA", "EXPONENTIAL"]);
     assert_eq!((&library).branches::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["MATH"]);
 
-    assert_eq!((&library.root_module).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["MATH", "GEOMETRY", "ALGEBRA"]);
+    assert_eq!((&library.root_module).branches::<&String>().map(|s| s.as_str()).collect::<Vec<_>>(), vec!["MATH", "GEOMETRY", "SHAPES", "ALGEBRA", "EXPONENTIAL"]);
     assert_eq!((&library.root_module).branches::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "ALGEBRA"]);
 }
 
@@ -159,6 +132,15 @@ fn get() {
 
     assert_eq!(((&library.root_module).get::<&Module>("algebra").unwrap()).branches::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
 }
+
+// visitor!{
+//     #[derive(Debug)]
+//     pub enum Visitors {
+//         Library(Visits = String, Module, Function),
+//         Module(Visits = String, Module, Function), 
+//         Function(Visits = Function)
+//     }
+// }
 
 #[derive(Clone, Debug, EnumAsInner)]
 pub enum Visitors<'a> {
@@ -221,15 +203,6 @@ impl<'a> HasBranches<Visitors<'a>> for &'a Visitors<'a> {
         }
     }
 }
-
-// visitor!{
-//     #[derive(Debug)]
-//     pub enum Visitors {
-//         Library(Visits = String, Module, Function),
-//         Module(Visits = String, Module, Function), 
-//         Function(Visits = Function)
-//     }
-// }
 
 #[derive(Debug, EnumAsInner)]
 pub enum VisitorsMut<'a> {
