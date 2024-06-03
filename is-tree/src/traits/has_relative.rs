@@ -15,7 +15,7 @@ pub trait HasRelative<'a>: Sized {
                 PathSegment::Self_ => self.clone(),
                 PathSegment::Root => self.root(),
                 PathSegment::Super => self.parent()?,
-                PathSegment::Other(_) => self.get::<Self>(segment)?
+                PathSegment::Other(_) => self.get_impl::<Self>(segment)?
             };
             unsafe { crate::unsafe_::longer_ref(&visitor) }.relative(path)
         } else {
@@ -37,7 +37,7 @@ pub trait UnsafeHasRelative<'a>: Sized {
                 PathSegment::Self_ => self.unsafe_clone(),
                 PathSegment::Root => self.root_mut()?,
                 PathSegment::Super => self.parent_mut()?,
-                PathSegment::Other(_) => self.get::<Self>(segment)?
+                PathSegment::Other(_) => self.get_impl::<Self>(segment)?
             };
             crate::unsafe_::longer_mut(&mut visitor).relative_mut(path)
         } else {

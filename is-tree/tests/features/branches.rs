@@ -133,14 +133,15 @@ fn branches() {
 fn get() {
     let mut library = Library::mock();
     assert_eq!((&library).branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["math"]);
-    if let Some(s) = (&mut library).get::<&mut String>("math") { *s = s.to_uppercase() }
+    if let Some(s) = library.get_mut::<String>("math") { *s = s.to_uppercase() }
+    assert_eq!(library.get::<String>("MATH").unwrap(), "MATH");
     assert_eq!((&library).branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["MATH"]);
 
     assert_eq!((&library.root_module).branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["geometry", "algebra"]);
-    if let Some(s) = (&mut library.root_module).get::<&mut String>("geometry") { *s = s.to_uppercase() }
+    if let Some(s) = library.root_module.get_mut::<String>("geometry") { *s = s.to_uppercase() }
     assert_eq!((&library.root_module).branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["GEOMETRY", "algebra"]);
 
-    assert_eq!(((&library.root_module).get::<&Module>("algebra").unwrap()).branches::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
+    assert_eq!((library.root_module.get::<Module>("algebra").unwrap()).branches::<&Function>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["exponential"]);
 }
 
 #[test]
@@ -197,7 +198,7 @@ fn relative_access() {
     
     assert_eq!(shapes_visitor.root().path_segment(), "library");
     
-    assert_eq!((&math_visitor).get("geometry").unwrap().path_segment(), "geometry");
+    assert_eq!((&math_visitor).get_impl("geometry").unwrap().path_segment(), "geometry"); // TODO: Why can't we use get() here? And why doesn't it need a generic type specifier?
 
     assert!(library_visitor.relative(vec!["super"]).is_none());
     assert_eq!(library_visitor.relative(Vec::<String>::new()).unwrap().path_segment(), "library");
@@ -215,7 +216,7 @@ fn relative_access() {
 }
 
 #[test]
-fn unsafe_relative_access() {
+fn unsafe_mutable_relative_access() {
     let mut branch = Library::mock();
 
     unsafe {
