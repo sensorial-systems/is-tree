@@ -15,18 +15,18 @@ pub trait HasGet {
 impl<T> HasGet for T {}
 
 pub trait HasGetAPI<'a> {
-    fn get<T>(&'a self, segment: impl Into<String>) -> Option<&'a T>
-    where &'a Self: HasGet + HasBranches<&'a T>,
-          &'a T: HasPathSegment + 'a
+    fn get<T>(&'a self, segment: impl Into<String>) -> Option<T>
+    where &'a Self: HasGet + HasBranches<T>,
+          T: HasPathSegment + 'a
     {
-        self.get_impl::<&T>(segment)
+        self.get_impl::<T>(segment)
     }
 
-    fn get_mut<T>(&'a mut self, segment: impl Into<String>) -> Option<&'a mut T>
-    where &'a mut Self: HasGet + HasBranches<&'a mut T>,
-          &'a mut T: HasPathSegment + 'a
+    fn get_mut<T>(&'a mut self, segment: impl Into<String>) -> Option<T>
+    where &'a mut Self: HasGet + HasBranches<T>,
+          T: HasPathSegment + 'a
     {
-        self.get_impl::<&mut T>(segment)
+        self.get_impl::<T>(segment)
     }
 }
 

@@ -13,6 +13,24 @@ pub trait HasBranchesAPI {
 
 impl<T> HasBranchesAPI for T {}
 
+pub trait HasBranchesAPIV2<'a> {
+    fn branches_ref<T>(&'a self) -> impl Iterator<Item = T>
+    where &'a Self: HasBranches<T>,
+          T: 'a
+    {
+        self.branches_impl()
+    }
+
+    fn branches_mut<T>(&'a mut self) -> impl Iterator<Item = T>
+    where &'a mut Self: HasBranches<T>,
+          T: 'a
+    {
+        self.branches_impl()
+    }
+}
+
+impl<'a, T> HasBranchesAPIV2<'a> for T {}
+
 pub trait AddBranch<T> {
     fn add_branch(&mut self, value: T) -> &mut T;
 }
