@@ -1,3 +1,5 @@
+//! Traits for working with trees.
+
 pub mod has_branches;
 pub mod has_get;
 pub mod has_parent;

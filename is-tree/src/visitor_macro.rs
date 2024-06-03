@@ -13,6 +13,21 @@ macro_rules! chain {
     };
 }
 
+///! A macro for generating visitor types.
+/// Example:
+/// ```rust,ignore
+/// use ::is_tree::*;
+/// visitor! {
+///    pub enum Visitors, VisitorMut {
+///       Root(Root visits [Type1]),
+///       Branches(
+///         Branch1 visits [Type1, Type2, Type3],
+///         Branch2 visits [Type2, Type4],
+///         Branch3
+///       )
+///    }
+/// }
+/// ```
 #[macro_export]
 macro_rules! visitor {
     (

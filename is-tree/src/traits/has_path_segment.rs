@@ -1,6 +1,10 @@
+//! Traits for types that have a path segment.
+
 use crate::Path;
 
+/// This trait should be implemented by types that have an absolute path.
 pub trait HasPath {
+    /// Gets the path of the type.
     fn path(&self) -> Path;
 }
 
@@ -10,9 +14,12 @@ impl HasPath for () {
     }
 }
 
+/// This trait should be implemented by types that have a path segment.
 pub trait HasPathSegment {
+    /// Gets the path segment of the type.
     fn path_segment(&self) -> String;
 
+    /// Checks if the type is identified by the given path segment.
     fn is(&self, identifier: impl PartialEq<String>) -> bool {
         identifier.eq(&self.path_segment())
     }

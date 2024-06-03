@@ -1,9 +1,15 @@
+//! Traits for relative path traversal.
+
 use crate::{HasPathSegment, IsPathSegment, PathSegment, UnsafeClone, UnsafeHasParent, UnsafeHasRoot};
 
 use super::{HasGet, HasParent, HasRoot};
 use super::has_branches::HasBranches;
 
+/// A trait for objects that have a relative path.
 pub trait HasRelative<'a>: Sized {
+    /// Gets a relative path.
+    /// "self", "root", and "super" are reserved path segments.
+    /// "self" is the current object, "root" is the root object, and "super" is the parent object.
     fn relative<K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<Self>
     where K: Into<String>,
         Self: Clone + HasRoot + HasParent + HasPathSegment,
@@ -25,7 +31,12 @@ pub trait HasRelative<'a>: Sized {
     }
 }
 
+/// A trait for objects that have a relative path mutably.
+/// By design, accessing a Visitor parent is unsafe.
 pub trait UnsafeHasRelative<'a>: Sized {
+    /// Gets a relative path mutably.
+    /// "self", "root", and "super" are reserved path segments.
+    /// "self" is the current object, "root" is the root object, and "super" is the parent object.
     unsafe fn relative_mut<K>(&'a mut self, path: impl IntoIterator<Item = K>) -> Option<Self>
     where K: Into<String>,
         Self: UnsafeClone + UnsafeHasRoot + UnsafeHasParent + HasPathSegment,
