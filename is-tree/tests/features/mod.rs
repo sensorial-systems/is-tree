@@ -16,9 +16,9 @@ visitor! {
 #[derive(Debug, IsTree)]
 pub struct Library {
     #[tree(path_segment)]
-    #[tree(branch(String))]
+    #[tree(branch)]
     pub name: String,
-    #[tree(branch(Module))]
+    #[tree(branch)]
     pub root_module: Module
 }
 
@@ -49,25 +49,18 @@ impl Library {
 #[derive(Debug, Default, IsTree)]
 pub struct Function {
     #[tree(path_segment)]
-    #[tree(branch(String))]
+    #[tree(branch)]
     pub name: String
-}
-
-impl From<&str> for Function {
-    fn from(name: &str) -> Self {
-        let name = name.into();
-        Self { name }
-    }
 }
 
 #[derive(Debug, Default, IsTree)]
 pub struct Module {
     #[tree(path_segment)]
-    #[tree(branch(String))]
+    #[tree(branch)]
     pub name: String,
-    #[tree(branch(Module))]
+    #[tree(branch)]
     pub modules: Vec<Module>,
-    #[tree(branch(Function))]
+    #[tree(branch)]
     pub functions: Vec<Function>
 }
 
@@ -228,4 +221,3 @@ fn unsafe_mutable_relative_access() {
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.filter(|visitor| !visitor.is_string()).map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "GEOMETRY", "math", "LIBRARY"]);
 }
-
