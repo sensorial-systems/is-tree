@@ -21,29 +21,25 @@ visitor! {
 
 #[derive(Debug, IsTree)]
 pub struct Library {
-    #[tree(path_segment)]
-    #[tree(branch(String))]
+    #[tree(path_segment)] // Any ToString can go here.
     pub name: String,
-    #[tree(branch(Module, String))]
+    #[tree(branch)] // If we want only this to be a branch.
     pub root_module: Module
 }
-
 #[derive(Debug, Default, IsTree)]
-pub struct Function {
+#[tree(branches)] // This will make all fields branches.
+pub struct Module {
     #[tree(path_segment)]
-    #[tree(branch(String))]
-    pub name: String
+    pub name: String,
+    pub modules: Vec<Module>,
+    pub functions: Vec<Function>
 }
 
 #[derive(Debug, Default, IsTree)]
-pub struct Module {
+#[tree(branches)] 
+pub struct Function {
     #[tree(path_segment)]
-    #[tree(branch(String))]
-    pub name: String,
-    #[tree(branch(Module, String))]
-    pub modules: Vec<Module>,
-    #[tree(branch(Function, String))]
-    pub functions: Vec<Function>
+    pub name: String
 }
 
 impl Library {
@@ -73,9 +69,9 @@ impl Library {
 fn main() {
     let mut library = Library::mock();
     
-    // Getting the String branches of the structure.
-    library.branches_mut::<&mut String>().for_each(|s| *s = s.to_uppercase());
-    library.branches::<&String>().for_each(|s| println!("{}", s));
+    // Getting the Module branches of the structure.
+    library.branches_mut::<&mut Module>().for_each(|module| module.name = module.name.to_uppercase());
+    library.branches::<&Module>().for_each(|module| println!("{}", module.name));
 
     // Getting a Module of the structure.
     library.get_mut::<&mut Module>("MATH").unwrap().name.push_str("EMATICS");
@@ -131,3 +127,4 @@ fn main() {
     }
 }
 ```
+
