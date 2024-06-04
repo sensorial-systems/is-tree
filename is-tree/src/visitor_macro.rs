@@ -215,7 +215,7 @@ macro_rules! visitor {
                             $(
                                 $(
                                     visitor.value.branches_impl2::<&$root_host>().map(|branch| $crate::Visitor::new(self.clone().into(), branch).into())
-                                )*
+                                ),*
                             )?
                         )
                     ) as Box<dyn Iterator<Item = _>>,
@@ -247,7 +247,7 @@ macro_rules! visitor {
                                         let visitor = unsafe { longer_mut(visitor) };
                                         visitor.value.branches_impl2::<&mut $root_host>().map(move |branch| $crate::Visitor::new(parent_clone.clone(), branch).into())
                                     }
-                                )*
+                                ),*
                             )?
                         )
                     ) as Box<dyn Iterator<Item = _>>,
