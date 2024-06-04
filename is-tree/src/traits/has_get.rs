@@ -2,7 +2,7 @@
 
 use crate::traits::has_branches::{HasBranches, HasBranchesAPI};
 
-use crate::HasPathSegment;
+use crate::{longer_mut, AddBranch, HasPathSegment};
 
 /// This is the trait one should implement to provide a way to get branches by their path segments.
 pub trait HasGet {
@@ -35,6 +35,21 @@ pub trait HasGetAPI<'a> {
           T: HasPathSegment + 'a
     {
         self.get_impl::<T>(segment)
+    }
+
+    fn branch<T>(&'a mut self, segment: impl Into<String>) -> &'a mut T
+    where &'a mut Self: HasGet + HasBranches<&'a mut T>,
+          Self: AddBranch<T> + Sized,
+          T: HasPathSegment + 'a,
+          String: Into<T>
+    {
+        let segment = segment.into();
+        let self_ = unsafe { longer_mut(self) }; // This is safe.
+        if let Some(value) = self.get_mut::<&mut T>(segment.clone()) {
+            value
+        } else {
+            self_.add_branch(segment.into())
+        }
     }
 }
 

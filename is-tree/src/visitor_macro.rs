@@ -38,16 +38,18 @@ macro_rules! visitor {
             )
         }
     ) => {
+        use $crate::*;
+
         #[derive(Clone, $crate::prelude::EnumAsInner)]
         $($access)? enum $name<'a> {
-            $root(Visitor<(), &'a $root>),
-            $($branch(Visitor<Box<$name<'a>>, &'a $branch>)),*
+            $root($crate::Visitor<(), &'a $root>),
+            $($branch($crate::Visitor<Box<$name<'a>>, &'a $branch>)),*
         }
 
         #[derive($crate::prelude::EnumAsInner)]
         $($access)? enum $name_mut<'a> {
-            $root(Visitor<(), &'a mut $root>),
-            $($branch(Visitor<Box<$name<'a>>, &'a mut $branch>)),*
+            $root($crate::Visitor<(), &'a mut $root>),
+            $($branch($crate::Visitor<Box<$name<'a>>, &'a mut $branch>)),*
         }
 
         impl<'a> From<&&'a mut $name_mut<'a>> for $name<'a> { // FIXME: This is unsafe. We should have a UnsafeFrom trait.
@@ -58,39 +60,39 @@ macro_rules! visitor {
             }
         }        
 
-        impl<'a> From<Visitor<(), &'a $root>> for $name<'a> {
-            fn from(visitor: Visitor<(), &'a $root>) -> Self {
+        impl<'a> From<$crate::Visitor<(), &'a $root>> for $name<'a> {
+            fn from(visitor: $crate::Visitor<(), &'a $root>) -> Self {
                 Self::$root(visitor)
             }
         }
 
-        impl<'a> From<Visitor<(), &'a mut $root>> for $name_mut<'a> {
-            fn from(visitor: Visitor<(), &'a mut $root>) -> Self {
+        impl<'a> From<$crate::Visitor<(), &'a mut $root>> for $name_mut<'a> {
+            fn from(visitor: $crate::Visitor<(), &'a mut $root>) -> Self {
                 Self::$root(visitor)
             }
         }
 
         impl<'a> From<&'a $root> for $name<'a> {
             fn from(branch: &'a $root) -> Self {
-                Self::$root(Visitor::new((), branch))
+                Self::$root($crate::Visitor::new((), branch))
             }
         }
 
         impl<'a> From<&'a mut $root> for $name_mut<'a> {
             fn from(branch: &'a mut $root) -> Self {
-                Self::$root(Visitor::new((), branch))
+                Self::$root($crate::Visitor::new((), branch))
             }
         }
 
         $(
-            impl<'a> From<Visitor<Box<$name<'a>>, &'a $branch>> for $name<'a> {
-                fn from(visitor: Visitor<Box<$name<'a>>, &'a $branch>) -> Self {
+            impl<'a> From<$crate::Visitor<Box<$name<'a>>, &'a $branch>> for $name<'a> {
+                fn from(visitor: $crate::Visitor<Box<$name<'a>>, &'a $branch>) -> Self {
                     Self::$branch(visitor)
                 }
             }
 
-            impl<'a> From<Visitor<Box<$name<'a>>, &'a mut $branch>> for $name_mut<'a> {
-                fn from(visitor: Visitor<Box<$name<'a>>, &'a mut $branch>) -> Self {
+            impl<'a> From<$crate::Visitor<Box<$name<'a>>, &'a mut $branch>> for $name_mut<'a> {
+                fn from(visitor: $crate::Visitor<Box<$name<'a>>, &'a mut $branch>) -> Self {
                     Self::$branch(visitor)
                 }
             }
@@ -205,14 +207,14 @@ macro_rules! visitor {
             }
         }
 
-        impl<'a> HasBranches<$name<'a>> for &'a $name<'a> {
+        impl<'a> $crate::HasBranches<$name<'a>> for &'a $name<'a> {
             fn branches_impl(self) -> impl Iterator<Item = $name<'a>> {
                 match self {
                     $name::$root(visitor) => Box::new(
                         chain!(
                             $(
                                 $(
-                                    visitor.value.branches_impl2::<&$root_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                                    visitor.value.branches_impl2::<&$root_host>().map(|branch| $crate::Visitor::new(self.clone().into(), branch).into())
                                 )*
                             )?
                         )
@@ -222,7 +224,7 @@ macro_rules! visitor {
                             chain!(
                                 $(
                                     $(
-                                        visitor.value.branches_impl2::<&$branch_host>().map(|branch| Visitor::new(self.clone().into(), branch).into())
+                                        visitor.value.branches_impl2::<&$branch_host>().map(|branch| $crate::Visitor::new(self.clone().into(), branch).into())
                                     ),*
                                 )?
                             )
@@ -232,7 +234,7 @@ macro_rules! visitor {
             }
         }
 
-        impl<'a> HasBranches<$name_mut<'a>> for &'a mut $name_mut<'a> {
+        impl<'a> $crate::HasBranches<$name_mut<'a>> for &'a mut $name_mut<'a> {
             fn branches_impl(self) -> impl Iterator<Item = $name_mut<'a>> {
                 let parent = Box::new($name::from(&self));
                 match self {
@@ -243,7 +245,7 @@ macro_rules! visitor {
                                     {
                                         let parent_clone = parent.clone();
                                         let visitor = unsafe { longer_mut(visitor) };
-                                        visitor.value.branches_impl2::<&mut $root_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
+                                        visitor.value.branches_impl2::<&mut $root_host>().map(move |branch| $crate::Visitor::new(parent_clone.clone(), branch).into())
                                     }
                                 )*
                             )?
@@ -257,7 +259,7 @@ macro_rules! visitor {
                                         {
                                             let parent_clone = parent.clone();
                                             let visitor = unsafe { longer_mut(visitor) };
-                                            visitor.value.branches_impl2::<&mut $branch_host>().map(move |branch| Visitor::new(parent_clone.clone(), branch).into())
+                                            visitor.value.branches_impl2::<&mut $branch_host>().map(move |branch| $crate::Visitor::new(parent_clone.clone(), branch).into())
                                         }
                                     ),*
                                 )?
