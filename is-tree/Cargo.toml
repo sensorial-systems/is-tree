@@ -11,4 +11,4 @@ readme.workspace = true
 
 [dependencies]
 enum-as-inner = "0.6.0"
-is-tree-macro = "0.9.2"
+is-tree-macro = "0.9.3"

@@ -44,42 +44,6 @@
 //!     pub functions: Vec<Function>
 //! }
 //! 
-//! // AddBranch<T> is logic-dependent so you need to implement it yourself.
-//! impl AddBranch<Module> for Library {
-//!     fn add_branch(&mut self, module: Module) -> &mut Module {
-//!         self.root_module = module;
-//!         &mut self.root_module
-//!     }
-//! }
-//! 
-//! impl AddBranch<String> for Library {
-//!     fn add_branch(&mut self, name: String) -> &mut String {
-//!         self.name = name;
-//!         &mut self.name
-//!     }
-//! }
-//! 
-//! impl AddBranch<Module> for Module {
-//!     fn add_branch(&mut self, branch: Module) -> &mut Module {
-//!         self.modules.push(branch);
-//!         self.modules.last_mut().unwrap()
-//!     }
-//! }
-//! 
-//! impl AddBranch<Function> for Module {
-//!     fn add_branch(&mut self, branch: Function) -> &mut Function {
-//!         self.functions.push(branch);
-//!         self.functions.last_mut().unwrap()
-//!     }
-//! }
-//! 
-//! impl AddBranch<String> for Module {
-//!     fn add_branch(&mut self, name: String) -> &mut String {
-//!         self.name = name;
-//!         &mut self.name
-//!     }
-//! }
-//! 
 //! impl Library {
 //!     pub fn mock() -> Self {
 //!         Library {
