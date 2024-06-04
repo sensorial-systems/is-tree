@@ -14,11 +14,10 @@ visitor! {
 }
 
 #[derive(Debug, IsTree)]
+#[tree(branches)]
 pub struct Library {
     #[tree(path_segment)]
-    #[tree(branch)]
     pub name: String,
-    #[tree(branch)]
     pub root_module: Module
 }
 
@@ -47,20 +46,18 @@ impl Library {
 }
 
 #[derive(Debug, Default, IsTree)]
+#[tree(branches)]
 pub struct Function {
     #[tree(path_segment)]
-    #[tree(branch)]
     pub name: String
 }
 
 #[derive(Debug, Default, IsTree)]
+#[tree(branches)]
 pub struct Module {
     #[tree(path_segment)]
-    #[tree(branch)]
     pub name: String,
-    #[tree(branch)]
     pub modules: Vec<Module>,
-    #[tree(branch)]
     pub functions: Vec<Function>
 }
 
