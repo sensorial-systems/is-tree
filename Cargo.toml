@@ -1,5 +1,5 @@
 [workspace.package]
-version = "0.9.4"
+version = "0.9.5"
 edition = "2021"
 description = "Everything is a tree"
 license = "Apache-2.0"

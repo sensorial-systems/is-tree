@@ -149,7 +149,7 @@ macro_rules! visitor {
             fn path(&self) -> Path {
                 match self {
                     $name::$root(visitor) => visitor.path(),
-                    $($name::$branch(visitor) => visitor.parent.path().join(visitor.path_segment())),*
+                    $($name::$branch(visitor) => visitor.path()),*
                 }
             }
         }        
@@ -158,7 +158,7 @@ macro_rules! visitor {
             fn path(&self) -> Path {
                 match self {
                     $name_mut::$root(visitor) => visitor.path(),
-                    $($name_mut::$branch(visitor) => visitor.parent.path().join(visitor.path_segment())),*
+                    $($name_mut::$branch(visitor) => visitor.path()),*
                 }
             }
         }        

@@ -14,6 +14,15 @@ impl HasPath for () {
     }
 }
 
+impl<T> HasPath for Box<T>
+where
+    T: HasPath,
+{
+    fn path(&self) -> Path {
+        (**self).path()
+    }
+}
+
 /// This trait should be implemented by types that have a path segment.
 pub trait HasPathSegment {
     /// Gets the path segment of the type.
