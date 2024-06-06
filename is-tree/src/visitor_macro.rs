@@ -224,7 +224,16 @@ macro_rules! visitor {
                 }
             }
         }
-        
+
+        impl<'a> HasRoot for $name_mut<'a> {
+            fn root(&self) -> Self::Visitor {
+                match self {
+                    $name_mut::$root(_) => unsafe { std::mem::transmute(self.unsafe_clone()) },
+                    $($name_mut::$branch(visitor) => visitor.parent.root()),*
+                }
+            }
+        }
+
         unsafe impl<'a> UnsafeHasRoot for $name_mut<'a> {
             unsafe fn root_mut(&mut self) -> Self {
                 match self {

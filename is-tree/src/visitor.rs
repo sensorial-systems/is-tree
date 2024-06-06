@@ -1,6 +1,6 @@
 //! Visitor pattern for tree traversal.
 
-use crate::{HasParent, HasPath, HasPathSegment, KnowsVisitor, Path};
+use crate::{HasParent, HasPath, HasPathSegment, HasRoot, KnowsVisitor, Path, UnsafeHasRoot};
 
 /// A visitor for tree traversal.
 #[derive(Clone, Debug, Default)]
@@ -47,9 +47,33 @@ where Parent: KnowsVisitor
 }
 
 impl<Parent, Value> HasParent for Visitor<Parent, Value>
-where Parent: HasParent + Clone + Into<Self::Visitor>
+where
+    Self: KnowsVisitor,
+    Parent: Clone + Into<Self::Visitor>
 {
     fn parent(&self) -> Option<Self::Visitor> {
         Some(self.parent.clone().into())
+    }
+}
+
+impl<Parent, Value> HasRoot for Visitor<Parent, Value>
+where
+    Self: KnowsVisitor,
+    Parent: HasRoot,
+    Parent::Visitor: Into<Self::Visitor>
+{
+    fn root(&self) -> Self::Visitor {
+        self.parent.root().into()
+    }
+}
+
+unsafe impl<Parent, Value> UnsafeHasRoot for Visitor<Parent, Value>
+where
+    Self: KnowsVisitor,
+    Parent: UnsafeHasRoot,
+    Parent::VisitorMut: Into<Self::VisitorMut>
+{
+    unsafe fn root_mut(&mut self) -> Self::VisitorMut {
+        self.parent.root_mut().into()
     }
 }

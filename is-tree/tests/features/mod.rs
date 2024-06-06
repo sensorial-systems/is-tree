@@ -225,13 +225,16 @@ fn branch_visitor() { // Visitor<Parent, Value>
     let visitor = Visitors::from(&library);
     let visitor = visitor.relative(vec!["math", "geometry"]).unwrap().into_module().unwrap();
     assert_eq!(visitor.parent().unwrap().path_segment(), "math");
-    // assert_eq!(visitor.root().path_segment(), "library");
+    assert_eq!(visitor.root().path_segment(), "library");
 
     let mut visitor = VisitorsMut::from(&mut library);
     unsafe {
         let mut visitor = visitor.relative_mut(vec!["math", "geometry"]).unwrap();
         visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name = visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name.to_uppercase();
         assert_eq!(visitor.parent().unwrap().path_segment(), "MATH");
+
+        visitor.root_mut().as_library_mut().unwrap().value.name = visitor.root_mut().as_library_mut().unwrap().value.name.to_uppercase();
+        assert_eq!(visitor.root().path_segment(), "LIBRARY");
     }
 
 }
