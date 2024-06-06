@@ -1,6 +1,6 @@
 //! Traits for relative path traversal.
 
-use crate::{HasPathSegment, IsPathSegment, PathSegment, UnsafeClone, UnsafeHasParent, UnsafeHasRoot};
+use crate::{HasPathSegment, IsPathSegment, KnowsVisitor, PathSegment, UnsafeClone, UnsafeHasParent, UnsafeHasRoot};
 
 use super::{HasGet, HasParent, HasRoot};
 use super::has_branches::HasBranches;
@@ -12,7 +12,7 @@ pub trait HasRelative<'a>: Sized {
     /// "self" is the current object, "root" is the root object, and "super" is the parent object.
     fn relative<K>(&'a self, path: impl IntoIterator<Item = K>) -> Option<Self>
     where K: Into<String>,
-        Self: Clone + HasRoot + HasParent + HasPathSegment,
+        Self: KnowsVisitor<Visitor = Self> + Clone + HasRoot + HasParent + HasPathSegment,
         &'a Self: HasBranches<Self>
     {
         let mut path = path.into_iter();
@@ -39,7 +39,7 @@ pub trait UnsafeHasRelative<'a>: Sized {
     /// "self" is the current object, "root" is the root object, and "super" is the parent object.
     unsafe fn relative_mut<K>(&'a mut self, path: impl IntoIterator<Item = K>) -> Option<Self>
     where K: Into<String>,
-        Self: UnsafeClone + UnsafeHasRoot + UnsafeHasParent + HasPathSegment,
+        Self: KnowsVisitor<VisitorMut = Self> + UnsafeClone + UnsafeHasRoot + UnsafeHasParent + HasPathSegment,
         &'a mut Self: HasBranches<Self>
     {
         let mut path = path.into_iter();

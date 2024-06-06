@@ -40,13 +40,13 @@ macro_rules! visitor {
     ) => {
         use $crate::*;
 
-        #[derive(Clone, $crate::prelude::EnumAsInner)]
+        #[derive(Debug, Clone, $crate::prelude::EnumAsInner)]
         $($access)? enum $name<'a> {
             $root($crate::Visitor<(), &'a $root>),
             $($branch($crate::Visitor<Box<$name<'a>>, &'a $branch>)),*
         }
 
-        #[derive($crate::prelude::EnumAsInner)]
+        #[derive(Debug, $crate::prelude::EnumAsInner)]
         $($access)? enum $name_mut<'a> {
             $root($crate::Visitor<(), &'a mut $root>),
             $($branch($crate::Visitor<Box<$name<'a>>, &'a mut $branch>)),*
@@ -84,6 +84,18 @@ macro_rules! visitor {
             }
         }
 
+        impl<'a> From<Box<$name<'a>>> for $name<'a> {
+            fn from(visitor: Box<$name<'a>>) -> Self {
+                *visitor
+            }
+        }
+
+        impl<'a> From<Box<$name_mut<'a>>> for $name_mut<'a> {
+            fn from(visitor: Box<$name_mut<'a>>) -> Self {
+                *visitor
+            }
+        }
+
         $(
             impl<'a> From<$crate::Visitor<Box<$name<'a>>, &'a $branch>> for $name<'a> {
                 fn from(visitor: $crate::Visitor<Box<$name<'a>>, &'a $branch>) -> Self {
@@ -97,6 +109,16 @@ macro_rules! visitor {
                 }
             }
         )*
+
+        impl<'a> KnowsVisitor for $name<'a> {
+            type Visitor = $name<'a>;
+            type VisitorMut = $name_mut<'a>;
+        }
+
+        impl<'a> KnowsVisitor for $name_mut<'a> {
+            type Visitor = $name<'a>;
+            type VisitorMut = $name_mut<'a>;
+        }
 
         unsafe impl<'a> UnsafeClone for $name<'a> {
             unsafe fn unsafe_clone(&self) -> Self {
@@ -171,12 +193,12 @@ macro_rules! visitor {
                 }
             }
         }
-        
-        impl<'a> HasRoot for $name<'a> {
-            fn root(&self) -> Self {
+
+        impl<'a> HasParent for $name_mut<'a> {
+            fn parent(&self) -> Option<Self::Visitor> {
                 match self {
-                    $name::$root(_) => self.clone(),
-                    $($name::$branch(visitor) => visitor.parent.root()),*
+                    $name_mut::$root(_) => None,
+                    $($name_mut::$branch(visitor) => Some((*visitor.parent).clone())),*
                 }
             }
         }
@@ -190,6 +212,15 @@ macro_rules! visitor {
                         let visitor = std::mem::transmute(visitor);
                         Some(visitor)
                     }),*
+                }
+            }
+        }
+
+        impl<'a> HasRoot for $name<'a> {
+            fn root(&self) -> Self {
+                match self {
+                    $name::$root(_) => self.clone(),
+                    $($name::$branch(visitor) => visitor.parent.root()),*
                 }
             }
         }

@@ -218,3 +218,20 @@ fn unsafe_mutable_relative_access() {
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.filter(|visitor| !visitor.is_string()).map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "GEOMETRY", "math", "LIBRARY"]);
 }
+
+#[test]
+fn branch_visitor() { // Visitor<Parent, Value>
+    let mut library = Library::mock();
+    let visitor = Visitors::from(&library);
+    let visitor = visitor.relative(vec!["math", "geometry"]).unwrap().into_module().unwrap();
+    assert_eq!(visitor.parent().unwrap().path_segment(), "math");
+    // assert_eq!(visitor.root().path_segment(), "library");
+
+    let mut visitor = VisitorsMut::from(&mut library);
+    unsafe {
+        let mut visitor = visitor.relative_mut(vec!["math", "geometry"]).unwrap();
+        visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name = visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name.to_uppercase();
+        assert_eq!(visitor.parent().unwrap().path_segment(), "MATH");
+    }
+
+}

@@ -1,6 +1,6 @@
 //! Visitor pattern for tree traversal.
 
-use crate::{HasPathSegment, Path, HasPath};
+use crate::{HasParent, HasPath, HasPathSegment, KnowsVisitor, Path};
 
 /// A visitor for tree traversal.
 #[derive(Clone, Debug, Default)]
@@ -35,5 +35,21 @@ where Value: HasPathSegment,
         let mut path = self.parent.path();
         path.segments.push(self.value.path_segment());
         path
+    }
+}
+
+// Parent as Visitor is a convention because it's always a Box<T> where T is an enumeration visitor defined with `visitor!`.
+impl<Parent, Value> KnowsVisitor for Visitor<Parent, Value>
+where Parent: KnowsVisitor
+{
+    type Visitor = Parent::Visitor;
+    type VisitorMut = Parent::VisitorMut;
+}
+
+impl<Parent, Value> HasParent for Visitor<Parent, Value>
+where Parent: HasParent + Clone + Into<Self::Visitor>
+{
+    fn parent(&self) -> Option<Self::Visitor> {
+        Some(self.parent.clone().into())
     }
 }
