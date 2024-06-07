@@ -15,3 +15,19 @@ where
     type Visitor = T::Visitor;
     type VisitorMut = T::VisitorMut;
 }
+
+impl<T> KnowsVisitor for &T
+where
+    T: KnowsVisitor,
+{
+    type Visitor = T::Visitor;
+    type VisitorMut = T::VisitorMut;
+}
+
+impl<T> KnowsVisitor for &mut T
+where
+    T: KnowsVisitor,
+{
+    type Visitor = T::Visitor;
+    type VisitorMut = T::VisitorMut;
+}

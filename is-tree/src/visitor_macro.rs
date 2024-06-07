@@ -52,7 +52,14 @@ macro_rules! visitor {
             $($branch($crate::Visitor<Box<$name<'a>>, &'a mut $branch>)),*
         }
 
-        impl<'a> From<&&'a mut $name_mut<'a>> for $name<'a> { // FIXME: This is unsafe. We should have a UnsafeFrom trait.
+        unsafe impl<'a> UnsafeFrom<Box<$name<'a>>> for $name_mut<'a> {
+            unsafe fn unsafe_from(visitor: Box<$name>) -> Self {
+                let visitor = *visitor;
+                unsafe { std::mem::transmute(visitor) }
+            }
+        }
+
+        impl<'a> From<&&'a mut $name_mut<'a>> for $name<'a> { // TODO: Is this unsafe? Can we get & from &mut? Should we use UnsafeFrom here?
             fn from(visitor: &&'a mut $name_mut<'a>) -> Self {
                 unsafe {
                     (*(std::mem::transmute::<_, &&$name<'a>>(visitor))).clone()
@@ -100,6 +107,12 @@ macro_rules! visitor {
             impl<'a> From<$crate::Visitor<Box<$name<'a>>, &'a $branch>> for $name<'a> {
                 fn from(visitor: $crate::Visitor<Box<$name<'a>>, &'a $branch>) -> Self {
                     Self::$branch(visitor)
+                }
+            }
+
+            impl<'a> From<$crate::Visitor<Box<$name<'a>>, &'a mut $branch>> for $name<'a> {
+                fn from(visitor: $crate::Visitor<Box<$name<'a>>, &'a mut $branch>) -> Self {
+                    unsafe { Self::$branch(std::mem::transmute(visitor)) }
                 }
             }
 
@@ -273,6 +286,13 @@ macro_rules! visitor {
                 }
             }
         }
+
+        // impl<'a> $crate::HasBranches<$name<'a>> for &'a mut $name_mut<'a> {
+        //     fn branches_impl(self) -> impl Iterator<Item = $name<'a>> {
+        //         let self_: &'a $name<'a> = unsafe { std::mem::transmute(self) };
+        //         self_.branches_impl()
+        //     }
+        // }
 
         impl<'a> $crate::HasBranches<$name_mut<'a>> for &'a mut $name_mut<'a> {
             fn branches_impl(self) -> impl Iterator<Item = $name_mut<'a>> {

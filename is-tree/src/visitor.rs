@@ -1,6 +1,6 @@
 //! Visitor pattern for tree traversal.
 
-use crate::{HasParent, HasPath, HasPathSegment, HasRoot, KnowsVisitor, Path, UnsafeHasRoot};
+use crate::{longer_mut, longer_ref, HasBranches, HasParent, HasPath, HasPathSegment, HasRoot, KnowsVisitor, Path, UnsafeClone, UnsafeFrom, UnsafeHasParent, UnsafeHasRoot};
 
 /// A visitor for tree traversal.
 #[derive(Clone, Debug, Default)]
@@ -46,6 +46,16 @@ where Parent: KnowsVisitor
     type VisitorMut = Parent::VisitorMut;
 }
 
+unsafe impl<Parent, Value> UnsafeClone for Visitor<Parent, &mut Value>
+where Parent: Clone
+{
+    unsafe fn unsafe_clone(&self) -> Self {
+        let parent = self.parent.clone();
+        let value = std::mem::transmute_copy(&self.value);
+        Self { parent, value }
+    }
+}
+
 impl<Parent, Value> HasParent for Visitor<Parent, Value>
 where
     Self: KnowsVisitor,
@@ -53,6 +63,17 @@ where
 {
     fn parent(&self) -> Option<Self::Visitor> {
         Some(self.parent.clone().into())
+    }
+}
+
+unsafe impl<Parent, Value> UnsafeHasParent for Visitor<Parent, Value>
+where
+    Self: KnowsVisitor,
+    Self::VisitorMut: UnsafeFrom<Parent>,
+    Parent: Clone
+{
+    unsafe fn parent_mut(&mut self) -> Option<Self::VisitorMut> {
+        Some(Self::VisitorMut::unsafe_from(self.parent.clone()))
     }
 }
 
@@ -75,5 +96,32 @@ where
 {
     unsafe fn root_mut(&mut self) -> Self::VisitorMut {
         self.parent.root_mut().into()
+    }
+}
+
+impl<'a, Parent: KnowsVisitor, Value> HasBranches<Parent::Visitor> for &'a Visitor<Parent, Value>
+where
+    Visitor<Parent, Value>: Clone + Into<Parent::Visitor>,
+    &'a Parent::Visitor: HasBranches<Parent::Visitor>
+{
+    fn branches_impl(self) -> impl Iterator<Item = Parent::Visitor> {
+        let self_ = unsafe { longer_ref(self) }; // TODO: Why is this necessary?
+        let visitor = self_.clone().into();
+        unsafe { longer_ref(&visitor) }.branches_impl()
+    }
+}
+
+impl<'a, Parent, Value, T> HasBranches<T> for &'a mut Visitor<Parent, Value>
+where
+    Visitor<Parent, Value>: UnsafeClone,
+    T: From<Visitor<Parent, Value>> + 'a,
+    &'a mut T: HasBranches<T>
+{
+    fn branches_impl(self) -> impl Iterator<Item = T> {
+        unsafe {
+            let visitor = self.unsafe_clone();
+            let mut visitor = T::from(visitor);
+            longer_mut(&mut visitor).branches_impl()
+        }
     }
 }

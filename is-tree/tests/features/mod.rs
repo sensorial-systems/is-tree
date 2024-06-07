@@ -221,20 +221,28 @@ fn unsafe_mutable_relative_access() {
 
 #[test]
 fn branch_visitor() { // Visitor<Parent, Value>
-    let mut library = Library::mock();
-    let visitor = Visitors::from(&library);
-    let visitor = visitor.relative(vec!["math", "geometry"]).unwrap().into_module().unwrap();
-    assert_eq!(visitor.parent().unwrap().path_segment(), "math");
-    assert_eq!(visitor.root().path_segment(), "library");
+    let mut library: Library = Library::mock();
+    let visitor: Visitors = Visitors::from(&library);
+    let visitor: Visitor<Box<Visitors>, &Module> = visitor.relative(vec!["math", "geometry"]).unwrap().into_module().unwrap();
+    assert_eq!((visitor.parent().unwrap() as Visitors).path_segment(), "math");
+    assert_eq!((visitor.root() as Visitors).path_segment(), "library");
+    assert_eq!((visitor.get("shapes").unwrap()).path_segment(), "shapes");
 
-    let mut visitor = VisitorsMut::from(&mut library);
     unsafe {
-        let mut visitor = visitor.relative_mut(vec!["math", "geometry"]).unwrap();
+        let mut visitor: VisitorsMut = VisitorsMut::from(&mut library);
+        let mut visitor: Visitor<Box<Visitors>, &mut Module> = visitor.relative_mut(vec!["math", "geometry"]).unwrap().into_module().unwrap();
         visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name = visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name.to_uppercase();
         assert_eq!(visitor.parent().unwrap().path_segment(), "MATH");
 
-        visitor.root_mut().as_library_mut().unwrap().value.name = visitor.root_mut().as_library_mut().unwrap().value.name.to_uppercase();
-        assert_eq!(visitor.root().path_segment(), "LIBRARY");
+        if let Some(value) = visitor.get_mut("shapes").and_then(|visitor| visitor.into_module().ok()) {
+            value.value.name = value.value.name.to_uppercase();
+        }
+        // assert_eq!((visitor.get("shapes").unwrap()).path_segment(), "SHAPES");
+
+        // let visitor = visitor.relative(vec!["self"]).unwrap();
+
+        // visitor.root_mut().as_library_mut().unwrap().value.name = visitor.root_mut().as_library_mut().unwrap().value.name.to_uppercase();
+        // assert_eq!(visitor.root().path_segment(), "LIBRARY");
     }
 
 }

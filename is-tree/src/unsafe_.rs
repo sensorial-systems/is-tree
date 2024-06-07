@@ -1,5 +1,11 @@
 //! Unsafe traits and functions cautiously used in the library but made unsafe to discourage their external use.
 
+pub unsafe trait UnsafeFrom<T> {
+    /// Converts the object from another object.
+    unsafe fn unsafe_from(t: T) -> Self;
+
+}
+
 /// This is required to generalize TreeIterator with a single ::new method.
 pub unsafe trait UnsafeClone {
     /// Clones the object.
