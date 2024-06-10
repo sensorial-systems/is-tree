@@ -1,17 +1,20 @@
-// use quote::quote;
+use quote::quote;
 
-// use crate::type_::Structure;
+use crate::type_::Structure;
 
-// pub(crate) fn impl_has_get(structure: &Structure) -> proc_macro2::TokenStream {
-//     if structure.implementation.has_branches && structure.implementation.has_path_segment {
-//         let structure_name = &structure.name;
-//         quote! {
-//             impl<'a> ::is_tree::HasGet<'a> for &'a #structure_name {}
-//             impl<'a> ::is_tree::HasGet<'a> for &'a mut #structure_name {}
-    
-//             impl<'a> ::is_tree::HasGetOrCreate<'a> for #structure_name {}
-//         }    
-//     } else {
-//         Default::default()
-//     }
-// }
+pub(crate) fn impl_has_get(structure: &Structure) -> proc_macro2::TokenStream {
+    let structure_name = &structure.name;
+    quote! {
+        impl<'a> ::is_tree::HasGetMut<'a> for #structure_name {
+            fn get_mut<T>(&'a mut self, segment: impl Into<String>) -> Option<T>
+            where &'a mut Self: ::is_tree::HasGet + ::is_tree::HasBranches<T>,
+                  T: ::is_tree::HasPathSegment + 'a
+            {
+                use ::is_tree::HasGet;
+                self.get_impl::<T>(segment)
+            }        
+        }
+
+        // impl ::is_tree::
+    }
+}

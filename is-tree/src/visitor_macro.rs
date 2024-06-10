@@ -216,7 +216,7 @@ macro_rules! visitor {
             }
         }
 
-        unsafe impl<'a> UnsafeHasParent for $name_mut<'a> {
+        unsafe impl<'a> HasParentMut for $name_mut<'a> {
             unsafe fn parent_mut(&mut self) -> Option<Self> {
                 match self {
                     $name_mut::Library(_) => None,
@@ -229,11 +229,37 @@ macro_rules! visitor {
             }
         }
 
+        impl<'a> std::ops::Deref for $name_mut<'a> {
+            type Target = $name<'a>;
+            fn deref(&self) -> &Self::Target {
+                self
+            }
+        }
+
+        impl<'a> std::ops::DerefMut for $name_mut<'a> {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                self
+            }
+        }
+
         impl<'a> HasRoot for $name<'a> {
             fn root(&self) -> Self {
                 match self {
                     $name::$root(_) => self.clone(),
                     $($name::$branch(visitor) => visitor.parent.root()),*
+                }
+            }
+        }
+
+        unsafe impl<'a> HasRootMut for $name<'a> {
+            unsafe fn root_mut(&mut self) -> Self::VisitorMut {
+                match self {
+                    $name::Library(_) => std::mem::transmute(self.unsafe_clone()),
+                    $($name::$branch(visitor) => {
+                        let visitor: $name = visitor.parent.root();
+                        let visitor = std::mem::transmute(visitor);
+                        visitor
+                    }),*
                 }
             }
         }
@@ -247,7 +273,7 @@ macro_rules! visitor {
             }
         }
 
-        unsafe impl<'a> UnsafeHasRoot for $name_mut<'a> {
+        unsafe impl<'a> HasRootMut for $name_mut<'a> {
             unsafe fn root_mut(&mut self) -> Self {
                 match self {
                     $name_mut::Library(_) => self.unsafe_clone(),

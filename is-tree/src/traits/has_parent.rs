@@ -10,7 +10,7 @@ pub trait HasParent: Sized + KnowsVisitor {
 
 /// A trait for objects that have a parent mutably.
 /// By design, accessing a Visitor parent is unsafe.
-pub unsafe trait UnsafeHasParent: Sized + KnowsVisitor {
+pub unsafe trait HasParentMut: Sized + KnowsVisitor {
     /// Gets the parent of the object.
     unsafe fn parent_mut(&mut self) -> Option<Self::VisitorMut>;
 }
@@ -23,8 +23,8 @@ where T: HasParent
     }
 }
 
-unsafe impl<T> UnsafeHasParent for Box<T>
-where T: UnsafeHasParent
+unsafe impl<T> HasParentMut for Box<T>
+where T: HasParentMut
 {
     unsafe fn parent_mut(&mut self) -> Option<Self::VisitorMut> {
         self.as_mut().parent_mut()

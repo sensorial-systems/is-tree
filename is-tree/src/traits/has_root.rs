@@ -10,7 +10,7 @@ pub trait HasRoot: KnowsVisitor {
 
 /// A trait for types that have a root mutably.
 /// By design, accessing a Visitor parent is unsafe.
-pub unsafe trait UnsafeHasRoot: Sized + KnowsVisitor {
+pub unsafe trait HasRootMut: Sized + KnowsVisitor {
     /// Gets the root of the object.
     unsafe fn root_mut(&mut self) -> Self::VisitorMut;
 }
@@ -23,8 +23,8 @@ where T: HasRoot
     }
 }
 
-unsafe impl<T> UnsafeHasRoot for Box<T>
-where T: UnsafeHasRoot
+unsafe impl<T> HasRootMut for Box<T>
+where T: HasRootMut
 {
     unsafe fn root_mut(&mut self) -> Self::VisitorMut {
         self.as_mut().root_mut()

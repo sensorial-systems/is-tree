@@ -34,13 +34,13 @@ pub(crate) fn impl_has_branches(structure: &mut Structure) -> proc_macro2::Token
     let structure_name = &structure.name;
 
     let all_branches = structure.has_attribute(vec!["tree", "branches"]);
-    
+
     let branches: HashSet<Path> = structure.fields.iter().filter_map(|field| {
         if all_branches || field.has_attribute(vec!["tree", "branch"]) {
             if let Some(path) = field.as_collection() {
                 Some(path.clone().into())
             } else if let syn::Type::Path(path) = &field.field.ty {
-                Some(Path::from(path.path.clone()))                
+                Some(Path::from(path.path.clone()))
             } else {
                 None
             }
