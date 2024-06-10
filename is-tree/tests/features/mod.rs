@@ -13,7 +13,7 @@ visitor! {
     }
 }
 
-#[derive(Debug, IsTree)]
+#[derive(Debug, Default, IsTree)]
 #[tree(branches)]
 pub struct Library {
     #[tree(path_segment)]
@@ -217,6 +217,34 @@ fn unsafe_mutable_relative_access() {
 
     let iterator: TreeIterator<Visitors> = TreeIterator::new(&branch);
     assert_eq!(iterator.filter(|visitor| !visitor.is_string()).map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["exponential", "algebra", "shapes", "GEOMETRY", "math", "LIBRARY"]);
+}
+
+impl From<String> for Module {
+    fn from(name: String) -> Self {
+        Module { name, .. Default::default() }
+    }
+}
+
+impl AddBranch<Module> for Module {
+    fn add_branch(&mut self, module: Module) -> &mut Module {
+        self.modules.push(module);
+        self.modules.last_mut().unwrap()
+    }
+}
+
+impl AddBranch<Module> for Library {
+    fn add_branch(&mut self, module: Module) -> &mut Module {
+        self.root_module = module;
+        &mut self.root_module
+    }
+}
+
+#[test]
+fn branch_fn() {
+    let mut root = Library { name: "Root".into(), ..Default::default() };
+        root.branch("Branch")
+            .branch("Leaf");
+    assert_eq!(TreeIterator::<Visitors>::new(&root).filter(|visitor| !visitor.is_string()).map(|visitor| visitor.path_segment().clone()).collect::<Vec<_>>(), vec!["Leaf", "Branch", "Root"]);
 }
 
 #[test]
