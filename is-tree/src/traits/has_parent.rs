@@ -3,14 +3,14 @@
 use crate::KnowsVisitor;
 
 /// A trait for objects that have a parent.
-pub trait HasParent: Sized + KnowsVisitor {
+pub trait HasParent: KnowsVisitor {
     /// Gets the parent of the object.
     fn parent(&self) -> Option<Self::Visitor>;
 }
 
 /// A trait for objects that have a parent mutably.
 /// By design, accessing a Visitor parent is unsafe.
-pub unsafe trait HasParentMut: Sized + KnowsVisitor {
+pub unsafe trait HasParentMut: KnowsVisitor {
     /// Gets the parent of the object.
     unsafe fn parent_mut(&mut self) -> Option<Self::VisitorMut>;
 }

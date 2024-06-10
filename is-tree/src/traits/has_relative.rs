@@ -6,7 +6,7 @@ use super::{HasGet, HasParent, HasRoot};
 use super::has_branches::HasBranches;
 
 /// A trait for objects that have a relative path.
-pub trait HasRelative<'a>: Sized {
+pub trait HasRelative<'a> {
     /// Gets a relative path.
     /// "self", "root", and "super" are reserved path segments.
     /// "self" is the current object, "root" is the root object, and "super" is the parent object.
@@ -33,13 +33,13 @@ pub trait HasRelative<'a>: Sized {
 
 /// A trait for objects that have a relative path mutably.
 /// By design, accessing a Visitor parent is unsafe.
-pub trait UnsafeHasRelative<'a>: Sized {
+pub trait HasRelativeMut<'a> {
     /// Gets a relative path mutably.
     /// "self", "root", and "super" are reserved path segments.
     /// "self" is the current object, "root" is the root object, and "super" is the parent object.
     unsafe fn relative_mut<K>(&'a mut self, path: impl IntoIterator<Item = K>) -> Option<Self>
     where K: Into<String>,
-        Self: KnowsVisitor<VisitorMut = Self> + UnsafeClone + HasRootMut + HasParentMut + HasPathSegment,
+        Self: KnowsVisitor<VisitorMut = Self> + UnsafeClone + HasRootMut + HasParentMut + HasPathSegment + Sized,
         &'a mut Self: HasBranches<Self>
     {
         let mut path = path.into_iter();
@@ -59,4 +59,4 @@ pub trait UnsafeHasRelative<'a>: Sized {
 }
 
 impl<'a, T: Sized> HasRelative<'a> for T {}
-impl<'a, T: Sized> UnsafeHasRelative<'a> for T {}
+impl<'a, T: Sized> HasRelativeMut<'a> for T {}

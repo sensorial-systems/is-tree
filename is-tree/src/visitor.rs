@@ -121,30 +121,3 @@ where
         }
     }
 }
-
-
-
-// impl<'a, Parent, Value, T> HasBranches<T> for &'a mut Visitor<Parent, Value>
-// where
-//     Visitor<Parent, Value>: UnsafeClone,
-//     T: From<Visitor<Parent, Value>> + 'a,
-// {
-//     fn branches_impl(self) -> impl Iterator<Item = T> {
-//         let mut visitor = unsafe { self.unsafe_clone() };
-//         std::iter::empty()
-//     }
-// }
-// impl<'a, Parent, Value, T> HasBranches<T> for &'a mut Visitor<Parent, Value>
-// where
-//     Visitor<Parent, Value>: UnsafeClone,
-//     T: From<Visitor<Parent, Value>> + 'a,
-//     &'a mut T: HasBranches<T>
-// {
-//     fn branches_impl(self) -> impl Iterator<Item = T> {
-//         unsafe {
-//             let visitor = self.unsafe_clone();
-//             let mut visitor = T::from(visitor);
-//             longer_mut(&mut visitor).branches_impl()
-//         }
-//     }
-// }

@@ -237,7 +237,7 @@ fn branch_visitor() { // Visitor<Parent, Value>
 
         visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name = visitor.parent_mut().unwrap().as_module_mut().unwrap().value.name.to_uppercase();
         visitor.root_mut().as_library_mut().unwrap().value.name = visitor.root().as_library_mut().unwrap().value.name.to_uppercase();
-        // visitor.get_mut::<VisitorsMut>("shapes").unwrap().as_module_mut().unwrap().value.name = visitor.get_mut::<VisitorsMut>("shapes").unwrap().as_module_mut().unwrap().value.name.to_uppercase();
+        // visitor.get_mut("shapes").unwrap().as_module_mut().unwrap().value.name = visitor.get_mut("shapes").unwrap().as_module_mut().unwrap().value.name.to_uppercase();
 
         assert_eq!((visitor.parent().unwrap() as Visitors).path_segment(), "MATH");
         assert_eq!((visitor.root() as Visitors).path_segment(), "LIBRARY");
