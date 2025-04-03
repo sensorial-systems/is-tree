@@ -35,6 +35,20 @@ pub trait HasBranchesAPIV2<'a> {
     {
         self.branches_impl()
     }
+
+    fn all_branches<T>(&'a self) -> impl Iterator<Item = T>
+    where &'a Self: HasBranches<T>,
+          T: 'a + HasBranches<T>
+    {
+        self.branches_impl().flat_map(|branch| branch.branches_impl())
+    }
+
+    fn all_branches_mut<T>(&'a mut self) -> impl Iterator<Item = T>
+    where &'a mut Self: HasBranches<T>,
+          T: 'a + HasBranches<T>
+    {
+        self.branches_impl().flat_map(|branch| branch.branches_impl())
+    }
 }
 
 impl<'a, T> HasBranchesAPIV2<'a> for T {}

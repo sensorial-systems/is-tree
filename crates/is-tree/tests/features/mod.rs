@@ -74,6 +74,13 @@ fn branches() {
 }
 
 #[test]
+fn all_branches() {
+    let library = Library::mock();
+    let modules = library.all_branches::<&Module>().map(|module| module.name.as_str()).collect::<Vec<_>>();
+    assert_eq!(modules, vec!["geometry", "algebra"]);
+}
+
+#[test]
 fn get() {
     let mut library = Library::mock();
     assert_eq!(library.branches::<&Module>().map(|branch| branch.name.as_str()).collect::<Vec<_>>(), vec!["math"]);
