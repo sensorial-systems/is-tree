@@ -38,16 +38,16 @@ pub trait HasBranchesAPIV2<'a> {
 
     fn all_branches<T>(&'a self) -> impl Iterator<Item = T>
     where &'a Self: HasBranches<T>,
-          T: 'a + HasBranches<T>
+          T: 'a + HasBranches<T> + Copy
     {
-        self.branches_impl().flat_map(|branch| branch.branches_impl())
+        self.branches_impl().flat_map(|branch| std::iter::once(branch).chain(branch.branches_impl()))
     }
 
     fn all_branches_mut<T>(&'a mut self) -> impl Iterator<Item = T>
     where &'a mut Self: HasBranches<T>,
-          T: 'a + HasBranches<T>
+          T: 'a + HasBranches<T> + Copy
     {
-        self.branches_impl().flat_map(|branch| branch.branches_impl())
+        self.branches_impl().flat_map(|branch| std::iter::once(branch).chain(branch.branches_impl()))
     }
 }
 
