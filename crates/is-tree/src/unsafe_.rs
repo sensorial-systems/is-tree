@@ -20,7 +20,6 @@ pub unsafe trait UnsafeBorrow<'a> {
     unsafe fn borrow(&'a self) -> Self::Borrow;
 }
 
-// TODO: Write about cases where this is needed.
 /// Makes the reference live longer.
 #[inline]
 pub unsafe fn longer_ref<'longer, T>(t: &T) -> &'longer T { unsafe { &*(t as *const T) } }
