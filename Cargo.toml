@@ -11,9 +11,9 @@ readme = "README.md"
 [workspace]
 resolver = "2"
 members = [
-    "is-tree",
-    "is-tree-macro",
+    "crates/is-tree",
+    "crates/is-tree-macro",
 ]
 
 [workspace.dependencies]
-is-tree-macro = { path = "is-tree-macro" }
+is-tree-macro = { path = "crates/is-tree-macro" }

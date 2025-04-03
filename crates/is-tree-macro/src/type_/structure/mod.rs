@@ -10,7 +10,6 @@ use crate::traits::{Derive, AttributeQuery};
 
 #[derive(Default)]
 pub struct Implementation {
-    pub has_branches: bool, // TODO: I don't think this is used anymore.
     pub has_path_segment: bool // TODO: I don't think this is used anymore.
 }
 
