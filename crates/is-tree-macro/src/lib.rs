@@ -2,6 +2,7 @@ use proc_macro::TokenStream;
 
 mod traits;
 mod type_;
+mod path;
 
 use traits::Derive;
 use type_::Type;

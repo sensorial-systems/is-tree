@@ -12,9 +12,7 @@ pub(crate) fn impl_has_get(structure: &Structure) -> proc_macro2::TokenStream {
             {
                 use ::is_tree::HasGet;
                 self.get_impl::<T>(segment)
-            }        
+            }
         }
-
-        // impl ::is_tree::
     }
 }
