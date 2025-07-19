@@ -10,5 +10,5 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-enum-as-inner = "0.6.0"
-is-tree-macro = "0.9.7"
+enum-as-inner.workspace = true
+is-tree-macro.workspace = true

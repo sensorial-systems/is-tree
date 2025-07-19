@@ -12,8 +12,10 @@ readme = "README.md"
 resolver = "2"
 members = [
     "crates/is-tree",
-    "crates/is-tree-macro",
+    "crates/is-tree-macro"
 ]
 
 [workspace.dependencies]
-is-tree-macro = { path = "crates/is-tree-macro" }
+enum-as-inner = "0.6.0"
+is-tree-macro = { version = "0.9.7", path = "crates/is-tree-macro" }
+is-tree = { version = "0.9.7", path = "crates/is-tree" }
